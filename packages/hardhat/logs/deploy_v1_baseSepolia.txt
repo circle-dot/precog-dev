@@ -1,0 +1,55 @@
+marto@MR1:/mnt/e/dev/precog-backend$ yarn deploy --network baseSepolia
+Nothing to compile
+No need to generate any newer typings.
+
+
+> Deploying at baseSepolia
+> Chain Id: 84532
+> Deployer: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+   Balance: 0.002 eth
+
+
+deploying "PrecogToken" (tx: 0x776c5cd30e2f8ceb6f7cc15c6e27f790c1fb1fd1d6b9df66e2c59d73bcad4b8e)...:
+ deployed at 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888 with 1399180 gas
+
+> PrecogToken deployed!
+  Contract: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+      Name: PrecogToken
+    Symbol: PRE
+  Decimals: 18n
+     Owner: 0x9475A4C1BF5Fc80aE079303f14B523da19619c16
+
+
+deploying "PrecogMasterV1" (tx: 0x72620bea50a641852483dbf84f41b2cf001b38197b805c8d6e0852abd172817d)...:
+ deployed at 0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E with 1696415 gas
+
+> PrecogMasterV1 deployed!
+     Contract: 0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E
+        token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+
+
+> Deployer: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+   Balance: 0.001615122946987007 eth
+      Cost: 0.000384877053012993 eth
+
+
+> Deploy ended successfully! :-)
+
+// Verifying PrecogMasterV1
+marto@MR1:/mnt/e/dev/precog-backend$ yarn hardhat-verify --network baseSepolia 0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888 0x9475A4C1BF5Fc80aE079303f14B523da19619c16
+Successfully submitted source code for contract
+contracts/PrecogMasterV1.sol:PrecogMasterV1 at 0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E
+for verification on the block explorer. Waiting for verification result...
+
+Successfully verified contract PrecogMasterV1 on the block explorer.
+https://sepolia.basescan.org/address/0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E#code
+
+
+// Verifying PrecogToken
+marto@MR1:/mnt/e/dev/precog-backend$ yarn hardhat-verify --network baseSepolia 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888 0x9475A4C1BF5Fc80aE079303f14B523da19619c16
+Successfully submitted source code for contract
+contracts/PrecogToken.sol:PrecogToken at 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+for verification on the block explorer. Waiting for verification result...
+
+Successfully verified contract PrecogToken on the block explorer.
+https://sepolia.basescan.org/address/0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888#code

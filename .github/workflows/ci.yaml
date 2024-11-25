@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [lts/*]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node env
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run hardhat tests (with gas profiler enabled)
+        run: yarn test-gas
+
+      - name: Run hardhat lint
+        run: yarn hardhat:lint --max-warnings=0
+
+      - name: Run nextjs lint
+        run: yarn next:lint --max-warnings=0
+
+      - name: Check typings on nextjs
+        run: yarn next:check-types
+

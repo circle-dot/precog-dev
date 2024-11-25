@@ -1,0 +1,55 @@
+{
+  "name": "precog",
+  "version": "0.7.2",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "scripts": {
+    "account": "yarn workspace @se-2/hardhat account",
+    "chain": "yarn workspace @se-2/hardhat chain",
+    "compile": "yarn workspace @se-2/hardhat compile",
+    "deploy": "yarn workspace @se-2/hardhat deploy",
+    "flatten": "yarn workspace @se-2/hardhat flatten",
+    "fork": "yarn workspace @se-2/hardhat fork",
+    "format": "yarn next:format && yarn hardhat:format",
+    "generate": "yarn workspace @se-2/hardhat generate",
+    "check-market": "yarn workspace @se-2/hardhat check-market",
+    "hardhat-verify": "yarn workspace @se-2/hardhat hardhat-verify",
+    "hardhat:format": "yarn workspace @se-2/hardhat format",
+    "hardhat:clean": "yarn workspace @se-2/hardhat clean",
+    "hardhat:lint": "yarn workspace @se-2/hardhat lint",
+    "hardhat:lint-staged": "yarn workspace @se-2/hardhat lint-staged",
+    "hardhat:test": "yarn workspace @se-2/hardhat test",
+    "hardhat:test-gas": "yarn workspace @se-2/hardhat test-gas",
+    "hardhat:test-details": "yarn workspace @se-2/hardhat test-details",
+    "postinstall": "yarn --version",
+    "next:build": "yarn workspace @se-2/nextjs build",
+    "next:check-types": "yarn workspace @se-2/nextjs check-types",
+    "next:format": "yarn workspace @se-2/nextjs format",
+    "next:lint": "yarn workspace @se-2/nextjs lint",
+    "precommit": "lint-staged",
+    "prepare": "install-self-peers -- --ignore-scripts",
+    "start": "yarn workspace @se-2/nextjs dev",
+    "lint": "yarn hardhat:lint && yarn next:lint",
+    "clean": "yarn hardhat:clean",
+    "test": "yarn hardhat:test",
+    "test-gas": "yarn hardhat:test-gas",
+    "test-details": "yarn hardhat:test-details",
+    "deploy-gui": "yarn workspace @se-2/nextjs vercel --prod",
+    "vercel": "yarn workspace @se-2/nextjs vercel",
+    "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo",
+    "verify": "yarn workspace @se-2/hardhat verify"
+  },
+  "resolutions": {
+    "usehooks-ts@^2.7.2": "patch:usehooks-ts@npm:^2.7.2#./.yarn/patches/usehooks-ts-npm-2.7.2-fceffe0e43.patch"
+  },
+  "devDependencies": {
+    "lint-staged": "~13.2.2",
+    "next": "~14.2.6",
+    "vercel": "~35.0.2"
+  },
+  "packageManager": "yarn@3.2.3"
+}

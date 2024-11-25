@@ -1,0 +1,683 @@
+import {expect} from "chai";
+import {ethers} from "hardhat";
+import {PrecogToken, PrecogMarketV5} from "../typechain-types";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+
+function fromInt128toNumber(a: bigint): number {
+    return Number(BigInt(a)) / Number((BigInt(2) ** BigInt(64)));
+}
+
+function fromNumberToInt128(a: number): bigint {
+    return BigInt(a) * (BigInt(2) ** BigInt(64))
+}
+
+describe("Precog Market V5", function () {
+    const detailsEnabled: boolean = process.env.TEST_DETAILS === 'true';
+    let pre: PrecogToken;
+    let preAddress: string;
+    let market: PrecogMarketV5;
+    let marketAddress: string;
+    let owner: HardhatEthersSigner;
+    let caller: HardhatEthersSigner;
+    let user: HardhatEthersSigner;
+
+    beforeEach(async function () {
+        [owner, caller, user] = await ethers.getSigners();
+    })
+
+    describe("Deployment", function () {
+
+        it("Fake PrecogToken contract deployed", async function () {
+            const PRE = await ethers.getContractFactory("PrecogToken");
+            const precogMaster: string = owner.address;
+            pre = await PRE.deploy(precogMaster);
+            preAddress = await pre.getAddress();
+        })
+
+        it("Minting some PRE tokens for users", async function () {
+            const initialSupply: bigint = ethers.parseEther('10000');
+            await pre.mint(owner.address, initialSupply);
+            await pre.mint(caller.address, initialSupply);
+            await pre.mint(user.address, initialSupply);
+            expect(await pre.balanceOf(owner.address)).to.equal(initialSupply);
+            expect(await pre.balanceOf(caller.address)).to.equal(initialSupply);
+            expect(await pre.balanceOf(user.address)).to.equal(initialSupply);
+        })
+
+        it("PrecogMarket contract deployed", async function () {
+            const PrecogMarket = await ethers.getContractFactory("PrecogMarketV5");
+            market = await PrecogMarket.deploy();
+            marketAddress = await market.getAddress();
+            await market.initialize(preAddress);
+        })
+
+        it("Approve PrecogMarket to spend users money", async function () {
+            const ownerBalance: bigint = await pre.balanceOf(owner.address);
+            await pre.approve(marketAddress, ownerBalance);
+
+            const callerBalance: bigint = await pre.balanceOf(caller.address);
+            await pre.connect(caller).approve(marketAddress, callerBalance);
+
+            const userBalance: bigint = await pre.balanceOf(user.address);
+            await pre.connect(user).approve(marketAddress, userBalance);
+
+            expect(await pre.allowance(owner.address, marketAddress)).to.equal(ownerBalance);
+            expect(await pre.allowance(caller.address, marketAddress)).to.equal(callerBalance);
+            expect(await pre.allowance(user.address, marketAddress)).to.equal(userBalance);
+        })
+
+        it("PrecogMarket [LsLMSR] setup", async function () {
+            const ownerInitialBalance: bigint = await pre.balanceOf(owner.address);
+
+            const marketId: number = 1;
+            const totalOutcomes: number = 2;
+            const subsidy: bigint = ethers.parseEther('2000');
+            const overround: number = 200;
+            await market.setup(marketId, owner.address, totalOutcomes, subsidy, overround);
+
+            const ownerFinalBalance: bigint = await pre.balanceOf(owner.address);
+            expect(await pre.balanceOf(marketAddress)).to.equal(subsidy);
+            expect(ownerFinalBalance).to.equal(ownerInitialBalance - subsidy);
+        })
+
+    })
+
+    describe("Cost functions", function () {
+
+        it("| Checking initial market info", async function () {
+            if (detailsEnabled) console.log("");
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares: number = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne: number = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo: number = fromInt128toNumber(marketInfo[2]);
+            const cost: number = fromInt128toNumber(marketInfo[3]);
+            const totalBuys: bigint = marketInfo[4];
+            const totalSells = fromInt128toNumber(marketInfo[5]);
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, OutcomeOne: ${outcomeOne}, OutcomeTwo: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, totalSells: ${totalSells}`);
+            }
+            expect(cost).to.equal(2040); // 2000 subsidy with 2% overround (aka fee)
+            expect(totalShares).to.equal(4000) // 2000 subsidy with 2 outcomes
+        })
+
+        it("| Checking initial prices at baseline", async function () {
+            if (detailsEnabled) console.log("");
+            const buyPrices: any[] = [null, [], []];  // the first item is added just for simplicity
+            const sellPrices: any[] = [null, [], []];  // the first item is added just for simplicity
+            const possibleOutcomes = [1, 2];
+            const sharesAmounts = [1, 10, 100];
+            for (const outcome of possibleOutcomes) {
+                for (const shares of sharesAmounts) {
+                    const sharesInt128: bigint = fromNumberToInt128(shares);
+                    const priceInt128: bigint = await market.buyPrice(outcome, sharesInt128);
+                    const price = fromInt128toNumber(priceInt128);
+                    if (detailsEnabled) {
+                        console.log(`\t|  Buy: outcome=${outcome}, amount=${shares} => ${price} [${priceInt128}]`);
+                    }
+                    buyPrices[outcome].push(price);
+                }
+            }
+            for (const outcome of possibleOutcomes) {
+                for (const shares of sharesAmounts) {
+                    const sharesInt128: bigint = fromNumberToInt128(shares);
+                    const priceInt128: bigint = await market.sellPrice(outcome, sharesInt128);
+                    const price = fromInt128toNumber(priceInt128);
+                    if (detailsEnabled) {
+                        console.log(`\t| Sell: outcome=${outcome}, amount=${shares} => ${price} [${priceInt128}]`);
+                    }
+                    sellPrices[outcome].push(price);
+                }
+            }
+            expect(buyPrices[1].toString()).to.equal(buyPrices[2].toString());
+            expect(sellPrices[1].toString()).to.equal(sellPrices[2].toString());
+        })
+    })
+
+    describe("Testing buying and selling shares", function () {
+        it("| Trying to buy one YES share [outcome=1]", async function () {
+            if (detailsEnabled) console.log("");
+            const balanceBefore = await pre.balanceOf(owner.address);
+            const outcome: number = 1;
+            const shares: number = 1;
+            const sharesInt128: bigint = fromNumberToInt128(shares);
+            if (detailsEnabled) {
+                console.log(`\t| Buying: outcome=${outcome}, shares=${shares} [${sharesInt128}]`);
+            }
+            const priceInt128: bigint = await market.buyPrice(outcome, sharesInt128);
+            const price = fromInt128toNumber(priceInt128);
+            await market.buy(outcome, sharesInt128);
+
+            const balanceAfter = await pre.balanceOf(owner.address);
+            const preCost = ethers.formatEther(balanceBefore - balanceAfter);
+            if (detailsEnabled) {
+                console.log(`\t| PRE: ${ethers.formatEther(balanceBefore)} -> ${ethers.formatEther(balanceAfter)}`);
+                console.log(`\t| Buy cost: ${preCost}, Calculated Price: ${price}`);
+            }
+            expect(preCost.includes(price.toString()), "Cost do not match price");
+            const ownerShares: bigint[] = await market.accountShares(owner.address);
+            const buys = ownerShares[0];
+            const sells = ownerShares[1];
+            const outOneShares = ethers.formatEther(ownerShares[2]);
+            const outTwoShares = ethers.formatEther(ownerShares[3]);
+            const deposited = ethers.formatEther(ownerShares[4]);
+            const withdrew = ethers.formatEther(ownerShares[5]);
+            if (detailsEnabled) {
+                console.log(`\t| Buys: ${buys}, Sells: ${sells}, YES: ${outOneShares}, NO: ${outTwoShares}`);
+                console.log(`\t| Deposited: ${deposited}, Withdrew: ${withdrew}`);
+            }
+            expect(Number(buys)).be.equal(1);
+            expect(Number(sells)).be.equal(0);
+            expect(Number(outOneShares)).be.equal(1);
+            expect(Number(outTwoShares)).be.equal(0);
+        })
+
+        it("| Checking current market info (after one buy)", async function () {
+            if (detailsEnabled) console.log("");
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const totalSells = marketInfo[5];
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, YES: ${outcomeOne}, NO: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, totalSells: ${totalSells}`);
+            }
+            expect(Number(totalBuys)).be.equal(1);
+            expect(Number(totalSells)).be.equal(0);
+        })
+
+        it("| Trying to buy one NO share [outcome=2]", async function () {
+            if (detailsEnabled) console.log("");
+            const balanceBefore = await pre.balanceOf(owner.address);
+
+            const outcome: number = 2;
+            const shares: number = 1;
+            const sharesInt128: bigint = fromNumberToInt128(shares);
+            if (detailsEnabled) {
+                console.log(`\t| Buying: outcome=${outcome}, amount=${shares} [${sharesInt128}]`);
+            }
+            const priceInt128: bigint = await market.buyPrice(outcome, sharesInt128);
+            const price = fromInt128toNumber(priceInt128);
+            await market.buy(outcome, sharesInt128);
+
+            const balanceAfter = await pre.balanceOf(owner.address);
+            const preCost = ethers.formatEther(balanceBefore - balanceAfter);
+            if (detailsEnabled) {
+                console.log(`\t| PRE: ${ethers.formatEther(balanceBefore)} -> ${ethers.formatEther(balanceAfter)}`);
+                console.log(`\t| Buy cost: ${preCost}, Calculated Price: ${price}`);
+            }
+            expect(preCost.includes(price.toString()), "Cost do not match price");
+            const ownerShares: bigint[] = await market.accountShares(owner.address);
+            const buys = ownerShares[0];
+            const sells = ownerShares[1];
+            const outOneShares = ethers.formatEther(ownerShares[2]);
+            const outTwoShares = ethers.formatEther(ownerShares[3]);
+            const deposited = ethers.formatEther(ownerShares[4]);
+            const withdrew = ethers.formatEther(ownerShares[5]);
+            if (detailsEnabled) {
+                console.log(`\t| Buys: ${buys}, Sells: ${sells}, YES: ${outOneShares}, NO: ${outTwoShares}`);
+                console.log(`\t| Deposited: ${deposited}, Withdrew: ${withdrew}`);
+            }
+            expect(Number(buys)).be.equal(2);
+            expect(Number(sells)).be.equal(0);
+            expect(Number(outOneShares)).be.equal(1);
+            expect(Number(outTwoShares)).be.equal(1);
+        })
+
+        it("| Checking current market info (after 2 buys)", async function () {
+            if (detailsEnabled) console.log("");
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const totalSells = marketInfo[5];
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, YES: ${outcomeOne}, NO: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, totalSells: ${totalSells}`);
+            }
+            expect(Number(totalBuys)).be.equal(2);
+            expect(Number(totalSells)).be.equal(0);
+        })
+
+        it("| Buying 200 YES & NO shares from many sizes", async function () {
+            if (detailsEnabled) console.log("");
+            const initialCost: number = fromInt128toNumber(await market.cost());
+            const initialPre = await pre.balanceOf(owner.address);
+
+            const outcomeYes: number = 1;
+            const outcomeNo: number = 2;
+            const oneSharesInt128: bigint = fromNumberToInt128(1);
+            const fiveSharesInt128: bigint = fromNumberToInt128(5);
+            const tenSharesInt128: bigint = fromNumberToInt128(10);
+            const fiftySharesInt128: bigint = fromNumberToInt128(50);
+            const hundredSharesInt128: bigint = fromNumberToInt128(100);
+
+            // Buying 199 shares of YES (note: 1 share it is already bought by previous test case)
+            await market.buy(outcomeYes, oneSharesInt128);
+            await market.buy(outcomeYes, oneSharesInt128);
+            await market.buy(outcomeYes, oneSharesInt128);
+            await market.buy(outcomeYes, oneSharesInt128);
+            await market.buy(outcomeYes, fiveSharesInt128);
+            await market.buy(outcomeYes, tenSharesInt128);
+            await market.buy(outcomeYes, tenSharesInt128);
+            await market.buy(outcomeYes, tenSharesInt128);
+            await market.buy(outcomeYes, tenSharesInt128);
+            await market.buy(outcomeYes, fiftySharesInt128);
+            await market.buy(outcomeYes, hundredSharesInt128);
+
+            // Buying 199 shares of NO (note: 1 share it is already bought by previous test case)
+            await market.buy(outcomeNo, oneSharesInt128);
+            await market.buy(outcomeNo, oneSharesInt128);
+            await market.buy(outcomeNo, oneSharesInt128);
+            await market.buy(outcomeNo, oneSharesInt128);
+            await market.buy(outcomeNo, fiveSharesInt128);
+            await market.buy(outcomeNo, tenSharesInt128);
+            await market.buy(outcomeNo, tenSharesInt128);
+            await market.buy(outcomeNo, tenSharesInt128);
+            await market.buy(outcomeNo, tenSharesInt128);
+            await market.buy(outcomeNo, fiftySharesInt128);
+            await market.buy(outcomeNo, hundredSharesInt128);
+
+            const finalCost = fromInt128toNumber(await market.cost());
+            const finalPre = await pre.balanceOf(owner.address);
+            if (detailsEnabled) {
+                console.log(`\t| Cost: ${initialCost} -> ${finalCost}`);
+                console.log(`\t| PRE: ${ethers.formatEther(initialPre)} -> ${ethers.formatEther(finalPre)}`);
+            }
+            const ownerShares: bigint[] = await market.accountShares(owner.address);
+            const buys = ownerShares[0];
+            const sells = ownerShares[1];
+            const outOneShares = ethers.formatEther(ownerShares[2]);
+            const outTwoShares = ethers.formatEther(ownerShares[3]);
+            const deposited = ethers.formatEther(ownerShares[4]);
+            const withdrew = ethers.formatEther(ownerShares[5]);
+            const redeemed = ethers.formatEther(ownerShares[6]);
+            if (detailsEnabled) {
+                console.log(`\t| Buys: ${buys}, Sells: ${sells}, YES: ${outOneShares}, NO: ${outTwoShares}`);
+                console.log(`\t| Deposited: ${deposited}, Withdrew: ${withdrew}, Redeemed: ${redeemed}`);
+            }
+            expect(Number(buys)).be.greaterThan(2);
+            expect(Number(sells)).be.equal(0);
+            expect(Number(outOneShares)).be.equal(200);
+            expect(Number(outTwoShares)).be.equal(200);
+        })
+
+        it("| Trying to sell one YES share [outcome=1]", async function () {
+            if (detailsEnabled) console.log("");
+            const ownerSharesBefore: bigint[] = await market.accountShares(owner.address);
+            const outOneSharesBefore = ethers.formatEther(ownerSharesBefore[2]);
+            const outTwoSharesBefore = ethers.formatEther(ownerSharesBefore[3]);
+            const balanceBefore = await pre.balanceOf(owner.address);
+
+            const outcome: number = 1;
+            const shares: number = 1;
+            const sharesInt128: bigint = fromNumberToInt128(shares);
+            const priceInt128: bigint = await market.sellPrice(outcome, sharesInt128);
+            const expectedReturn: number = fromInt128toNumber(priceInt128);
+            if (detailsEnabled) {
+                console.log(`\t| Shares : 1-YES=${outOneSharesBefore}, 2-NO=${outTwoSharesBefore}`);
+                console.log(`\t| Selling: outcome=${outcome}, shares=${shares} [${sharesInt128}]`);
+                console.log(`\t|   Expected return: ${expectedReturn} PRE`);
+            }
+            await market.sell(outcome, sharesInt128);
+
+            const ownerSharesAfter: bigint[] = await market.accountShares(owner.address);
+            const balanceAfter: bigint = await pre.balanceOf(owner.address);
+            const preReturn: string = ethers.formatEther(balanceAfter - balanceBefore);
+            if (detailsEnabled) {
+                console.log(`\t| After Sold return: ${preReturn} PRE`);
+            }
+
+            const buys = ownerSharesAfter[0];
+            const sells = ownerSharesAfter[1];
+            const outOneSharesAfter = ethers.formatEther(ownerSharesAfter[2]);
+            const outTwoSharesAfter = ethers.formatEther(ownerSharesAfter[3]);
+            const deposited = ethers.formatEther(ownerSharesAfter[4]);
+            const withdrew = ethers.formatEther(ownerSharesAfter[5]);
+            if (detailsEnabled) {
+                console.log(`\t| Shares : 1-YES=${outOneSharesAfter}, 2-NO=${outTwoSharesAfter}`);
+                console.log(`\t| Buys: ${buys}, Sells: ${sells}`);
+                console.log(`\t| Deposited: ${deposited}, Withdrew: ${withdrew}`);
+            }
+
+            expect(preReturn.includes(expectedReturn.toString()), "Return do not match price");
+            expect(Number(sells)).be.equal(1);
+            expect(Number(outOneSharesAfter)).be.equal(Number(outOneSharesBefore) - 1);
+            expect(Number(outTwoSharesAfter)).be.equal(Number(outTwoSharesAfter));
+        })
+
+        it("| Trying to sell one NO share [outcome=2]", async function () {
+            if (detailsEnabled) console.log("");
+            const ownerSharesBefore: bigint[] = await market.accountShares(owner.address);
+            const outOneSharesBefore = ethers.formatEther(ownerSharesBefore[2]);
+            const outTwoSharesBefore = ethers.formatEther(ownerSharesBefore[3]);
+            const balanceBefore = await pre.balanceOf(owner.address);
+
+            const outcome: number = 2;
+            const shares: number = 1;
+            const sharesInt128: bigint = fromNumberToInt128(shares);
+            const priceInt128: bigint = await market.sellPrice(outcome, sharesInt128);
+            const expectedReturn: number = fromInt128toNumber(priceInt128);
+            if (detailsEnabled) {
+                console.log(`\t| Shares : 1-YES=${outOneSharesBefore}, 2-NO=${outTwoSharesBefore}`);
+                console.log(`\t| Selling: outcome=${outcome}, shares=${shares} [${sharesInt128}]`);
+                console.log(`\t|   Expected return: ${expectedReturn} PRE`);
+            }
+            await market.sell(outcome, sharesInt128);
+
+            const ownerSharesAfter: bigint[] = await market.accountShares(owner.address);
+            const balanceAfter: bigint = await pre.balanceOf(owner.address);
+            const preReturn: string = ethers.formatEther(balanceAfter - balanceBefore);
+            if (detailsEnabled) {
+                console.log(`\t| After Sold return: ${preReturn} PRE`);
+            }
+
+            const buys = ownerSharesAfter[0];
+            const sells = ownerSharesAfter[1];
+            const outOneSharesAfter = ethers.formatEther(ownerSharesAfter[2]);
+            const outTwoSharesAfter = ethers.formatEther(ownerSharesAfter[3]);
+            const deposited = ethers.formatEther(ownerSharesAfter[4]);
+            const withdrew = ethers.formatEther(ownerSharesAfter[5]);
+            if (detailsEnabled) {
+                console.log(`\t| Shares : 1-YES=${outOneSharesAfter}, 2-NO=${outTwoSharesAfter}`);
+                console.log(`\t| Buys: ${buys}, Sells: ${sells}`);
+                console.log(`\t| Deposited: ${deposited}, Withdrew: ${withdrew}`);
+            }
+
+            expect(preReturn.includes(expectedReturn.toString()), "Return do not match price");
+            expect(Number(sells)).be.equal(2);
+            expect(Number(outTwoSharesAfter)).be.equal(Number(outTwoSharesBefore) - 1);
+            expect(Number(outOneSharesAfter)).be.equal(Number(outOneSharesBefore));
+        })
+
+        it("| Trying many small Buys & 1 big Sell from users", async function () {
+            if (detailsEnabled) console.log("");
+
+            const userSharesBefore: bigint[] = await market.accountShares(user.address);
+            const buysBefore = userSharesBefore[0];
+            const sellsBefore = userSharesBefore[1];
+            const outOneSharesBefore = ethers.formatEther(userSharesBefore[2]);
+            const outTwoSharesBefore = ethers.formatEther(userSharesBefore[3]);
+            if (detailsEnabled) {
+                console.log(`\t| User Shares: 1-YES=${outOneSharesBefore}, 2-NO=${outTwoSharesBefore}`);
+                console.log(`\t| User Actions: BUYs=${buysBefore}, SELLs= ${sellsBefore}`);
+            }
+
+            const balanceBefore = await pre.balanceOf(user.address);
+            const yesOutcome: number = 1;
+
+            // CASE 1: Small buys, big sell
+            const buys: number = 100;
+            if (detailsEnabled) console.log(`\t| Buying (1 share, ${buys} times)...`);
+            for (let i: number = 0; i < buys; i++) {
+                await market.connect(user).buy(yesOutcome, fromNumberToInt128(1));
+            }
+            if (detailsEnabled) console.log(`\t| Selling (${buys} shares)...`);
+            await market.connect(user).sell(yesOutcome, fromNumberToInt128(buys));
+
+            const balanceAfter: bigint = await pre.balanceOf(user.address);
+            const deltaBalance: string = ethers.formatEther(balanceAfter - balanceBefore);
+            if (detailsEnabled) {
+                console.log(`\t| Balance: ${balanceBefore} -> ${balanceAfter} PRE`);
+                console.log(`\t| Delta balance: ${deltaBalance} PRE`);
+            }
+            expect(balanceAfter).be.lessThanOrEqual(balanceBefore);
+
+            const ownerSharesAfter: bigint[] = await market.accountShares(user.address);
+            const buysAfter = ownerSharesAfter[0];
+            const sellsAfter = ownerSharesAfter[1];
+            const outOneSharesAfter = ethers.formatEther(ownerSharesAfter[2]);
+            const outTwoSharesAfter = ethers.formatEther(ownerSharesAfter[3]);
+            if (detailsEnabled) {
+                console.log(`\t| User Shares (after): 1-YES=${outOneSharesAfter}, 2-NO=${outTwoSharesAfter}`);
+                console.log(`\t| User Actions (after): BUYs=${buysAfter}, SELLs= ${sellsAfter}`);
+            }
+
+            expect(Number(outOneSharesAfter)).be.equal(Number(outOneSharesBefore));
+            expect(Number(outTwoSharesAfter)).be.equal(Number(outTwoSharesBefore));
+        })
+
+        it("| Trying 1 big Buy & many small Sells from users", async function () {
+            if (detailsEnabled) console.log("");
+
+            const userSharesBefore: bigint[] = await market.accountShares(user.address);
+            const buysBefore = userSharesBefore[0];
+            const sellsBefore = userSharesBefore[1];
+            const outOneSharesBefore = ethers.formatEther(userSharesBefore[2]);
+            const outTwoSharesBefore = ethers.formatEther(userSharesBefore[3]);
+            if (detailsEnabled) {
+                console.log(`\t| User Shares: 1-YES=${outOneSharesBefore}, 2-NO=${outTwoSharesBefore}`);
+                console.log(`\t| User Actions: BUYs=${buysBefore}, SELLs= ${sellsBefore}`);
+            }
+
+            const balanceBefore = await pre.balanceOf(user.address);
+            const yesOutcome: number = 1;
+
+            // CASE 2: Big buy, small sells
+            const sells: number = 100;
+            if (detailsEnabled) console.log(`\t| Buying (${sells} shares)...`);
+            await market.connect(user).buy(yesOutcome, fromNumberToInt128(sells));
+            if (detailsEnabled) console.log(`\t| Selling (1 share, ${sells} times)...`);
+            for (let i: number = 0; i < sells; i++) {
+                await market.connect(user).sell(yesOutcome, fromNumberToInt128(1));
+            }
+
+            const balanceAfter: bigint = await pre.balanceOf(user.address);
+            const deltaBalance: string = ethers.formatEther(balanceAfter - balanceBefore);
+            if (detailsEnabled) {
+                console.log(`\t| Balance: ${balanceBefore} -> ${balanceAfter} PRE`);
+                console.log(`\t| Delta balance: ${deltaBalance} PRE`);
+            }
+            expect(balanceAfter).be.lessThanOrEqual(balanceBefore);
+
+            const ownerSharesAfter: bigint[] = await market.accountShares(user.address);
+            const buysAfter = ownerSharesAfter[0];
+            const sellsAfter = ownerSharesAfter[1];
+            const outOneSharesAfter = ethers.formatEther(ownerSharesAfter[2]);
+            const outTwoSharesAfter = ethers.formatEther(ownerSharesAfter[3]);
+            if (detailsEnabled) {
+                console.log(`\t| User Shares (after): 1-YES=${outOneSharesAfter}, 2-NO=${outTwoSharesAfter}`);
+                console.log(`\t| User Actions (after): BUYs=${buysAfter}, SELLs= ${sellsAfter}`);
+            }
+
+            expect(Number(outOneSharesAfter)).be.equal(Number(outOneSharesBefore));
+            expect(Number(outTwoSharesAfter)).be.equal(Number(outTwoSharesBefore));
+        })
+
+        it("| Trying to make some profit buying low and selling high", async function () {
+            if (detailsEnabled) console.log("");
+
+            const userSharesBefore: bigint[] = await market.accountShares(user.address);
+            const buysBefore: bigint = userSharesBefore[0];
+            const sellsBefore: bigint = userSharesBefore[1];
+            const outOneSharesBefore: string = ethers.formatEther(userSharesBefore[2]);
+            const outTwoSharesBefore: string = ethers.formatEther(userSharesBefore[3]);
+            if (detailsEnabled) {
+                console.log(`\t| User Shares: 1-YES=${outOneSharesBefore}, 2-NO=${outTwoSharesBefore}`);
+                console.log(`\t| User Actions: BUYs=${buysBefore}, SELLs= ${sellsBefore}`);
+            }
+
+            // Dev Note: There is a lib limit of 1545 shares YES/NO delta on 200 overround.
+            const balanceBefore: bigint = await pre.balanceOf(user.address);
+
+            const YesOutcome: number = 1;
+
+            // User BUY 1 share of YES at low price
+            await market.connect(user).buy(YesOutcome, fromNumberToInt128(1));
+
+            // Other user BUY 1 share of YES
+            await market.connect(caller).buy(YesOutcome, fromNumberToInt128(1));
+
+            // User SELL 1 share of YES at a higher price
+            await market.connect(user).sell(YesOutcome, fromNumberToInt128(1));
+
+            // Other user SELL 1 share of YES (to keep equality, this other user operate at loss)
+            await market.connect(caller).sell(YesOutcome, fromNumberToInt128(1));
+
+            const balanceAfter: bigint = await pre.balanceOf(user.address);
+            const deltaBalance: string = ethers.formatEther(balanceAfter - balanceBefore);
+            if (detailsEnabled) {
+                console.log(`\t| Shares Bought!, Total Cost: ${deltaBalance} PRE\``);
+            }
+
+            const ownerSharesAfter: bigint[] = await market.accountShares(user.address);
+            const buysAfter: bigint = ownerSharesAfter[0];
+            const sellsAfter: bigint = ownerSharesAfter[1];
+            const outOneSharesAfter: string = ethers.formatEther(ownerSharesAfter[2]);
+            const outTwoSharesAfter: string = ethers.formatEther(ownerSharesAfter[3]);
+            if (detailsEnabled) {
+                console.log(`\t| User Shares (after): 1-YES=${outOneSharesAfter}, 2-NO=${outTwoSharesAfter}`);
+                console.log(`\t| User Actions (after): BUYs=${buysAfter}, SELLs= ${sellsAfter}`);
+            }
+
+            expect(Number(balanceAfter)).be.greaterThan(Number(balanceBefore));
+            expect(Number(outOneSharesAfter)).be.equal(Number(outOneSharesBefore));
+            expect(Number(outTwoSharesAfter)).be.equal(Number(outTwoSharesBefore));
+        })
+
+        it("| Checking final market info (equal YES/NO quantities)", async function () {
+            if (detailsEnabled) console.log("");
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const totalSells = marketInfo[5];
+            const marketPreBalance = await pre.balanceOf(marketAddress);
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, OutcomeOne: ${outcomeOne}, OutcomeTwo: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, totalSells: ${totalSells}`);
+                console.log(`\t| Market balance: ${ethers.formatEther(marketPreBalance)}`);
+            }
+            expect(outcomeOne).be.equal(outcomeTwo);
+        })
+
+        it("| Checking final prices (equal YES/NO quantities)", async function () {
+            if (detailsEnabled) console.log("");
+            const buyPrices: any[] = [null, [], []];  // the first item is added just for simplicity
+            const possibleOutcomes = [1, 2];
+            const sharesAmounts = [1, 10, 100];
+            for (const outcome of possibleOutcomes) {
+                for (const shares of sharesAmounts) {
+                    const sharesInt128: bigint = fromNumberToInt128(shares);
+                    const priceInt128: bigint = await market.buyPrice(outcome, sharesInt128);
+                    const price = fromInt128toNumber(priceInt128);
+                    if (detailsEnabled) {
+                        console.log(`\t| Price: outcome=${outcome}, amount=${shares} => ${price} [${priceInt128}]`);
+                    }
+                    buyPrices[outcome].push(price);
+                }
+            }
+            expect(buyPrices[1].toString()).to.equal(buyPrices[2].toString());
+        })
+    })
+
+    describe("Testing functions when Market already ended", function () {
+        it("| Reporting result NO[outcome=2] for a Market", async function () {
+            if (detailsEnabled) console.log("");
+            const oracle: string = await market.oracle();
+            const startTimestamp: bigint = await market.startTimestamp();
+            const endTimestamp: bigint = await market.endTimestamp();
+            const initialCloseTimestamp: bigint = await market.closeTimestamp();
+            const initialResult: bigint = await market.result();
+            if (detailsEnabled) {
+                console.log(`\t| Oracle: ${oracle}`);
+                console.log(`\t| StartTimestamp: ${startTimestamp}, EndTimestamp=${endTimestamp}`);
+                console.log(`\t| Initial -> CloseTimestamp: ${initialCloseTimestamp}, Result=${initialResult}`);
+            }
+
+            const marketId: number = 1;
+            const resultOutcome: number = 2;
+            await market.reportResult(marketId, resultOutcome);
+
+            const finalCloseTimestamp: bigint = await market.closeTimestamp();
+            const finalResult: bigint = await market.result();
+            if (detailsEnabled) {
+                console.log(`\t|   Final -> CloseTimestamp: ${finalCloseTimestamp}, Result=${finalResult}`);
+            }
+
+            expect(initialResult).be.equal(0);
+            expect(initialCloseTimestamp).be.equal(0);
+            expect(finalResult).be.equal(resultOutcome);
+            expect(finalCloseTimestamp).be.greaterThan(0);
+        })
+
+        it("| Buying after Market result reported", async function () {
+            if (detailsEnabled) console.log("");
+            const shares: number = 10;
+            const sharesInt128: bigint = fromNumberToInt128(shares);
+            if (detailsEnabled) {
+                console.log(`\t| Buying: condition=1, amount=${shares} [${sharesInt128}]`);
+            }
+
+            await expect(market.buy(1, sharesInt128)).to.be.revertedWith("Market already closed");
+
+            const finalCloseTimestamp: bigint = await market.closeTimestamp();
+            const finalResult: bigint = await market.result();
+            if (detailsEnabled) {
+                console.log(`\t|  CloseTimestamp: ${finalCloseTimestamp}, Result=${finalResult}`);
+            }
+        })
+
+        it("| Redeeming shares from Market", async function () {
+            if (detailsEnabled) console.log("");
+            const initialPre = await pre.balanceOf(owner.address);
+            const initialOwnerShares: bigint[] = await market.accountShares(owner.address);
+            const buys = initialOwnerShares[0];
+            const sells = initialOwnerShares[1];
+            const outOneShares = ethers.formatEther(initialOwnerShares[2]);
+            const outTwoShares = ethers.formatEther(initialOwnerShares[3]);
+            const deposited = ethers.formatEther(initialOwnerShares[4]);
+            const withdrew = ethers.formatEther(initialOwnerShares[5]);
+            const initialRedeemed = ethers.formatEther(initialOwnerShares[6]);
+            if (detailsEnabled) {
+                console.log(`\t| Initial balance: ${ethers.formatEther(initialPre)} PRE`);
+                console.log(`\t| Buys: ${buys}, Sells: ${sells}, YES: ${outOneShares}, NO: ${outTwoShares}`);
+                console.log(`\t| Deposited: ${deposited}, Withdrew: ${withdrew}, Redeemed: ${initialRedeemed}`);
+            }
+            const sharesToRedeem: bigint = initialOwnerShares[3];
+
+            await market.redeemShares();
+
+            const finalOwnerShares: bigint[] = await market.accountShares(owner.address);
+            const finalPre = await pre.balanceOf(owner.address);
+            const finalRedeemed: string = ethers.formatEther(finalOwnerShares[6]);
+            const redeemedBalance: bigint = finalPre - initialPre;
+            const deltaPre: string = ethers.formatEther(finalPre - initialPre);
+            if (detailsEnabled) {
+                console.log(`\t| Final balance: ${ethers.formatEther(finalPre)} PRE (delta: ${deltaPre})`);
+                console.log(`\t| Final Redeemed: ${finalRedeemed}`);
+            }
+
+            expect(redeemedBalance).be.equal(sharesToRedeem);
+        })
+
+        it("| Withdrawing liquidity (initial + dust) from Market", async function () {
+            if (detailsEnabled) console.log("");
+            const initialPre: bigint = await pre.balanceOf(marketAddress);
+            const initialCost: number = fromInt128toNumber(await market.cost());
+            if (detailsEnabled) {
+                console.log(`\t| Initial market balance: ${ethers.formatEther(initialPre)} PRE`);
+                console.log(`\t| Initial market cost: ${initialCost} PRE`);
+            }
+
+            await market.withdraw(preAddress);
+
+            const finalPre: bigint = await pre.balanceOf(marketAddress);
+            const finalCost: number = fromInt128toNumber(await market.cost());
+            if (detailsEnabled) {
+                console.log(`\t| Final market balance: ${ethers.formatEther(finalPre)} PRE`);
+                console.log(`\t| Final market cost: ${finalCost} PRE`);
+            }
+
+            expect(finalPre).be.equal(0);
+            expect(finalCost).be.equal(initialCost);
+        })
+    })
+})

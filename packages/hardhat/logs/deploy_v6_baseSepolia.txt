@@ -1,0 +1,68 @@
+marto@MR1:/mnt/e/dev/precog-backend$ yarn deploy --network baseSepolia
+Nothing to compile
+No need to generate any newer typings.
+
+> Deploying at baseSepolia
+> Chain Id: 84532
+> Deployer: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+   Balance: 0.065769857300402667 eth
+
+> PrecogToken found! (new deploy: false)
+  Contract: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+      Name: PrecogToken
+    Symbol: PRE
+  Decimals: 18n
+     Owner: 0x1eB088E48341F22385c14E2bD25D7Eccc6BB496B
+
+deploying "PrecogMasterV6" (tx: 0x0e75bfd86ce61c15ffb53692461e75272303c1df53ea50f3cbd998a18400b1f7)...:
+ deployed at 0x16D24dE99e3282F153B72229a3c23959cC20FdA3 with 3739931 gas
+
+> PrecogMasterV6 found! (new deploy: true)
+     Contract: 0x16D24dE99e3282F153B72229a3c23959cC20FdA3
+        token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+      markets: 0n
+
+deploying "PrecogMarketV6" (tx: 0x9ae7fb2aee24f015f4944cbb6c4e831d4d693552cc9c53ab81c7d009e51f13ab)...:
+ deployed at 0x0984Bed9E120774820D717df6A4ee217268A7b65 with 3412930 gas
+
+> PrecogMarketV6 found! (new deploy: true)
+     Contract: 0x0984Bed9E120774820D717df6A4ee217268A7b65
+        token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+        owner: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+
+> Deployer: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+   Balance: 0.065756297221794215 eth
+      Cost: 0.000013560078608452 eth
+  GasPrice: 0.001100406 gwei
+
+
+> Deploy ended successfully! :-)
+>> After Deploy Instructions (change local backend to baseSepolia):
+0 - Set PrecogMasterV6 (0x16D24dE99e3282F153B72229a3c23959cC20FdA3) as owner of PRE Token on PrecogMasterV4 [via UI]
+1 - Set BaseOracle (0x9475A4C1BF5Fc80aE079303f14B523da19619c16) on PrecogMasterV6 [via UI]
+2 - Set BaseMarketV6 (0x0984Bed9E120774820D717df6A4ee217268A7b65) on PrecogMasterV6 [via UI]
+3 - Add marto.eth (0x9475A4C1BF5Fc80aE079303f14B523da19619c16) as CALLER on PrecogMasterV3 [via UI]
+3 - Add marto.eth (0x9475A4C1BF5Fc80aE079303f14B523da19619c16) as MARKET_CREATOR on PrecogMasterV3 [via UI]
+4 - Claim Tokens for (marto.eth, 0, 100000000000000000000) on PrecogMasterV6 [via UI]
+5 - Create market (
+    'Is Farcaster going to appear on the news before Jul 15?',
+    'On any TV channel or newspaper before Jul 15, 2024 9AM UTC',
+    'CRYPTO',
+    1719576000,
+    1721044800,
+    0x9475A4C1BF5Fc80aE079303f14B523da19619c16
+    2,
+    1000000000000000000000,
+    200
+    ) on PrecogMasterV6 [via UI]
+6 - MarketBuy 2 YES share (0, 1, 36893488147419103232, 1100000000000000000)
+7 - MarketSell 1 YES share (0, 1, 18446744073709551616, 400000000000000000)
+8 - Add 0xpetra.eth as CALLER on PrecogMasterV6 [via UI]
+9 - Add 0xE8Fd060b4F23E508744727100090F19a91A51e4b as CALLER on PrecogMasterV6 [via UI]
+10 - Add 0xpetra.eth as MARKET_CREATOR on PrecogMasterV6 [via UI]
+
+// Verifying PrecogMasterV6
+marto@MR1:/mnt/e/dev/precog-backend$ yarn hardhat-verify --network baseSepolia 0x16D24dE99e3282F153B72229a3c23959cC20FdA3 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888 0x9475A4C1BF5Fc80aE079303f14B523da19619c16
+
+// Verifying PrecogMarketV6
+marto@MR1:/mnt/e/dev/precog-backend$ yarn hardhat-verify --network baseSepolia 0x0984Bed9E120774820D717df6A4ee217268A7b65

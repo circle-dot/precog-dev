@@ -1,0 +1,322 @@
+import {expect} from "chai";
+import {ethers} from "hardhat";
+import {PrecogToken, PrecogMarketV3, ConditionalTokens, PrecogMasterV3} from "../typechain-types";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+
+function fromInt128toNumber(a: bigint): number {
+    return Number(BigInt(a)) / Number((BigInt(2) ** BigInt(64)));
+}
+
+function fromNumberToInt128(a: number): bigint {
+    return BigInt(a) * (BigInt(2) ** BigInt(64));
+}
+
+async function getCurrentBlockTimestamp() {
+    const blockNumber: number = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNumber);
+    return block ? block.timestamp : 0;
+}
+
+describe("Precog Master", function () {
+    const detailsEnabled: boolean = process.env.TEST_DETAILS === 'true';
+    let pre: PrecogToken;
+    let preAddress: string;
+    let ct: ConditionalTokens;
+    let ctAddress: string;
+    let market: PrecogMarketV3;
+    let marketAddress: string;
+    let master: PrecogMasterV3;
+    let masterAddress: string;
+    let owner: HardhatEthersSigner;
+    let user: HardhatEthersSigner;
+    let caller: HardhatEthersSigner;
+
+    beforeEach(async function () {
+        [owner, caller, user] = await ethers.getSigners();
+    })
+
+    describe("Deployment", function () {
+
+        it("PrecogToken contract deployed", async function () {
+            let PRE = await ethers.getContractFactory("PrecogToken");
+            const precogOwner = owner.address;
+            pre = await PRE.deploy(precogOwner);
+            preAddress = await pre.getAddress();
+        })
+
+        it("PrecogMaster contract deployed", async function () {
+            let PrecogMaster = await ethers.getContractFactory("PrecogMasterV3");
+            master = await PrecogMaster.deploy(preAddress, owner.address);
+            masterAddress = await master.getAddress();
+        })
+
+        it("Base Conditional Tokens contract deployed", async function () {
+            let CT = await ethers.getContractFactory("ConditionalTokens");
+            ct = await CT.deploy();
+            ctAddress = await ct.getAddress();
+        })
+
+        it("Base PrecogMarket contract deployed", async function () {
+            let PrecogMarket = await ethers.getContractFactory("PrecogMarketV3");
+            market = await PrecogMarket.deploy();
+            marketAddress = await market.getAddress();
+            await market.initialize(ctAddress, preAddress);
+        })
+        
+        it("Setting market & conditional tokens references on Master", async function () {
+            await master.setBaseConditionalTokens(ctAddress);
+            await master.setBaseMarket(marketAddress);
+        })
+
+        it("Minting 2000 PRE for user", async function () {
+            await pre.mint(owner.address, ethers.parseEther('2000'))
+            expect(await pre.balanceOf(owner.address)).to.equal(ethers.parseEther('2000'))
+        })
+
+        it("Adding caller account to PrecogMaster access list", async function () {
+            await master.addCaller(caller.address);
+        })
+
+        it("Adding admin account to PrecogMaster access list", async function () {
+            await master.addAdmin(owner.address);
+        })
+
+        it("Transfer ownership of PrecogToken to deployed PrecogMaster", async function () {
+            await pre.transferOwnership(masterAddress);
+        })
+    })
+
+    describe("Access functions", function () {
+
+        it("| Random accounts can't use onlyAdmin functions", async function () {
+            if (detailsEnabled) {
+                console.log('');
+                console.log(`\t| User: ${user.address}`);
+            }
+            const call = master.connect(user).addAdmin(user);
+            await expect(call).to.be.revertedWith('Only Admins');
+        })
+
+        it("| Caller accounts can't use onlyAdmin functions", async function () {
+            if (detailsEnabled) {
+                console.log('');
+                console.log(`\t| User: ${user.address}`);
+            }
+            const call = master.connect(caller).addAdmin(user);
+            await expect(call).to.be.revertedWith('Only Admins');
+        })
+
+        it("| Admin accounts can't use onlyCaller functions", async function () {
+            if (detailsEnabled) {
+                console.log('');
+                console.log(`\t| Admin: ${owner.address}`);
+            }
+            const call = master.connect(owner).claimToken(owner.address, 1, 1);
+            await expect(call).to.be.revertedWith('Only Callers');
+        })
+
+    })
+
+    describe("Token Claim & Seasons functions", function () {
+        it("| Set mining season", async function () {
+            if (detailsEnabled) console.log('');
+            const seasonIndex = 0;
+            const startTimestamp = 1712707200;
+            const endTimestamp = 2533161600;
+            const maxUserClaim: bigint = ethers.parseEther('1000');
+            const maxTotalClaim: bigint = ethers.parseEther('2000');
+            const maxTotalMint: bigint = ethers.parseEther('5000');
+            await master.connect(owner).setMiningSeason(
+                seasonIndex,
+                startTimestamp,
+                endTimestamp,
+                maxUserClaim,
+                maxTotalClaim,
+                maxTotalMint,
+                0,  // "claimedAmount" status variable
+                0  // "mintedAmount" status variable
+            );
+
+            const miningSeason: any[] = await master.miningSeasons(seasonIndex);
+            if (detailsEnabled) {
+                console.log(`\t| maxTotalMint: ${miningSeason[4]}`);
+            }
+            expect(miningSeason[4]).to.equal(maxTotalMint);
+        })
+
+        it("| Claiming tokens", async function () {
+            if (detailsEnabled) console.log('');
+            const account = user.address;
+            const userId = 1;
+            const amount: bigint = ethers.parseEther('100');
+            await master.connect(caller).claimToken(account, userId, amount);
+
+            const claim: any[] = await master.accountTokenClaims(account);
+            const claimedAmount = claim[2];
+            const claimedTimestamp = claim[3];
+            if (detailsEnabled) {
+                console.log(`\t| Account: ${account}, UserId: ${userId}, Amount: ${amount}`);
+                console.log(`\t| Claimed: ${claimedAmount}, Timestamp: ${claimedTimestamp}`);
+            }
+            expect(claimedAmount).to.equal(amount);
+            expect(claimedTimestamp).to.be.greaterThan(0);
+        })
+
+        it("| Should revert claiming with already claimed account", async function () {
+            if (detailsEnabled) console.log('');
+            const account: string = user.address;
+            const userId: number = 999;
+            const amount: bigint = ethers.parseEther('100');
+            const claimSameAccount: Promise<any> = master.connect(caller).claimToken(account, userId, amount);
+            await expect(claimSameAccount).revertedWith('Account already claimed')
+        })
+
+        it("| Should revert claiming with already claimed user id", async function () {
+            if (detailsEnabled) console.log('');
+            const account: string = '0x0000000000000000000000000000000000000000';
+            const userId: number = 1;
+            const amount: bigint = ethers.parseEther('100');
+            const claimSameAccount: Promise<any> = master.connect(caller).claimToken(account, userId, amount);
+            await expect(claimSameAccount).revertedWith('User already claimed')
+        })
+
+        it("| Should revert claiming a token amount over the season limit", async function () {
+            if (detailsEnabled) console.log('');
+            const account: string = '0x0000000000000000000000000000000000000001';
+            const userId: number = 999;
+            const amount: bigint = ethers.parseEther('1001');
+            const claimSameAccount: Promise<any> = master.connect(caller).claimToken(account, userId, amount);
+            await expect(claimSameAccount).revertedWith('Invalid user claim amount')
+        })
+
+
+    })
+
+    describe("Market functions", function () {
+        it("| Creating a new prediction market", async function () {
+            if (detailsEnabled) console.log('');
+            const name: string = 'Initial market';
+            const description: string = 'Initial description';
+            const category: string = 'CRYPTO';
+            const startTimestamp: number = await getCurrentBlockTimestamp();
+            const endTimestamp: number = startTimestamp + 300;  // 5 min market
+            const funding = ethers.parseEther('1000');
+            const dustFee: number = 200;  // 200 bps
+            const creator: string = owner.address;
+            await master.connect(caller).createMarket(
+                name,
+                description,
+                category,
+                startTimestamp,
+                endTimestamp,
+                funding,
+                dustFee,
+                creator
+            );
+            const createdMarkets: bigint = await master.createdMarkets();
+            const createdMarket: any[] = await master.markets(0);
+            const marketName = createdMarket[0];
+            const marketCreator = createdMarket[6];
+            if (detailsEnabled) {
+                console.log(`\t| Market -> name: ${marketName}, creator: ${marketCreator}`);
+            }
+            expect(createdMarkets).to.equal(1);
+            expect(marketCreator).to.equal(creator);
+            expect(marketName).to.equal(name);
+        })
+
+        it("| Updating a created prediction market", async function () {
+            if (detailsEnabled) console.log('');
+            const nowTimestamp = await getCurrentBlockTimestamp();
+            const marketId: number = 0;
+            const name: string = 'Market 1';
+            const description: string = 'Description 1';
+            const category: string = 'CRYPTO';
+            const startTimestamp: number = nowTimestamp;
+            const endTimestamp: number = nowTimestamp + 300;
+            const emptyCreator: string = '0x0000000000000000000000000000000000000000';
+            await master.connect(owner).updateMarket(
+                marketId,
+                name,
+                description,
+                category,
+                startTimestamp,
+                endTimestamp,
+                emptyCreator
+            );
+            const market: any[] = await master.markets(marketId);
+            const marketName = market[0];
+            const marketAddress = market[5];
+            const marketCreator = market[6];
+            if (detailsEnabled) {
+                console.log(`\t| Market -> name: ${marketName}, address: ${marketAddress}, creator: ${marketCreator}`);
+            }
+            expect(marketName).to.equal(name);
+            const oldCreator: string = owner.address;
+            expect(marketCreator).to.equal(oldCreator);
+        })
+
+        it("| Buying shares [outcome 1] from created market", async function () {
+            if (detailsEnabled) console.log('');
+            const shares: number = 10
+            const marketId: number = 0;
+            const outcome: number = 1;
+            const sharesAmount: bigint = fromNumberToInt128(shares);
+            const maxAmountIn: bigint = ethers.parseEther(`${shares * 0.6}`);
+            const buyPriceInt128: bigint = await master.marketPrice(marketId, outcome, sharesAmount);
+            const buyCost: number = fromInt128toNumber(buyPriceInt128);
+            const buyCostPerShare: number = buyCost / shares;
+            const balanceBefore: bigint = await pre.balanceOf(user.address);
+            if (detailsEnabled) {
+                console.log(`\t| buyCost -> ${buyCost}, buyPrice: ${buyCostPerShare}`);
+            }
+            await master.connect(user).marketBuy(
+                marketId,
+                outcome,
+                sharesAmount,
+                maxAmountIn
+            );
+            const marketSharesInfo: any[] = await master.marketSharesInfo(marketId);
+            const totalShares: number = fromInt128toNumber(marketSharesInfo[0]);
+            const totalBuys: number = marketSharesInfo[4];
+            const balanceAfter: bigint = await pre.balanceOf(user.address);
+            const preTokenCost: string = ethers.formatEther(balanceBefore - balanceAfter);
+            if (detailsEnabled) {
+                console.log(`\t| Market -> totalBuys: ${buyCost}, TotalShares: ${totalShares}`);
+                console.log(`\t| PRE cost: ${preTokenCost}`);
+            }
+            expect(totalBuys).be.equal(1);
+            expect(totalShares).be.equal(2010);
+        })
+
+        it("| Buying shares [outcome 2] from created market", async function () {
+            if (detailsEnabled) console.log('');
+            const shares: number = 10
+            const marketId: number = 0;
+            const outcome: number = 2;
+            const sharesAmount: bigint = fromNumberToInt128(shares);
+            const maxAmountIn: bigint = ethers.parseEther(`${shares * 0.6}`);
+            const buyPriceInt128: bigint = await master.marketPrice(marketId, outcome, sharesAmount);
+            const buyCost: number = fromInt128toNumber(buyPriceInt128);
+            const buyCostPerShare: number = buyCost / shares;
+            if (detailsEnabled) {
+                console.log(`\t| buyCost -> ${buyCost}, buyPrice: ${buyCostPerShare}`);
+            }
+            await master.connect(user).marketBuy(
+                marketId,
+                outcome,
+                sharesAmount,
+                maxAmountIn
+            );
+            const marketSharesInfo: any[] = await master.marketSharesInfo(marketId);
+            const totalShares: number = fromInt128toNumber(marketSharesInfo[0]);
+            const totalBuys: number = marketSharesInfo[4];
+            if (detailsEnabled) {
+                console.log(`\t| Market -> totalBuys: ${buyCost}, TotalShares: ${totalShares}`);
+            }
+            expect(totalBuys).be.equal(2);
+            expect(totalShares).be.equal(2020);
+        })
+
+    })
+})

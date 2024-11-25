@@ -1,0 +1,38 @@
+marto@MR1:/mnt/e/dev/precog-backend$ yarn deploy --network baseSepolia
+> Deploying at baseSepolia
+> Chain Id: 84532
+> Deployer: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+   Balance: 0.065756297221794215 eth
+     Nonce: 16
+
+> PrecogToken found! (new deploy: false)
+  Contract: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+      Name: PrecogToken
+    Symbol: PRE
+  Decimals: 18n
+     Owner: 0x16D24dE99e3282F153B72229a3c23959cC20FdA3
+
+deploying "PrecogMarketV7" (tx: 0xb55790b1ce3877fde0f6e82dd08b6b2cc803f4ad0cca6bba388fbe7ab3fe2d99)...:
+ deployed at 0x40e9283B127D711A7Fc392C4FAc2CE7841390C1f with 3528719 gas
+
+> PrecogMarketV7 found! (new deploy: true)
+     Contract: 0x40e9283B127D711A7Fc392C4FAc2CE7841390C1f
+        token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
+        owner: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+
+> Deployer: 0x6FEe026Ae8a76258063C9c67eC78F75b7815D101
+   Balance: 0.065751491532336511 eth
+      Cost: 0.000004805689457704 eth
+  GasPrice: 0.001200002 gwei
+
+> Deploy ended successfully! :-)
+
+
+>> After Deploy Instructions (change local backend to baseSepolia):
+0 - Update "getLatestContracts()" on /nextjs/contracts/deployedContracts.ts to use GUI
+1 - Set BaseMarket (0x40e9283B127D711A7Fc392C4FAc2CE7841390C1f) on PrecogMasterV6 [via UI]
+2 - Verify contract.
+
+
+// Verifying PrecogMarketV5
+marto@MR1:/mnt/e/dev/precog-backend$ yarn hardhat-verify --network baseSepolia 0x40e9283B127D711A7Fc392C4FAc2CE7841390C1f

@@ -1,0 +1,342 @@
+import {expect} from "chai";
+import {ethers} from "hardhat";
+import {PrecogToken, PrecogMarketV3, ConditionalTokens} from "../typechain-types";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+
+function fromInt128toNumber(a: bigint): number {
+    return Number(BigInt(a)) / Number((BigInt(2) ** BigInt(64)));
+}
+
+function fromNumberToInt128(a: number): bigint {
+    return BigInt(a) * (BigInt(2) ** BigInt(64))
+}
+
+describe("Precog Market [LS-LMSR]", function () {
+    const detailsEnabled: boolean = process.env.TEST_DETAILS === 'true';
+    let ct: ConditionalTokens;
+    let ctAddress: string;
+    let pre: PrecogToken;
+    let preAddress: string;
+    let market: PrecogMarketV3;
+    let marketAddress: string;
+    let owner: HardhatEthersSigner;
+
+    beforeEach(async function () {
+        [owner] = await ethers.getSigners();
+    })
+
+    describe("Deployment", function () {
+
+        it("Fake PrecogToken contract deployed", async function () {
+            let PRE = await ethers.getContractFactory("PrecogToken");
+            const precogMaster = owner.address;
+            pre = await PRE.deploy(precogMaster);
+            preAddress = await pre.getAddress();
+        })
+
+        it("Conditional Tokens contract deployed", async function () {
+            let CT = await ethers.getContractFactory("ConditionalTokens");
+            ct = await CT.deploy();
+            ctAddress = await ct.getAddress();
+        })
+
+        it("Minting 2000 PRE for user", async function () {
+            await pre.mint(owner.address, ethers.parseEther('2000'))
+            expect(await pre.balanceOf(owner.address)).to.equal(ethers.parseEther('2000'))
+        })
+
+        it("PrecogMarket contract deployed", async function () {
+            let PrecogMarket = await ethers.getContractFactory("PrecogMarketV3");
+            market = await PrecogMarket.deploy();
+            marketAddress = await market.getAddress();
+            await market.initialize(ctAddress, preAddress);
+        })
+
+        it("Approve PrecogMarket to spend user money", async function () {
+            await pre.approve(marketAddress, ethers.parseEther('2000'))
+            expect(await pre.allowance(owner.address, marketAddress)).to.equal(ethers.parseEther('2000'))
+        })
+
+        it("PrecogMarket [LsLMSR] setup", async function () {
+            const marketId: string = '0x0000000000000000000000000000000000000000000000000000000000000001';
+            const numOutcomes: number = 2;
+            const subsidy: bigint = ethers.parseEther('1000');
+            const overround: number = 200;
+            await market.setup(owner.address, marketId, numOutcomes, subsidy, overround)
+
+            expect(await pre.balanceOf(marketAddress)).to.equal(ethers.parseEther('1000'))
+            expect(await pre.balanceOf(owner.address)).to.equal(ethers.parseEther('1000'))
+        })
+
+    })
+
+    describe("Cost functions", function () {
+
+        it("| Checking initial market info", async function () {
+            if (detailsEnabled) console.log('');
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const beta = fromInt128toNumber(marketInfo[5]);
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, OutcomeOne: ${outcomeOne}, OutcomeTwo: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, current beta: ${beta}`);
+            }
+            expect(cost).to.equal(1020); //1000 subsidy with 2% overround (aka fee)
+            expect(totalShares).to.equal(2000) // 1000 subsidy with 2 outcomes
+        })
+
+        it("| Checking initial prices at baseline", async function () {
+            if (detailsEnabled) console.log('');
+            let buyPrices: any[] = [null, [], []];  // the first item is added just for simplicity
+            const possibleOutcomes = [1, 2];
+            const sharesAmounts = [1, 10, 100];
+            for (const outcome of possibleOutcomes) {
+                for (const shares of sharesAmounts) {
+                    let sharesInt128: bigint = fromNumberToInt128(shares);
+                    let priceInt128: bigint = await market.price(outcome, sharesInt128);
+                    let price = fromInt128toNumber(priceInt128);
+                    if (detailsEnabled) {
+                        console.log(`\t| Price: outcome=${outcome}, amount=${shares} => ${price} [${priceInt128}]`);
+                    }
+                    buyPrices[outcome].push(price);
+                }
+            }
+            expect(buyPrices[1].toString()).to.equal(buyPrices[2].toString());
+        })
+    })
+
+    describe("Testing buying and selling shares", function () {
+        it("| Trying to buy [outcome: 1]", async function () {
+            if (detailsEnabled) console.log('');
+            let preBalanceBefore = await pre.balanceOf(owner.address);
+            const outcome: number = 1;
+            const parentCollectionId: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
+            let condition = await market.condition();
+            const indexSet: number = 1;
+            let collectionId = await ct.getCollectionId(parentCollectionId, condition, indexSet);
+            let position = await ct.getPositionId(preAddress, collectionId);
+
+            let shares: number = 1;
+            let sharesInt128: bigint = fromNumberToInt128(shares);
+            if (detailsEnabled) {
+                console.log(`\t| Buying: outcome=${outcome}, shares=${shares} [${sharesInt128}]`);
+            }
+            let priceInt128: bigint = await market.price(outcome, sharesInt128);
+            let price = fromInt128toNumber(priceInt128);
+            await market.buy(outcome, sharesInt128);
+            let costInt128: bigint = await market.cost();
+            if (detailsEnabled) {
+                console.log(`\t| Cost => ${fromInt128toNumber(costInt128)} [${costInt128}]`);
+            }
+            // Note: Deprecated to enable ConditionalToken removal
+            // await expect(market.buy(outcome, sharesInt128)).to.emit(ct, 'PositionSplit');
+            // expect(await ct.balanceOf(owner.address, position)).to.equal(ethers.parseEther('1'));
+
+            let preBalanceAfter = await pre.balanceOf(owner.address);
+            let preCost = ethers.formatEther(preBalanceBefore - preBalanceAfter);
+            if (detailsEnabled) {
+                console.log(`\t| PRE: ${ethers.formatEther(preBalanceBefore)} -> ${ethers.formatEther(preBalanceAfter)}`);
+                console.log(`\t| Cost: ${preCost}, Calculated Price: ${price}`);
+            }
+            expect(preCost.includes(price.toString()), "Cost do not match price");
+            const ownerShares: bigint[] = await market.accountShares(owner.address);
+            const buys = ownerShares[0];
+            const outOneShares = ethers.formatEther(ownerShares[1]);
+            const outTwoShares = ethers.formatEther(ownerShares[2]);
+            const deposited = ethers.formatEther(ownerShares[3]);
+            if (detailsEnabled) {
+                console.log(`\t| Buys: ${buys}, One: ${outOneShares}, Two: ${outTwoShares}, Deposited: ${deposited}`);
+            }
+            expect(Number(buys)).be.equal(1);
+            expect(Number(outOneShares)).be.equal(1);
+        })
+
+        it("| Checking current market info (after buy)", async function () {
+            if (detailsEnabled) console.log('');
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const beta = fromInt128toNumber(marketInfo[5]);
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, OutcomeOne: ${outcomeOne}, OutcomeTwo: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, current beta: ${beta}`);
+            }
+            expect(Number(totalBuys)).be.equal(1);
+            expect(outcomeOne).be.equal(1001);
+        })
+
+        it("| Trying to buy [outcome: 2] (decreasing position)", async function () {
+            if (detailsEnabled) console.log('');
+            // SELL: When you buy an opposite side share
+            let preBalanceBefore = await pre.balanceOf(owner.address);
+
+            const outcome: number = 2;
+            const parentCollectionId: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
+            let condition = await market.condition();
+            const indexSet: number = 2;
+            let collectionId = await ct.getCollectionId(parentCollectionId, condition, indexSet);
+            let position = await ct.getPositionId(preAddress, collectionId);
+            let shares: number = 1;
+            let sharesInt128: bigint = fromNumberToInt128(shares);
+            if (detailsEnabled) {
+                console.log(`\t| Buying: outcome=${outcome}, amount=${shares} [${sharesInt128}]`);
+            }
+            let priceInt128: bigint = await market.price(outcome, sharesInt128);
+            let price = fromInt128toNumber(priceInt128);
+            await market.buy(outcome, sharesInt128);
+            let costInt128: bigint = await market.cost();
+            if (detailsEnabled) {
+                console.log(`\t| Cost => ${fromInt128toNumber(costInt128)} [${costInt128}]`);
+            }
+            // Note: Deprecated to enable ConditionalToken removal
+            // expect(await ct.balanceOf(marketAddress, position)).to.equal(ethers.parseEther('0'));
+
+            let preBalanceAfter = await pre.balanceOf(owner.address);
+            let preCost = ethers.formatEther(preBalanceBefore - preBalanceAfter);
+            if (detailsEnabled) {
+                console.log(`\t| PRE: ${ethers.formatEther(preBalanceBefore)} -> ${ethers.formatEther(preBalanceAfter)}`);
+                console.log(`\t| Cost: ${preCost}, Calculated Price: ${price}`);
+            }
+            const ownerShares: bigint[] = await market.accountShares(owner.address);
+            const buys: bigint = ownerShares[0];
+            const outOneShares = ethers.formatEther(ownerShares[1]);
+            const outTwoShares = ethers.formatEther(ownerShares[2]);
+            const deposited = ethers.formatEther(ownerShares[3]);
+            if (detailsEnabled) {
+                console.log(`\t| Buys: ${buys}, One: ${outOneShares}, Two: ${outTwoShares}, Deposited: ${deposited}`);
+            }
+            expect(Number(buys)).be.equal(2);
+            expect(Number(outTwoShares)).be.equal(1);
+        })
+
+        it("| Checking current market info (after 2 buys)", async function () {
+            if (detailsEnabled) console.log('');
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const beta = fromInt128toNumber(marketInfo[5]);
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, OutcomeOne: ${outcomeOne}, OutcomeTwo: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, current beta: ${beta}`);
+            }
+            expect(totalBuys).be.equal(2);
+        })
+
+        it("| Many buys from random sizes", async function () {
+            if (detailsEnabled) console.log('');
+            const initialCost: number = fromInt128toNumber(await market.cost());
+            let initialPre = await pre.balanceOf(owner.address);
+            const parentCollectionId: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
+            let condition = await market.condition();
+            const indexSet: number = 1;
+            let collectionId = await ct.getCollectionId(parentCollectionId, condition, indexSet);
+            let position = await ct.getPositionId(preAddress, collectionId);
+            let initialPosition = await ct.balanceOf(owner.address, position);
+
+            const outcomeYes: number = 1;
+            const outcomeNo: number = 2;
+            let oneSharesInt128: bigint = fromNumberToInt128(1);
+            let tenSharesInt128: bigint = fromNumberToInt128(10);
+            let hundredSharesInt128: bigint = fromNumberToInt128(100);
+            await market.buy(outcomeYes, oneSharesInt128);
+            await market.buy(outcomeYes, tenSharesInt128);
+            await market.buy(outcomeYes, hundredSharesInt128);
+            await market.buy(outcomeYes, hundredSharesInt128);
+            await market.buy(outcomeYes, hundredSharesInt128);
+            await market.buy(outcomeNo, oneSharesInt128);
+            await market.buy(outcomeNo, tenSharesInt128);
+            await market.buy(outcomeNo, hundredSharesInt128);
+            await market.buy(outcomeNo, hundredSharesInt128);
+            await market.buy(outcomeNo, hundredSharesInt128);
+
+            const finalCost = fromInt128toNumber(await market.cost());
+            let finalPre = await pre.balanceOf(owner.address);
+            let finalPosition = await ct.balanceOf(owner.address, position);
+            if (detailsEnabled) {
+                console.log(`\t| Cost: ${initialCost} -> ${finalCost}`);
+                console.log(`\t| PRE: ${ethers.formatEther(initialPre)} -> ${ethers.formatEther(finalPre)}`);
+                console.log(`\t| Position: ${ethers.formatEther(initialPosition)} -> ${ethers.formatEther(finalPosition)}`);
+            }
+            const ownerShares: bigint[] = await market.accountShares(owner.address);
+            const buys = ownerShares[0];
+            const outOneShares = ethers.formatEther(ownerShares[1]);
+            const outTwoShares = ethers.formatEther(ownerShares[2]);
+            const deposited = ethers.formatEther(ownerShares[3]);
+            if (detailsEnabled) {
+                console.log(`\t| Buys: ${buys}, One: ${outOneShares}, Two: ${outTwoShares}, Deposited: ${deposited}`);
+            }
+            expect(buys).be.equal(12);
+            expect(Number(outOneShares)).be.equal(312);
+            expect(Number(outTwoShares)).be.equal(312);
+        })
+
+        it("| Checking final prices", async function () {
+            if (detailsEnabled) console.log('');
+            let buyPrices: any[] = [null, [], []];  // the first item is added just for simplicity
+            const possibleOutcomes = [1, 2];
+            const sharesAmounts = [1, 10, 100];
+            for (const outcome of possibleOutcomes) {
+                for (const shares of sharesAmounts) {
+                    let sharesInt128: bigint = fromNumberToInt128(shares);
+                    let priceInt128: bigint = await market.price(outcome, sharesInt128);
+                    let price = fromInt128toNumber(priceInt128);
+                    if (detailsEnabled) {
+                        console.log(`\t| Price: outcome=${outcome}, amount=${shares} => ${price} [${priceInt128}]`);
+                    }
+                    buyPrices[outcome].push(price);
+                }
+            }
+            expect(buyPrices[1].toString()).to.equal(buyPrices[2].toString());
+        })
+
+        it("| Checking final market info", async function () {
+            if (detailsEnabled) console.log('');
+            const marketInfo: bigint[] = await market.getMarketInfo();
+            const totalShares = fromInt128toNumber(marketInfo[0]);
+            const outcomeOne = fromInt128toNumber(marketInfo[1]);
+            const outcomeTwo = fromInt128toNumber(marketInfo[2]);
+            const cost = fromInt128toNumber(marketInfo[3]);
+            const totalBuys = marketInfo[4];
+            const beta = fromInt128toNumber(marketInfo[5]);
+            if (detailsEnabled) {
+                console.log(`\t| TotalShares: ${totalShares}, OutcomeOne: ${outcomeOne}, OutcomeTwo: ${outcomeTwo}`);
+                console.log(`\t| TotalDeposited: ${cost}, totalBuys: ${totalBuys}, current beta: ${beta}`);
+            }
+            expect(totalBuys).be.equal(12);
+        })
+
+    })
+
+    describe("Testing functions when event is over", function () {
+        it("Reporting outcome for event", async function () {
+            const marketId: string = '0x0000000000000000000000000000000000000000000000000000000000000001';
+            const payouts = [0, 1]  // 2 possible outcomes, 2nd one PAYs
+            // const payouts = [0, 1, 0]  // 3 possible outcomes, 2nd one PAYs
+            await expect(ct.reportPayouts(marketId, payouts)).to.emit(ct, 'ConditionResolution')
+        })
+
+        it("Checking to see if you can buy after resolution", async function () {
+            let shares: number = 10;
+            let sharesInt128: bigint = fromNumberToInt128(shares);
+            if (detailsEnabled) {
+                console.log(`\t| Buying: condition=1, amount=${shares} [${sharesInt128}]`);
+            }
+            await expect(market.buy(1, sharesInt128)).to.be.revertedWith('Market already resolved');
+        })
+
+        it("Seeing if you can withdraw initial liquidity", async function () {
+            await market.withdraw()
+        })
+    })
+
+})

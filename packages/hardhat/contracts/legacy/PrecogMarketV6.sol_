@@ -1,0 +1,476 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.7.6;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {ABDKMath} from "./ABDKMath64x64.sol";
+
+/**
+ * @title PrecogMasterV6: An implementation for liquidity-sensitive LMSR market maker in Solidity
+ * @author Marto (built based on Abdulla Al-Kamil implementation)
+ * @dev Feel free to make any adjustments to the code
+ */
+contract PrecogMarketV6 {
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
+
+    struct SharesInfo {
+        uint256 buys;  // Counter on Buy
+        uint256 sells;  // Counter on Sell
+        uint256 deposited; // Collateral-In on Buys
+        uint256 withdrew; // Collateral-Out on Sells
+        uint256 redeemed; // Collateral-Out on Redeems
+        mapping(uint256 => uint256) balances;  // Shares balances (by outcome) [has an custom getter]
+    }
+
+    // Public market variables
+    address public owner;  // Should be the PrecogMaster contract
+    address public token;  // Collateral to Buy and redeem shares
+    uint256 public id;  // Unique Identifier for the market
+    address public oracle;  // EOA or Contract in change to reportResults
+    uint256 public startTimestamp;  // Time when Buy/Sell shares are enabled
+    uint256 public endTimestamp;  // Time when Buy/Sell shares are disabled
+    uint256 public closeTimestamp;  // Time when results were reported
+    uint256 public result;  // Final outcome of the market (published by the oracle)
+    mapping(address => SharesInfo) public accountShares;  // Account shares balances and info
+
+    // Private market variables
+    // Note: This contract uses the ABDKMath library to allow for math functions such as logarithms and exponents.
+    //       All the sensitive state variables are stored as int128 (signed 64.64 bit fixed point number).
+    uint256 private totalOutcomes;
+    int128[] private shares;
+    int128 private beta;
+    int128 private alpha;
+    int128 private dust;
+    int128 private currentCost;
+    int128 private totalShares;
+    uint256 private totalBuys;
+    uint256 private totalSells;
+    bool private marketSetup;
+    bool private internalCall;
+
+    event SharesBought(address indexed account, uint256 amount, uint256 tokenIn);
+    event SharesSold(address indexed account, uint256 amount, uint256 tokenOut);
+    event SharesRedeemed(address indexed account, uint256 amount, uint256 tokenOut);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    modifier onlyAfterSetup {
+        require(marketSetup == true, "Not setup");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner");
+        _;
+    }
+
+    modifier onlyOwnerOrInternal() {
+        require(msg.sender == owner || internalCall, "Only owner or self");
+        _;
+        internalCall = false;
+    }
+
+    modifier onlyOracle() {
+        require(msg.sender == oracle, "Only oracle");
+        _;
+    }
+
+    /**
+     * @notice Constructor like function for the market maker
+     * @param _token ERC-20 token will be used to purchase and redeem rewards for this Market
+     */
+    function initialize(address _token) public {
+        require(owner == address(0) && token == address(0), "Already initialized");
+        owner = msg.sender;
+        token = _token;
+    }
+
+    /**
+     * @notice Set up some of the variables for the market maker
+     * @param _id The market id should be unique for each master
+     * @param _oracle The address for the EOA or contract which will report the result for this Market
+     * @param _totalOutcomes The number of different outcomes possible for this market (currently fixed at 2)
+     * @param _subsidy How much initial funding is used to seed the market (denominated on initialized token)
+     * @param _overround AMM profit margin in bps (Note that 200 represents 2% of the subsidy)
+     */
+    function setup(uint _id, address _oracle, uint _totalOutcomes, uint _subsidy, uint _overround) public onlyOwner {
+        require(!marketSetup, "Already setup");
+        require(_overround > 0, "Unsupported overround");
+
+        // Get subsidy tokens
+        IERC20(token).safeTransferFrom(msg.sender, address(this), _subsidy);
+
+        // Save basic parameters
+        id = _id;
+        oracle = _oracle;
+        totalOutcomes = _totalOutcomes;
+
+        // Calculate initialization variables
+        int128 initialSubsidy = getTokenEth(token, _subsidy);
+        int128 n = ABDKMath.fromUInt(_totalOutcomes);
+        int128 overround = ABDKMath.divu(_overround, 10000); // Note: if the overround is too low, then exp overflows
+        alpha = ABDKMath.div(overround, ABDKMath.mul(n, ABDKMath.ln(n)));
+        beta = ABDKMath.mul(ABDKMath.mul(initialSubsidy, n), alpha);
+        shares = new int128[](totalOutcomes.add(1));
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            shares[outcome] = initialSubsidy;
+            totalShares = ABDKMath.add(totalShares, initialSubsidy);
+        }
+
+        // Initialize token leak mitigation of 0.001% (could be a setup parameter in the future)
+        // Note: Needed to avoid leaks due to rounding errors on math logarithmic and exponential approximations
+        dust = ABDKMath.fromUInt(100000);  // 100k as signed 64.64 bit fixed point
+
+        // Register successful initialization
+        marketSetup = true;
+
+        // Optimization: pre calculate current cost to avoid extra calculation on buys and sells
+        currentCost = cost();
+    }
+
+    /**
+     * @notice This function is used to buy outcome tokens.
+     * @param _outcome The outcome(s) which a user is buying tokens for (1 for YES, 2 for NO)
+     * @param _amount This is the number of outcome tokens purchased (signed 64.64-bit fixed point number)
+     * @return _cost The total amount of tokens received from selling the _amount of shares
+     */
+    function buy(uint256 _outcome, int128 _amount) public onlyAfterSetup returns (uint256 _cost) {
+        // Send BUY call to internal function with msg sender
+        internalCall = true;
+        return _buy(_outcome, _amount, msg.sender);
+    }
+
+    /**
+     * Internal Buy function used by the public Buy function and PrecogMaster (to facilitate token approvals)
+     */
+    function _buy(uint256 _outcome, int128 _amount, address _account) public onlyOwnerOrInternal returns (uint256 _cost) {
+        require(_outcome > 0 && _outcome <= totalOutcomes, "Invalid outcome");
+        require(_amount > 0, "Invalid amount");
+        require(block.timestamp >= startTimestamp, "Market not started");
+        require(endTimestamp == 0 || block.timestamp <= endTimestamp, "Market already ended");
+        require(closeTimestamp == 0, "Market already closed");
+
+        // Add amount of shares to be bought from individual and total shares counters
+        shares[_outcome] = ABDKMath.add(shares[_outcome], _amount);
+        totalShares = ABDKMath.add(totalShares, _amount);
+
+        // Calculate new BETA parameter (taking into account new total shares and fixed alpha)
+        beta = ABDKMath.mul(totalShares, alpha);
+
+        // Calculate new current cost and price to pay. After that, update current cost variable
+        int128 sumTotal;
+        for (uint outcome = 1; outcome <= totalOutcomes; outcome++) {
+            sumTotal = ABDKMath.add(sumTotal, ABDKMath.exp(ABDKMath.div(shares[outcome], beta)));
+        }
+        int128 newCost = ABDKMath.mul(beta, ABDKMath.ln(sumTotal));
+        int128 deltaCost = ABDKMath.sub(newCost, currentCost);
+        currentCost = newCost;
+
+        // Get amount of tokens from sender (as current payment)
+        uint tokenCost = getTokenWei(token, deltaCost);
+        require(tokenCost > 0, "Invalid cost");
+        IERC20(token).safeTransferFrom(msg.sender, address(this), tokenCost);
+        uint outcomeShares = getTokenWei(token, _amount);
+
+        // Register BUY in market total and Account details
+        totalBuys = totalBuys.add(1);
+        accountShares[_account].buys = accountShares[_account].buys.add(1);
+        accountShares[_account].deposited = accountShares[_account].deposited.add(tokenCost);
+        accountShares[_account].balances[_outcome] = accountShares[_account].balances[_outcome].add(outcomeShares);
+
+        emit SharesBought(_account, outcomeShares, tokenCost);
+        return tokenCost;
+    }
+
+    /**
+     * @notice This function is used to sell outcome tokens already bought.
+     * @param _outcome The outcome(s) which a user is buying tokens for (e.g.: 1 for YES, 2 for NO)
+     * @param _amount This is the number of outcome tokens purchased (signed 64.64-bit fixed point number)
+     * @return _returned The total amount of tokens received from selling the _amount of shares
+     */
+    function sell(uint256 _outcome, int128 _amount) public onlyAfterSetup returns (uint256 _returned) {
+        // Send SELL call to internal function
+        internalCall = true;
+        return _sell(_outcome, _amount, msg.sender);
+    }
+
+    /**
+     * Internal Sell function used by the public Sell function and PrecogMaster (to facilitate token approvals)
+     */
+    function _sell(uint256 _outcome, int128 _amount, address _account) public onlyOwnerOrInternal returns (uint256) {
+        require(_outcome > 0 && _outcome <= totalOutcomes, "Invalid outcome");
+        require(_amount > 0, "Invalid amount");
+        require(block.timestamp >= startTimestamp, "Market not started");
+        require(endTimestamp == 0 || block.timestamp <= endTimestamp, "Market already ended");
+        require(closeTimestamp == 0, "Market already closed");
+
+        // Remove amount of shares to be sold from individual and total shares counters
+        shares[_outcome] = ABDKMath.sub(shares[_outcome], _amount);
+        totalShares = ABDKMath.sub(totalShares, _amount);
+
+        // Calculate new BETA parameter (taking into account new total shares and fixed alpha)
+        beta = ABDKMath.mul(totalShares, alpha);
+
+        // Calculate new cost and tokens to return. After that, update current cost variable
+        int128 sumTotal;
+        for (uint outcome = 1; outcome <= totalOutcomes; outcome++) {
+            sumTotal = ABDKMath.add(sumTotal, ABDKMath.exp(ABDKMath.div(shares[outcome], beta)));
+        }
+        int128 newCost = ABDKMath.mul(beta, ABDKMath.ln(sumTotal));
+        int128 deltaCost = ABDKMath.sub(currentCost, newCost);
+        int128 deltaDust = ABDKMath.div(deltaCost, dust);  // Token leak mitigation
+        currentCost = newCost;
+
+        // Calculate return amount of token to send
+        uint tokenReturn = getTokenWei(token, ABDKMath.sub(deltaCost, deltaDust));
+
+        require(tokenReturn > 0, "Invalid return");
+        uint outcomeShares = getTokenWei(token, _amount);
+
+        // Check that the received account have the amount of shares to sell
+        require(accountShares[_account].balances[_outcome] >= outcomeShares, "Insufficient balance");
+
+        // Register SELL in market total and Account details
+        totalSells = totalSells.add(1);
+        accountShares[_account].sells = accountShares[_account].sells.add(1);
+        accountShares[_account].withdrew = accountShares[_account].withdrew.add(tokenReturn);
+        accountShares[_account].balances[_outcome] = accountShares[_account].balances[_outcome].sub(outcomeShares);
+
+        // Transfer collateral tokens to received account
+        IERC20(token).safeTransfer(_account, tokenReturn);
+
+        emit SharesSold(_account, outcomeShares, tokenReturn);
+        return tokenReturn;
+    }
+
+    /**
+     * @notice Used to update open market periods
+     * @param _startTimestamp Block timestamp when the market start allowing shares trading
+     * @param _endTimestamp Block timestamp when the market ends trading and enable report results
+     */
+    function updateDates(uint256 _startTimestamp, uint256 _endTimestamp) public onlyOwner {
+        startTimestamp = _startTimestamp;
+        endTimestamp = _endTimestamp;
+    }
+
+    /**
+     * @notice Used to update oracle address
+     * @param _newOracle address of an EOA or contract that can close the market
+     */
+    function updateOracle(address _newOracle) public onlyOwner {
+        require(_newOracle != address(0), "Invalid new oracle");
+        oracle = _newOracle;
+    }
+
+    /**
+     * @notice Used to report results of the market (only for defined oracle)
+     * @param _id Unique identifier received on market setup
+     * @param _outcome The resulted outcome of the market
+     */
+    function reportResult(uint256 _id, uint256 _outcome) public onlyOracle {
+        // Validate received inputs
+        require(_id == id, "Invalid market");
+        require(_outcome > 0 && _outcome <= totalOutcomes, "Invalid outcome");
+
+        // Check current state of the market
+        require(block.timestamp > endTimestamp, "Market not ended");
+        require(closeTimestamp == 0, "Market already closed");
+
+        // Register reported results and register current time
+        result = _outcome;
+        closeTimestamp = block.timestamp;
+    }
+
+    /**
+     * @notice Used to redeem token gains (only the market is already closed)
+     * @dev The redeem account will be the current msg sender of the tx
+     */
+    function redeemShares() public onlyAfterSetup returns (uint256 redeemedShares) {
+        internalCall = true;
+        return _redeem(msg.sender);
+    }
+
+    /**
+     * @notice Used to redeem token gains in batch (could only be used by the oracle)
+     * @dev The list of accounts could be calculated using the "SharesBought" event
+     */
+    function redeemBatch(address[] memory _accounts) public onlyAfterSetup onlyOracle returns (uint256 redeems) {
+        internalCall = true;
+        for (uint256 i = 0; i < _accounts.length; i++) {
+            try this._redeem(_accounts[i]) {
+                redeems.add(1);
+            } catch {
+                // CASE: `_redeem` call reverted
+                // This could be a expected if the account don't have redeemable shares
+            }
+        }
+        return redeems;
+    }
+
+    /**
+     * Internal Redeem function used by single share redeeming and redeem in batch
+     */
+    function _redeem(address _account) public onlyOwnerOrInternal returns (uint256 redeemedShares) {
+        // Check current state of the market and received account
+        require(closeTimestamp > 0, "Market not closed");
+        require(accountShares[_account].redeemed == 0, "Shares already redeemed");
+
+        // Get amount of shares to be redeemed for received account
+        redeemedShares = accountShares[_account].balances[result];
+        require(redeemedShares > 0, "Nothing to redeem");
+
+        // Register amount of shares redeemed and send corresponding collateral tokens (ratio 1:1)
+        accountShares[_account].redeemed = redeemedShares;
+        IERC20(token).safeTransfer(_account, redeemedShares);
+
+        emit SharesRedeemed(_account, redeemedShares, redeemedShares);
+        return redeemedShares;
+    }
+
+    /**
+     * @notice Used to retrieve any liquidity left on the market (allowed only when market is closed)
+     */
+    function withdraw(address _token) public onlyAfterSetup onlyOwner {
+        require(closeTimestamp > 0, "Market not closed");
+        IERC20(_token).safeTransfer(msg.sender, IERC20(_token).balanceOf(address(this)));
+    }
+
+    /**
+     * @notice Admin function to transfer the ownership of this contract
+     */
+    function transferOwnership(address _newOwner) public virtual onlyOwner {
+        require(_newOwner != address(0), "Invalid new owner");
+        emit OwnershipTransferred(owner, _newOwner);
+        owner = _newOwner;
+    }
+
+    /**
+     *  @notice Total amount of collateral spent in this Market
+     *  For example, if a market was seeded with 2000 PRE and then a further 20 PRE has been spent,
+     *  this function will return 2020 PRE.
+     */
+    function cost() public view onlyAfterSetup returns (int128) {
+        int128 sumTotal;
+        for (uint outcome = 1; outcome <= totalOutcomes; outcome++) {
+            sumTotal = ABDKMath.add(sumTotal, ABDKMath.exp(ABDKMath.div(shares[outcome], beta)));
+        }
+        return ABDKMath.mul(beta, ABDKMath.ln(sumTotal));
+    }
+
+    /**
+     *  This function will tell you the cost (similar to above) after a proposed BUY transaction.
+     */
+    function costAfterBuy(uint256 _outcome, int128 _amount) internal view returns (int128) {
+        int128 newSumTotal;
+        int128[] memory newShares = new int128[](shares.length);
+        int128 newTotalShares = totalShares;
+
+        // Add new amount of shares to received outcome
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            if (outcome == _outcome) {
+                newShares[outcome] = ABDKMath.add(shares[outcome], _amount);
+                newTotalShares = ABDKMath.add(newTotalShares, _amount);
+            } else {
+                newShares[outcome] = shares[outcome];
+            }
+        }
+
+        // Calculate new cost based on newTotalShares and newQ values
+        int128 newBeta = ABDKMath.mul(newTotalShares, alpha);
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            newSumTotal = ABDKMath.add(newSumTotal, ABDKMath.exp(ABDKMath.div(newShares[outcome], newBeta)));
+        }
+        return ABDKMath.mul(newBeta, ABDKMath.ln(newSumTotal));
+    }
+
+    /**
+     *  This function will tell you the cost (similar to above) after a proposed SELL transaction.
+     */
+    function costAfterSell(uint256 _outcome, int128 _amount) internal view returns (int128) {
+        int128 newSumTotal;
+        int128[] memory newShares = new int128[](shares.length);
+        int128 newTotalShares = totalShares;
+
+        // Add new amount of shares to received outcome
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            if (outcome == _outcome) {
+                newShares[outcome] = ABDKMath.sub(shares[outcome], _amount);
+                newTotalShares = ABDKMath.sub(newTotalShares, _amount);
+            } else {
+                newShares[outcome] = shares[outcome];
+            }
+        }
+
+        // Calculate new cost based on newTotalShares and newShares values
+        int128 newBeta = ABDKMath.mul(newTotalShares, alpha);
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            newSumTotal = ABDKMath.add(newSumTotal, ABDKMath.exp(ABDKMath.div(newShares[outcome], newBeta)));
+        }
+        return ABDKMath.mul(newBeta, ABDKMath.ln(newSumTotal));
+    }
+
+    /**
+     *  This function tells you how much it will cost to make a particular BUY trade.
+     *  It does this by calculating the difference between the current cost and the cost after the trade.
+     */
+    function buyPrice(uint256 _outcome, int128 _amount) public view returns (int128) {
+        return ABDKMath.sub(costAfterBuy(_outcome, _amount), currentCost);
+    }
+
+    /**
+     *  This function tells you how much it will return making a particular SELL trade.
+     *  It does this by calculating the difference between the current cost and the cost after the trade.
+     */
+    function sellPrice(uint256 _outcome, int128 _amount) public view returns (int128) {
+        int128 deltaCost = ABDKMath.sub(currentCost, costAfterSell(_outcome, _amount));
+        int128 deltaDust = ABDKMath.div(deltaCost, dust);  // token leak mitigation
+        return ABDKMath.sub(deltaCost, deltaDust);
+    }
+
+    /**
+     *  Get current market state information:
+     *  total shares (all outcomes), shares balances (by outcome), current liquidity, buys counter, sells counter
+     */
+    function getMarketInfo() public view returns (int128, int128[] memory, int128, uint256, uint256) {
+        int128[] memory sharesBalances = new int128[](totalOutcomes.add(1));
+
+        if (!marketSetup) {
+            return (0, sharesBalances, 0, 0, 0);
+        }
+
+        // Populate shares balances based on total outcomes configured for this market
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            sharesBalances[outcome] = shares[outcome];
+        }
+
+        return (totalShares, sharesBalances, currentCost, totalBuys, totalSells);
+    }
+
+    /**
+     *  Get amount of shares that an account owns for all outcomes (index 0 should will always be empty)
+     */
+    function getAccountOutcomeBalances(address _account) public view returns (uint256[] memory) {
+        uint256[] memory balances = new uint256[](totalOutcomes.add(1));
+        for (uint256 outcome = 1; outcome <= totalOutcomes; outcome++) {
+            balances[outcome] = accountShares[_account].balances[outcome];
+        }
+        return balances;
+    }
+
+    /**
+     *  Helper function: int128 (signed 64.64 bit fixed point number) [in ether] -> uint256 token amount [in wei]
+     */
+    function getTokenWei(address _token, int128 _amount) internal view returns (uint256) {
+        uint256 d = ERC20(_token).decimals();
+        return ABDKMath.mulu(_amount, 10 ** d);
+    }
+
+    /**
+     *  Helper function: uint256 token amount [in wei] -> int128 (signed 64.64 bit fixed point number) [in ether]
+     */
+    function getTokenEth(address _token, uint256 _amount) internal view returns (int128) {
+        uint256 d = ERC20(_token).decimals();
+        return ABDKMath.divu(_amount, 10 ** d);
+    }
+}

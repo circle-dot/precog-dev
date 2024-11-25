@@ -1,0 +1,111 @@
+import {ethers, getChainId} from "hardhat";
+import {PrecogMasterV3, PrecogMarketV3, ConditionalTokens} from "../typechain-types";
+
+function fromInt128toNumber(a: bigint): number {
+    return Number(BigInt(a)) / Number((BigInt(2) ** BigInt(64)));
+}
+
+function fromNumberToInt128(a: number): bigint {
+    return BigInt(a) * (BigInt(2) ** BigInt(64));
+}
+
+async function main() {
+    console.log(`\n> Checking Precog Market state...\n`);
+
+    // Fixed master contract address and market id (could be a user input in the future)
+    const contractAddress:string = '0x3f408C67cE37eA69e1FEd59ABA78389EdA3d5b9c';
+    const marketId: number = 2;
+
+    // Get master contract instance from recieved parameters
+    const master: PrecogMasterV3 = await ethers.getContractAt('PrecogMasterV3', contractAddress);
+
+    // Show precog master contract information
+    const chainId = await getChainId();
+    console.log(`> PrecogMasterV3 found! (chain: ${chainId})`);
+    console.log(`\t  Address: ${await master.getAddress()}`);
+
+    console.log(`\n> Market (id: ${marketId}):`);
+    const predictionMarketInfo: any[] = await master.markets(marketId);
+    console.log(`\tAddress: ${predictionMarketInfo[5]}`);
+    console.log(`\t   Name: ${predictionMarketInfo[0]}`);
+    console.log(`\tCreator: ${predictionMarketInfo[6]}`);
+    const marketAddress = predictionMarketInfo[5]
+    console.log(`\t     at: ${marketAddress}`);
+
+    console.log(`\n> Market Shares Info:`);
+    const marketInfo:any[] = await master.marketSharesInfo(marketId);
+    const totalShares: number = fromInt128toNumber(marketInfo[0]);
+    const outcomeOneShares: number = fromInt128toNumber(marketInfo[1]);
+    const outcomeTwoShares: number = fromInt128toNumber(marketInfo[2]);
+    const liquidity: number = fromInt128toNumber(marketInfo[3]);
+    const totalBuys = marketInfo[4];
+    console.log(`\tTotal Shares: ${totalShares} (YES: ${outcomeOneShares} | NO: ${outcomeTwoShares})`);
+    console.log(`\tLiquidity: ${liquidity} PRE`);
+    console.log(`\tTotal Buys: ${totalBuys}`);
+
+    // Calculate current market prediction
+    const yesPriceInt128:bigint = await master.marketPrice(marketId, 1, fromNumberToInt128(1));
+    const noPriceInt128:bigint = await master.marketPrice(marketId, 2, fromNumberToInt128(1));
+    const yesPrediction:number = 100 * fromInt128toNumber(yesPriceInt128);
+    const noPrediction:number = 100 * fromInt128toNumber(noPriceInt128);
+    if (yesPrediction >= noPrediction) {
+        console.log(`\n> Prediction: YES (${yesPrediction.toFixed(1)}%)`);
+    } else {
+        console.log(`\n> Prediction: NO (${noPrediction.toFixed(1)}%)`);
+    }
+
+    // Fixed outcomes and amounts (could be a user input in the future)
+    const possibleOutcomes: number[] = [1, 2];
+    const sharesAmounts: number[] = [1, 2, 5, 10, 50, 100, 200, 500];
+
+    // Iterate over all outcomes and amounts and show current prices
+    console.log(`\n> Market Prices:`);
+    const buyPrices: any[] = [null, [], []];  // the first item is added just for simplicity
+    for (const outcome of possibleOutcomes) {
+        for (const shares of sharesAmounts) {
+            const sharesInt128: bigint = fromNumberToInt128(shares);
+            const priceInt128: bigint = await master.marketPrice(marketId, outcome, sharesInt128);
+            const price: number = fromInt128toNumber(priceInt128);
+            const pricePerShare: number = price / shares;
+            const response = `${price} [${pricePerShare.toFixed(4)} pre/share]`
+            const parameters: string = `market=${marketId}, outcome=${outcome}, amount=${shares}`;
+            // let parameters: string = `market=${marketId}, outcome=${outcome}, amount=${shares} [${sharesInt128}]`;
+            console.log(`\tmarketPrice(${parameters}) => ${response}`);
+            buyPrices[outcome].push(price);
+        }
+        console.log('\t')
+    }
+
+    console.log(`\n> Info to close:`);
+    const ctAddress: string = '0x065d23d57C45459fA5e14DAB84F3501c38728F27';
+    const ct: ConditionalTokens = await ethers.getContractAt('ConditionalTokens', ctAddress);
+    const market: PrecogMarketV3 = await ethers.getContractAt('PrecogMarketV3', marketAddress);
+
+    console.log(`\t Market: ${await market.getAddress()}`);
+    console.log(`\t Conditional Tokens: ${await ct.getAddress()}`);
+    const marketIdBytes: string = `0x000000000000000000000000000000000000000000000000000000000000000${marketId}`
+    console.log(`\t MarketIdBytes: ${marketIdBytes}`);
+    // const payouts: string = '[1,0]';  // Result YES, outcomeOne: 1, outcomeTwo: 0
+    const payouts: string = '[0,1]';  // Result NO, outcomeOne: 0, outcomeTwo: 1
+    console.log(`\t Payouts: ${payouts}`);
+
+    const oracle: string = '0x9475A4C1BF5Fc80aE079303f14B523da19619c16';  // marto.eth
+    const parentCollectionId: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
+    const collateral: string = '0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888';
+    const conditionId = await market.condition();
+    console.log(`\t Oracle: ${oracle}`);
+    console.log(`\t ConditionId: ${conditionId}`);
+    console.log(`\t parentCollectionId: ${parentCollectionId}`);
+    console.log(`\t collateral: ${collateral}`);
+
+
+
+
+
+    console.log(`\n\n`);
+}
+
+main().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+});

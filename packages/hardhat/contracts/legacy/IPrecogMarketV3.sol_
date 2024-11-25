@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.6.0 <0.8.0;
+
+interface IPrecogMarket {
+    // Returns the start timestamp of the market
+    function startTimestamp() external view returns (uint256);
+
+    // Returns the end timestamp of the market
+    function endTimestamp() external view returns (uint256);
+
+    // Returns the condition identifier of the market
+    function condition() external view returns (bytes32);
+
+    // Returns the address of the token used in the market
+    function token() external view returns (address);
+
+    // Returns the address of the current owner
+    function owner() external view returns (address);
+
+    // Returns information about the shares owned by an account
+    function accountShares(address _account)
+        external
+        view
+        returns (
+            uint256 buys,
+            uint256 outcomeOneBalance,
+            uint256 outcomeTwoBalance,
+            uint256 deposited,
+            uint256 withdrawn,
+            uint256 claimed
+        );
+
+    // Initialize the market contract (needed for support cloning)
+    function initialize(address _ct, address _token) external;
+
+    // Setup the market with the specified parameters
+    function setup(
+        address _oracle,
+        bytes32 _questionId,
+        uint256 _numOutcomes,
+        uint256 _subsidy,
+        uint256 _overround
+    ) external;
+
+    // Allows buying outcome tokens for the specified outcome
+    function buy(uint256 _outcome, int128 _amount) external returns (int128);
+
+    // Allows buying outcome tokens for an specified account (restricted to only Self or Owner)
+    function _buy(uint256 _outcome, int128 _amount, address _account) external returns (int128);
+
+    // Updates the start and end timestamps of the market
+    function updateDates(uint256 _startTimestamp, uint256 _endTimestamp) external;
+
+    // Withdraws remaining tokens from the market after it's resolved
+    function withdraw() external;
+
+    // Returns the current cost of the market
+    function cost() external view returns (int128);
+
+    // Returns the cost of the market after a proposed transaction
+    function cost_after_buy(uint256 _outcome, int128 _amount) external view returns (int128);
+
+    // Returns the price of buying a specified amount of outcome tokens
+    function price(uint256 _outcome, int128 _amount) external view returns (int128);
+
+    // Helper function to convert price in token cost
+    function getTokenWei(address _token, int128 _amount) external view returns (uint);
+
+    // Helper function to convert token amount to initial funding (on int128)
+    function getTokenEth(address _token, uint _amount) external view returns (int128);
+
+    // Returns information about the market
+    function getMarketInfo()
+        external
+        view
+        returns (
+            int128 totalShares,
+            int128 outcomeOneShares,
+            int128 outcomeTwoShares,
+            int128 currentCost,
+            uint256 totalBuys,
+            int128 b
+        );
+
+    // Returns the address of the ConditionalTokens contract
+    function getConditionalTokens() external view returns (address);
+}

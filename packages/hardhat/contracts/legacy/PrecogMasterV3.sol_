@@ -1,0 +1,322 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.7.6;
+//pragma abicoder v2;
+
+import "hardhat/console.sol";
+
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
+import "./IPrecogToken.sol";
+import "./IPrecogMarketV3.sol";
+// import "./IPrecogMarket.sol"; this line was replaced by the line above on V4 release
+
+/**
+ * @title PrecogMasterV3
+ * @dev Contract to manage Precog token claims and PredictionMarkets
+ */
+contract PrecogMasterV3 is AccessControl {
+    using SafeMath for uint256;
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant CALLER_ROLE = keccak256("CALLER_ROLE");
+
+    struct TokenClaim {
+        address account;
+        uint256 user;
+        uint256 claimedAmount;
+        uint256 claimedTimestamp;
+    }
+
+    struct MiningSeason {
+        uint256 startTimestamp;
+        uint256 endTimestamp;
+        uint256 maxUserClaim;
+        uint256 maxTotalClaim;
+        uint256 maxTotalMint;
+        uint256 claimedAmount;
+        uint256 mintedAmount;
+    }
+
+    struct PredictionMarket {
+        string name;
+        string description;
+        string category;
+        uint256 startTimestamp;
+        uint256 endTimestamp;
+        address market;
+        address creator;
+    }
+
+    address public token;
+    address private conditionalTokens;
+    address private market;
+    uint256 public createdMarkets;
+    uint256 public currentSeason;
+
+    mapping(address => TokenClaim) public accountTokenClaims;
+    mapping(uint256 => TokenClaim) public userTokenClaims;
+    mapping(uint256 => MiningSeason) public miningSeasons;
+    mapping(uint256 => PredictionMarket) public markets;
+
+    event TokensClaimed(address indexed account, uint256 indexed user, uint256 amount, uint256 timestamp);
+    event TokensMinted(address indexed account, uint256 amount, uint256 timestamp);
+
+    constructor(address precogToken, address initialAdmin) {
+        // Grant DEFAULT_ADMIN_ROLE to the initial admin (this is the admin to the ADMIN_ROLE list)
+        _setupRole(DEFAULT_ADMIN_ROLE, initialAdmin);
+        // Set ADMIN_ROLE as admin of CALLER_ROLE list
+        _setRoleAdmin(CALLER_ROLE, ADMIN_ROLE);
+        // Set already deployed precogToken as claimable token and collateral token for all Markets
+        token = precogToken;
+        // Grant ADMIN_ROLE to initial Admin (this enables to call "addAdmin" helper function)
+        _setupRole(ADMIN_ROLE, initialAdmin);
+    }
+
+    modifier onlyAdmin() {
+        require(hasRole(ADMIN_ROLE, msg.sender), "Only Admins");
+        _;
+    }
+
+    modifier onlyCaller() {
+        require(hasRole(CALLER_ROLE, msg.sender), "Only Callers");
+        _;
+    }
+
+    // Public functions and helpers
+    function hasClaimed(address account, uint256 user) external view returns (bool) {
+        return accountTokenClaims[account].claimedTimestamp != 0 || userTokenClaims[user].claimedTimestamp != 0;
+    }
+
+    // Only caller functions
+    function claimToken(address account, uint256 user, uint256 amount) external onlyCaller returns (bool) {
+        // Validate token claim
+        require(accountTokenClaims[account].claimedTimestamp == 0, "Account already claimed");
+        require(userTokenClaims[user].claimedTimestamp == 0, "User already claimed");
+        MiningSeason storage season = miningSeasons[currentSeason];
+        if (season.startTimestamp > 0) {
+            require(block.timestamp >= season.startTimestamp, "Season not started");
+            require(block.timestamp < season.endTimestamp, "Season already ended");
+            require(amount <= season.maxUserClaim, "Invalid user claim amount");
+            require(amount.add(season.claimedAmount) <= season.maxTotalClaim, "Season max token claims");
+            require(amount.add(season.mintedAmount) <= season.maxTotalMint, "Season max token mints");
+        }
+
+        // Register current token claim
+        TokenClaim memory claim = TokenClaim({
+            account: account,
+            user: user,
+            claimedAmount: amount,
+            claimedTimestamp: block.timestamp
+        });
+        accountTokenClaims[account] = claim;
+        userTokenClaims[user] = claim;
+        season.claimedAmount = season.claimedAmount.add(amount);
+        season.mintedAmount = season.mintedAmount.add(amount);
+
+        // Mint tokens to received account
+        IPrecogToken(token).mint(account, amount);
+
+        emit TokensClaimed(account, user, amount, block.timestamp);
+        return true;
+    }
+
+    // Only admin functions
+    function addCaller(address account) external onlyAdmin {
+        grantRole(CALLER_ROLE, account);
+    }
+
+    function removeCaller(address account) external onlyAdmin {
+        revokeRole(CALLER_ROLE, account);
+    }
+
+    function addAdmin(address account) external onlyAdmin {
+        grantRole(ADMIN_ROLE, account);
+    }
+
+    function removeAdmin(address account) external onlyAdmin {
+        revokeRole(ADMIN_ROLE, account);
+    }
+
+    function updateCurrentSeason(uint256 seasonIndex) external onlyAdmin {
+        currentSeason = seasonIndex;
+    }
+
+    function setMiningSeason(
+        uint256 seasonIndex,
+        uint256 startTimestamp,
+        uint256 endTimestamp,
+        uint256 maxUserClaim,
+        uint256 maxTotalClaim,
+        uint256 maxTotalMint,
+        uint256 claimedAmount,
+        uint256 mintedAmount
+    ) external onlyAdmin {
+        miningSeasons[seasonIndex] = MiningSeason({
+            startTimestamp: startTimestamp,
+            endTimestamp: endTimestamp,
+            maxUserClaim: maxUserClaim,
+            maxTotalClaim: maxTotalClaim,
+            maxTotalMint: maxTotalMint,
+            claimedAmount: claimedAmount,
+            mintedAmount: mintedAmount
+        });
+    }
+
+    function setBaseConditionalTokens(address _conditionalTokens) external onlyAdmin {
+        conditionalTokens = _conditionalTokens;
+    }
+
+    function setBaseMarket(address _market) external onlyAdmin {
+        market = _market;
+    }
+
+    function createMarket(
+        string calldata name,
+        string calldata description,
+        string calldata category,
+        uint256 startTimestamp,
+        uint256 endTimestamp,
+        uint256 funding,
+        uint256 dustFee,
+        address creator
+    ) external onlyCaller returns (uint256 newMarketId) {
+        // Initialize and setup new market contract
+        newMarketId = createdMarkets;
+        address createdMarket = Clones.clone(market);
+        IPrecogMarket(createdMarket).initialize(conditionalTokens, token);
+
+        // Mint new funding to seed the new created market
+        IPrecogToken(token).mint(address(this), funding);
+        IPrecogToken(token).approve(createdMarket, type(uint256).max);
+
+        // Initialize and setup new market contract (in V4 this should be an updatable parameter)
+        address admin = getRoleMember(ADMIN_ROLE, 0);
+        IPrecogMarket(createdMarket).setup(admin, bytes32(newMarketId), 2, funding, dustFee);
+
+        // Save created market references in local storage
+        markets[newMarketId] = PredictionMarket({
+            name: name,
+            description: description,
+            category: category,
+            startTimestamp: startTimestamp,
+            endTimestamp: endTimestamp,
+            market: createdMarket,
+            creator: creator
+        });
+
+        // Increase created markets global counter and return created market id
+        createdMarkets = createdMarkets.add(1);
+        return newMarketId;
+    }
+
+    function updateMarket(
+        uint256 id,
+        string memory name,
+        string memory description,
+        string memory category,
+        uint256 startTimestamp,
+        uint256 endTimestamp,
+        address creator
+    ) external onlyAdmin {
+        if (bytes(name).length > 0) {
+            markets[id].name = name;
+        }
+        if (bytes(description).length > 0) {
+            markets[id].description = description;
+        }
+        if (bytes(category).length > 0) {
+            markets[id].category = category;
+        }
+        if (creator != address(0)) {
+            markets[id].creator = creator;
+        }
+        bool updateDates = false;
+        if (startTimestamp > 0) {
+            markets[id].startTimestamp = startTimestamp;
+            updateDates = true;
+        }
+        if (endTimestamp > 0) {
+            markets[id].endTimestamp = endTimestamp;
+            updateDates = true;
+        }
+        if (updateDates) {
+            IPrecogMarket(markets[id].market).updateDates(markets[id].startTimestamp, markets[id].endTimestamp);
+        }
+    }
+
+    function marketBuy(
+        uint256 marketId,
+        uint256 outcome,
+        int128 sharesAmount,
+        uint256 maxAmountIn
+    ) external returns (int128) {
+        require(block.timestamp >= markets[marketId].startTimestamp, 'Market not started');
+        require(block.timestamp <= markets[marketId].endTimestamp, 'Market already ended');
+
+        // Move maxAmountIn of PRE tokens from buyer to Master
+        IPrecogToken(token).move(msg.sender, address(this), maxAmountIn);
+
+        // Send internal BUY to received market
+        int128 price = IPrecogMarket(markets[marketId].market)._buy(outcome, sharesAmount, msg.sender);
+
+        // Given the buy price, calculate the actual token cost in wei
+        uint amountIn = IPrecogMarket(markets[marketId].market).getTokenWei(token, price);
+        IPrecogToken(token).transfer(msg.sender, maxAmountIn.sub(amountIn));
+
+        return price;
+    }
+
+    function marketPrice(uint256 marketId, uint256 outcome, int128 sharesAmount) external view returns (int128) {
+        return IPrecogMarket(markets[marketId].market).price(outcome, sharesAmount);
+    }
+
+    function marketAccountShares(uint256 marketId, address account) external view
+    returns (uint256 buys, uint256 outOne, uint256 outTwo, uint256 deposited, uint256 withdrawn, uint256 claimed) {
+        address marketAddress = markets[marketId].market;
+        (buys, outOne, outTwo, deposited, withdrawn, claimed) = IPrecogMarket(marketAddress).accountShares(account);
+    }
+
+    function marketSharesInfo(uint256 marketId) external view
+    returns (int128 totalShares, int128 qOne, int128 qTwo, int128 cost, uint256 totalBuys, int128 beta) {
+        address marketAddress = markets[marketId].market;
+        (totalShares, qOne, qTwo, cost, totalBuys, beta) = IPrecogMarket(marketAddress).getMarketInfo();
+    }
+
+    function marketWithdraw(uint256 id) external onlyAdmin {
+        IPrecogMarket(markets[id].market).withdraw();
+    }
+
+    function updateTokenClaim(address account, uint256 amount, uint256 timestamp) external onlyAdmin {
+        // Used to reset token claims
+        accountTokenClaims[account].claimedAmount = amount;
+        accountTokenClaims[account].claimedTimestamp = timestamp;
+        uint256 user = accountTokenClaims[account].user;
+        userTokenClaims[user].claimedAmount = amount;
+        userTokenClaims[user].claimedTimestamp = timestamp;
+    }
+
+    function precogMint(address to, uint256 amount) external onlyAdmin {
+        // Validate token mint
+        MiningSeason storage season = miningSeasons[currentSeason];
+        if (season.startTimestamp > 0) {
+            require(amount.add(season.mintedAmount) <= season.maxTotalMint, "Season max token mints");
+        }
+
+        // Register token mint
+        season.mintedAmount = season.mintedAmount.add(amount);
+
+        // Mint tokens to received account
+        IPrecogToken(token).mint(to, amount);
+
+        emit TokensMinted(to, amount, block.timestamp);
+    }
+
+    function precogBurn(address from, uint256 amount) external onlyAdmin {
+        // Here we should decrease `season.mintedAmount` for the current season
+        IPrecogToken(token).burn(from, amount);
+    }
+
+    function precogTransferOwnership(address newPrecogMaster) external onlyAdmin {
+        IPrecogToken(token).transferOwnership(newPrecogMaster);
+    }
+}

@@ -1,0 +1,333 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.6.0 <0.8.0;
+
+/// @title An implementation for liquidity-sensitive LMSR market maker in Solidity
+/// @author Marto (based on Abdulla Al-Kamil LsLMSR implementation)
+/// @dev Feel free to make any adjustments to the code
+
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {ABDKMath} from "./ABDKMath64x64.sol";
+import "./ConditionalTokens.sol";
+
+contract PrecogMarketV3 is IERC1155Receiver {
+    /**
+     * @dev: the contract uses the ABDKMath library to allow for math functions such as logarithms and exponents.
+     * As such, all the sensitive state variables are stored as int128(signed 64.64 bit fixed point number).
+     */
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
+
+    struct ShareInfo {
+        uint256 buys;
+        uint256 outcomeOneBalance;
+        uint256 outcomeTwoBalance;
+        uint256 deposited;
+        uint256 withdrawn;
+        uint256 claimed;
+    }
+
+    uint256 public startTimestamp;
+    uint256 public endTimestamp;
+    bytes32 public condition;
+    address public token;
+    address public owner;
+    mapping(address => ShareInfo) public accountShares;
+
+    uint public numOutcomes;
+    int128[] private q;
+    int128 private b;
+    int128 private alpha;
+    int128 private currentCost;
+    int128 private totalShares;
+    uint private totalBuys;
+    ConditionalTokens private CT;
+    bool private initialized;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    modifier onlyAfterInit {
+        require(initialized == true);
+        _;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner");
+        _;
+    }
+
+    modifier onlyOwnerOrSelf() {
+        require(msg.sender == owner || msg.sender == address(this), "Only owner or internal");
+        _;
+    }
+    /**
+     * @notice Constructor like function for the market maker
+     * @param _ct The address for the deployed conditional tokens contract
+     * @param _token Which ERC-20 token will be used to purchase and redeem outcome tokens for this condition
+     */
+    function initialize(address _ct, address _token) public {
+        require(owner == address(0), 'Already initialized');
+        owner = msg.sender;
+        token = _token;
+        CT = ConditionalTokens(_ct);
+    }
+
+    /**
+     * @notice Set up some of the variables for the market maker
+     * @param _oracle The address for the EOA/contract which will act as the oracle for this condition
+     * @param _questionId The question ID (needs to be unique)
+     * @param _numOutcomes The number of different outcomes available
+     * _subsidyToken Which ERC-20 token will be used to purchase and redeem outcome tokens for this condition
+     * @param _subsidy How much initial funding is used to seed the market maker.
+     * @param _overround How much 'profit' does the AMM claim? Note that this is
+     * represented in bips. Therefore inputting 300 represents 0.30%
+     */
+    function setup(
+        address _oracle,
+        bytes32 _questionId,
+        uint _numOutcomes,
+        uint _subsidy,
+        uint _overround
+    ) public onlyOwner {
+        require(initialized == false, 'Already initialized');
+        require(_overround > 0, 'Cannot have 0 overround');
+        CT.prepareCondition(_oracle, _questionId, _numOutcomes);
+        condition = CT.getConditionId(_oracle, _questionId, _numOutcomes);
+
+        IERC20(token).safeTransferFrom(msg.sender, address(this), _subsidy);
+
+        numOutcomes = _numOutcomes;
+        int128 initialSubsidy = getTokenEth(token, _subsidy);
+        int128 n = ABDKMath.fromUInt(_numOutcomes);
+        int128 overround = ABDKMath.divu(_overround, 10000); // Note: if the overround is too low, then exp overflows
+        alpha = ABDKMath.div(overround, ABDKMath.mul(n, ABDKMath.ln(n)));
+        b = ABDKMath.mul(ABDKMath.mul(initialSubsidy, n), alpha);
+        for (uint i = 0; i < _numOutcomes; i++) {
+            q.push(initialSubsidy);
+        }
+
+        initialized = true;
+
+        // After initialization, pre calculate current totals and cost
+        totalShares = ABDKMath.mul(initialSubsidy, n);
+        currentCost = cost();
+    }
+
+    /**
+     * @notice This function is used to buy outcome tokens.
+     * @param _outcome The outcome(s) which a user is buying tokens for.
+     * Note: This is the integer representation for the bit array.
+     * @param _amount This is the number of outcome tokens purchased
+     * @return _price The cost to purchase _amount number of tokens
+     */
+    function buy(uint256 _outcome, int128 _amount) public onlyAfterInit returns (int128 _price) {
+        // If enabled, check if market already started
+        if (startTimestamp > 0) {
+            require(block.timestamp >= startTimestamp, 'Market not started');
+        }
+
+        // If enabled, check if market still open
+        if (endTimestamp > 0) {
+            require(block.timestamp <= endTimestamp, 'Market already ended');
+        }
+
+        // Send call to internal
+        return _buy(_outcome, _amount, msg.sender);
+    }
+
+    function _buy(uint256 _outcome, int128 _amount, address _account) public onlyOwnerOrSelf returns (int128 _price) {
+        // Special buy function to Buy tokens f
+        require(_outcome > 0, 'Invalid outcome');
+        require(CT.payoutDenominator(condition) == 0, 'Market already resolved');
+
+        for (uint j = 0; j < numOutcomes; j++) {
+            // Note: (1 << j) is equal to (1 x 2 ** j)
+            if ((_outcome & (1 << j)) != 0) {
+                q[j] = ABDKMath.add(q[j], _amount);
+                totalShares = ABDKMath.add(totalShares, _amount);
+            }
+        }
+
+        // Calculate new Beta parameter (taking into account new total_shares)
+        b = ABDKMath.mul(totalShares, alpha);
+
+        int128 sum_total;
+        for (uint i = 0; i < numOutcomes; i++) {
+            sum_total = ABDKMath.add(sum_total, ABDKMath.exp(ABDKMath.div(q[i], b)));
+        }
+
+        // Calculate new cost and
+        int128 new_cost = ABDKMath.mul(b, ABDKMath.ln(sum_total));
+        _price = ABDKMath.sub(new_cost, currentCost);
+        currentCost = new_cost;
+
+        // Get token_cost amount of token from sender (as current payment)
+        uint tokenCost = getTokenWei(token, _price);
+        require(IERC20(token).transferFrom(msg.sender, address(this), tokenCost), 'Error transferring tokens');
+        uint outcomeShares = getTokenWei(token, _amount);
+
+        uint position = CT.getPositionId(IERC20(token), CT.getCollectionId(bytes32(0), condition, _outcome));
+        if (CT.balanceOf(address(this), position) < outcomeShares) {
+            IERC20(token).approve(address(CT), outcomeShares);
+            uint[] memory partition = getPositionAndDustPositions(_outcome);
+            CT.splitPosition(IERC20(token), bytes32(0), condition, partition, outcomeShares);
+        }
+        // Give n_outcome_tokens of shares to current account (as shares bought)
+        CT.safeTransferFrom(address(this), _account, position, outcomeShares, '');
+
+        // Register account buy
+        totalBuys = totalBuys.add(1);
+        accountShares[_account].buys = accountShares[_account].buys.add(1);
+        if (_outcome == 1) {
+            accountShares[_account].outcomeOneBalance = accountShares[_account].outcomeOneBalance.add(outcomeShares);
+        } else if (_outcome == 2) {
+            accountShares[_account].outcomeTwoBalance = accountShares[_account].outcomeTwoBalance.add(outcomeShares);
+        }
+        accountShares[_account].deposited = accountShares[_account].deposited.add(tokenCost);
+    }
+
+    function updateDates(uint256 _startTimestamp, uint256 _endTimestamp) public onlyOwner {
+        startTimestamp = _startTimestamp;
+        endTimestamp = _endTimestamp;
+    }
+
+    function withdraw() public onlyAfterInit onlyOwner {
+        require(CT.payoutDenominator(condition) != 0, 'Market needs to be resolved');
+        uint[] memory dust = new uint256[](numOutcomes);
+        for (uint i = 0; i < numOutcomes; i++) {
+            dust[i] = 1 << i;
+        }
+        CT.redeemPositions(IERC20(token), bytes32(0), condition, dust);
+        IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
+    }
+
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+
+    function getOnes(uint n) internal pure returns (uint count) {
+        while (n != 0) {
+            n = n & (n - 1);
+            count++;
+        }
+        return count;
+    }
+
+    function getPositionAndDustPositions(uint _outcome) public view returns (uint256[] memory) {
+        uint index = (1 << numOutcomes) - 1;
+        uint inv = _outcome ^ index;
+        uint[] memory partx = new uint256[](getOnes(inv) + 1);
+        uint n = 1;
+        partx[0] = _outcome;
+        for (uint i = 0; i < numOutcomes; i++) {
+            // Note: (1 << i) is equal to (1 x 2 ** i)
+            if ((inv & 1 << i) != 0) {
+                partx[n] = 1 << i;
+                n++;
+            }
+        }
+        return partx;
+    }
+
+    /**
+     *  @notice View function returning the cost function.
+     *  This function returns the cost for this inventory state. It will be able
+     *  to tell you the total amount of collateral spent within the market maker.
+     *  For example, if a pool was seeded with 100 DAI and then a further 20 DAI
+     *  has been spent, this function will return 120 DAI.
+     */
+    function cost() public view onlyAfterInit returns (int128) {
+        int128 sum_total;
+        for (uint i = 0; i < numOutcomes; i++) {
+            sum_total = ABDKMath.add(sum_total, ABDKMath.exp(ABDKMath.div(q[i], b)));
+        }
+        return ABDKMath.mul(b, ABDKMath.ln(sum_total));
+    }
+
+    /**
+     *  This function will tell you the cost (similar to above) after a proposed transaction.
+     */
+    function cost_after_buy(uint256 _outcome, int128 _amount) public view returns (int128) {
+        int128 sumTotal;
+        int128[] memory newQ = new int128[](q.length);
+        int128 newTotalShares = totalShares;
+
+        // Add new amount of shares to received outcome
+        for (uint j = 0; j < numOutcomes; j++) {
+            // Note: (1 << j) is equal to (1 x 2 ** j)
+            if ((_outcome & (1 << j)) != 0) {
+                newQ[j] = ABDKMath.add(q[j], _amount);
+                newTotalShares = ABDKMath.add(newTotalShares, _amount);
+            } else {
+                newQ[j] = q[j];
+            }
+        }
+
+        // Calculate new cost based on newTotalShares and newQ values
+        int128 newB = ABDKMath.mul(newTotalShares, alpha);
+        for (uint i = 0; i < numOutcomes; i++) {
+            sumTotal = ABDKMath.add(sumTotal, ABDKMath.exp(ABDKMath.div(newQ[i], newB)));
+        }
+        return ABDKMath.mul(newB, ABDKMath.ln(sumTotal));
+    }
+
+    /**
+     *  This function tells you how much it will cost to make a particular trade.
+     *  It does this by calculating the difference between the current cost and the cost after the transaction.
+     */
+    function price(uint256 _outcome, int128 _amount) public view returns (int128) {
+        return ABDKMath.sub(cost_after_buy(_outcome, _amount), currentCost);
+    }
+
+    function getMarketInfo() public view returns (int128, int128, int128, int128, uint256, int128) {
+        if (q.length < 1) {
+            return (0, 0, 0, 0, 0, 0);
+        }
+        return (totalShares, q[0], q[1], currentCost, totalBuys, b);
+    }
+
+    function getConditionalTokens() public view returns (address) {
+        return address(CT);
+    }
+
+    function getTokenWei(address _token, int128 _amount) public view returns (uint) {
+        uint d = ERC20(_token).decimals();
+        return ABDKMath.mulu(_amount, 10 ** d);
+    }
+
+    function getTokenEth(address _token, uint _amount) public view returns (int128) {
+        uint d = ERC20(_token).decimals();
+        return ABDKMath.divu(_amount, 10 ** d);
+    }
+
+    function onERC1155Received(
+        address operator,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external override pure returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address operator,
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external override pure returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
+    }
+
+    function supportsInterface(bytes4 interfaceId) external override pure returns (bool) {
+        return false;
+    }
+}
