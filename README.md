@@ -1,4 +1,4 @@
-# Precog core
+# Precog core - Staging
 EVM contracts for a Prediction Market platform deployed in Farcaster.
 - [Contracts Implementations](/packages/hardhat/contracts)
 - [Test Implementations](/packages/hardhat/test)
