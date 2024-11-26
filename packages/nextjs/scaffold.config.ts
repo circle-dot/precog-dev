@@ -7,6 +7,7 @@ export type ScaffoldConfig = {
     walletConnectProjectId: string;
     onlyLocalBurnerWallet: boolean;
     marketSharesToTrade: number;
+    privyAppId:string;
 };
 
 const scaffoldConfig = {
@@ -34,7 +35,10 @@ const scaffoldConfig = {
     onlyLocalBurnerWallet: false,
 
     // # Amount of shares to be used as default in BUY and SELL trades
-    marketSharesToTrade: 1
+    marketSharesToTrade: 1,
+
+    //Privy config
+    privyAppId: process.env.NEXT_PUBLIC_PRIVY_APP_ID || "clxnojby306casiqiko284fv9",
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;
