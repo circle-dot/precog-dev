@@ -1,14 +1,10 @@
 import { getPublicClient } from "@wagmi/core";
-import { Hash, SendTransactionParameters, WalletClient } from "viem";
+import { Hash, SendTransactionParameters, WalletClient, createWalletClient, custom } from "viem";
 import { useWalletClient } from "wagmi";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
 import { TransactorFuncOptions } from "~~/utils/scaffold-eth/contract";
-
-type TransactionFunc = (
-  tx: (() => Promise<Hash>) | SendTransactionParameters,
-  options?: TransactorFuncOptions,
-) => Promise<Hash | undefined>;
 
 /**
  * Custom notification content for TXs.
@@ -26,6 +22,11 @@ const TxnNotification = ({ message, blockExplorerLink }: { message: string; bloc
   );
 };
 
+type TransactionFunc = (
+  tx: (() => Promise<Hash>) | SendTransactionParameters,
+  options?: TransactorFuncOptions,
+) => Promise<Hash | undefined>;
+
 /**
  * Runs Transaction passed in to returned function showing UI feedback.
  * @param _walletClient - Optional wallet client to use. If not provided, will use the one from useWalletClient.
@@ -34,7 +35,28 @@ const TxnNotification = ({ message, blockExplorerLink }: { message: string; bloc
 export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => {
   let walletClient = _walletClient;
   const { data } = useWalletClient();
-  if (walletClient === undefined && data) {
+  const { authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const activePrivyWallet = wallets[0];
+
+  // If using Privy wallet
+  if (authenticated && activePrivyWallet) {
+    const getPrivyWalletClient = async () => {
+      const provider = await activePrivyWallet.getEthereumProvider();
+      return createWalletClient({
+        account: activePrivyWallet.address as `0x${string}`,
+        chain: wagmiConfig.chains[0],
+        transport: custom(provider),
+      });
+    };
+    
+    // Set up Privy wallet client
+    getPrivyWalletClient().then(client => {
+      walletClient = client;
+    });
+  } 
+  // Otherwise use wagmi wallet client
+  else if (walletClient === undefined && data) {
     walletClient = data;
   }
 
