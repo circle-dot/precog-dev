@@ -11,8 +11,8 @@ import { useNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { PrivyProvider } from '@privy-io/react-auth';
-import scaffoldConfig from "~~/scaffold.config";
-import { baseSepolia } from "viem/chains";
+import { getPrivyConfig, PRIVY_APP_ID } from "~~/services/web3/privy/privyConfig";
+
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const price = useNativeCurrencyPrice();
   const setNativeCurrencyPrice = useGlobalState(state => state.setNativeCurrencyPrice);
@@ -46,27 +46,14 @@ export const queryClient = new QueryClient({
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
-  const defaultChain = baseSepolia;
-  const supportedChains =  [baseSepolia];
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ProgressBar />
         <PrivyProvider
-          appId={scaffoldConfig.privyAppId}
-          config={{
-            appearance: {
-              theme: isDarkMode ? 'dark' : 'light',
-              accentColor: '#676FFF',
-              logo: '/precogLogo.png',
-            },
-            loginMethods: ['email', 'wallet'],
-            embeddedWallets: {
-              createOnLogin: 'users-without-wallets',
-            },
-            defaultChain,
-            supportedChains,
-          }}
+          appId={PRIVY_APP_ID}
+          config={getPrivyConfig(isDarkMode)}
         >
           <ScaffoldEthApp>{children}</ScaffoldEthApp>
         </PrivyProvider>
