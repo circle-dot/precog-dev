@@ -1,8 +1,7 @@
-import {formatEther, parseEther, encodeFunctionData, createWalletClient, custom, Hash} from "viem";
+import {formatEther, parseEther, encodeFunctionData, Hash} from "viem";
 import {useReadContract, usePublicClient} from "wagmi";
 import {useScaffoldContract, useTransactor} from "~~/hooks/scaffold-eth";
 import {fromNumberToInt128, fromInt128toNumber} from "~~/utils/numbers"
-import {baseSepolia} from 'viem/chains';
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
 
@@ -54,8 +53,8 @@ export const MarketSell = ({
         setIsPending(true);
 
         try {
-            let provider;
-            let address;
+            let provider: { request(args: { method: string; params?: any[] }): Promise<any> };
+            let address: string;
 
             if (user.wallet.walletClientType === 'privy') {
                 const wallet = wallets[0];

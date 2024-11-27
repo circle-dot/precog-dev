@@ -73,8 +73,8 @@ export const MarketBuy = ({marketId, marketOutcome, outcomeLabel = "", sharesToT
         if (!publicClient || !master || !user?.wallet) return;
 
         try {
-            let provider;
-            let address;
+            let provider: { request(args: { method: string; params?: any[] }): Promise<any> };
+            let address: string;
 
             if (user.wallet.walletClientType === 'privy') {
                 const wallet = wallets[0];
