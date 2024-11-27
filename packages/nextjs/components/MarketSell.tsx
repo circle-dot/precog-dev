@@ -1,5 +1,5 @@
-import {formatEther, parseEther, encodeFunctionData, createWalletClient, custom} from "viem";
-import {useReadContract, useWriteContract, usePublicClient} from "wagmi";
+import {formatEther, parseEther, encodeFunctionData, createWalletClient, custom, Hash} from "viem";
+import {useReadContract, usePublicClient} from "wagmi";
 import {useScaffoldContract, useTransactor} from "~~/hooks/scaffold-eth";
 import {fromNumberToInt128, fromInt128toNumber} from "~~/utils/numbers"
 import {baseSepolia} from 'viem/chains';
@@ -27,6 +27,7 @@ export const MarketSell = ({
     const { wallets } = useWallets();
     const publicClient = usePublicClient();
     const [isPending, setIsPending] = useState(false);
+    const writeTx = useTransactor();
 
     const market = BigInt(marketId);
     const outcome = BigInt(marketOutcome);
@@ -55,23 +56,16 @@ export const MarketSell = ({
         try {
             let provider;
             let address;
-            let walletClient;
 
             if (user.wallet.walletClientType === 'privy') {
                 const wallet = wallets[0];
                 
-                // Get current chain ID and switch if needed
                 const currentChainId = wallet.chainId;
                 console.log("Current Chain ID:", currentChainId);
                 
                 if (currentChainId !== '84532') {
                     console.log("Switching to Base Sepolia...");
-                    try {
-                        await wallet.switchChain(84532);
-                    } catch (switchError) {
-                        console.log("Failed to switch chain:", switchError);
-                        throw new Error('Failed to switch to Base Sepolia');
-                    }
+                    await wallet.switchChain(84532);
                     console.log("Switched to Base Sepolia");
                 }
 
@@ -86,11 +80,6 @@ export const MarketSell = ({
                 }
                 provider = await wallet.getEthereumProvider();
                 address = wallet.address;
-                walletClient = createWalletClient({
-                    account: address as `0x${string}`,
-                    chain: baseSepolia,
-                    transport: custom(provider),
-                });
             }
 
             console.log("=== Wallet Details ===");
@@ -103,9 +92,8 @@ export const MarketSell = ({
                 args: [market, outcome, shares, minOut],
             });
 
-            let marketSellTx;
-            if (user.wallet.walletClientType === 'privy') {
-                marketSellTx = await provider.request({
+            await writeTx(async () => {
+                const tx = await provider.request({
                     method: 'eth_sendTransaction',
                     params: [{
                         from: address,
@@ -113,19 +101,9 @@ export const MarketSell = ({
                         data: marketSellTxData,
                     }],
                 });
-            } else {
-                marketSellTx = await walletClient?.sendTransaction({
-                    to: master.address,
-                    data: marketSellTxData,
-                });
-            }
+                return tx as Hash;
+            }, { blockConfirmations: 1 });
 
-            console.log("Market Sell Transaction:", marketSellTx);
-            const receipt = await publicClient.waitForTransactionReceipt({ 
-                hash: marketSellTx as `0x${string}` 
-            });
-            
-            console.log("Transaction Receipt:", receipt);
         } catch (e) {
             console.log("=== Transaction Failed ===");
             console.log("Error Type:", typeof e);
