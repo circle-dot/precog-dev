@@ -9,8 +9,8 @@ import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {usePrecogMarketData} from "~~/hooks/usePrecogMarketData";
 import scaffoldConfig from "~~/scaffold.config";
 import {MarketBalance} from "~~/components/MarketBalance";
-import {useAccount} from "wagmi";
 import React, {useState} from "react";
+import { usePrivy,useWallets } from "@privy-io/react-auth";
 
 type MarketProps = {
     contractName: ContractName;
@@ -31,10 +31,14 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
     const marketPrediction = marketStateData?.prediction;
     // @ts-ignore
     const marketClosedDate = marketStateData?.closedDate
-    const {address: connectedAddress} = useAccount();
+    const { user } = usePrivy();
+    const { wallets } = useWallets();
+    
+    // Get the correct wallet address
+    const walletAddress = (user?.wallet?.address || wallets[0]?.address) as `0x${string}`;
 
     const {data: accountShares} = useScaffoldReadContract({
-        contractName: contractName, functionName: "marketAccountShares", args: [BigInt(id), connectedAddress]
+        contractName: contractName, functionName: "marketAccountShares", args: [BigInt(id), walletAddress]
     });
 
     const [showExtraInfo, setShowExtraInfo] = useState<boolean>(false);
@@ -175,10 +179,10 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                 <div className="flex flex-col w-full items-center bg-base-300 py-1 rounded-md  overflow-auto">
                     <div className="flex flex-row gap-2 items-center">
                         <span className="font-bold text-sm">You:</span>
-                        <PrecogBalance address={connectedAddress}/>
+                        <PrecogBalance address={walletAddress as `0x${string}`}/>
                         <span className="text-sm">|</span>
                         <span className="font-bold text-sm">Shares:</span>
-                        <MarketBalance id={id} address={connectedAddress} outcomes={marketOutcomes}/>
+                        <MarketBalance id={id} address={walletAddress as `0x${string}`} outcomes={marketOutcomes}/>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,9 @@
-import {parseEther} from "viem";
+import {parseEther, encodeFunctionData,Hash} from "viem";
 import {useReadContract, useWriteContract} from "wagmi";
+import {usePublicClient} from "wagmi";
 import {useScaffoldContract, useTransactor} from "~~/hooks/scaffold-eth";
-import {fromNumberToInt128, fromInt128toNumber} from "~~/utils/numbers"
+import {fromNumberToInt128, fromInt128toNumber} from "~~/utils/numbers";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 type MarketBuyProps = {
     marketId: number;
@@ -10,11 +12,45 @@ type MarketBuyProps = {
     sharesToTrade?: number
 };
 
+// ERC20 ABI - just the functions we need
+const erc20Abi = [
+    {
+        "inputs": [
+            { "name": "spender", "type": "address" },
+            { "name": "amount", "type": "uint256" }
+        ],
+        "name": "approve",
+        "outputs": [{ "name": "", "type": "bool" }],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{ "name": "account", "type": "address" }],
+        "name": "balanceOf",
+        "outputs": [{ "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            { "name": "owner", "type": "address" },
+            { "name": "spender", "type": "address" }
+        ],
+        "name": "allowance",
+        "outputs": [{ "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+    }
+] as const;
+
 export const MarketBuy = ({marketId, marketOutcome, outcomeLabel = "", sharesToTrade = 1}: MarketBuyProps) => {
     const {data: master} = useScaffoldContract({contractName: "PrecogMasterV7"});
     const ABI = master ? master.abi : [];
+    const {  user } = usePrivy();
+    const { wallets } = useWallets();
+    const publicClient = usePublicClient();
 
-    const {writeContractAsync, isPending} = useWriteContract();
+    const { isPending} = useWriteContract();
     const writeTx = useTransactor();
 
     const market = BigInt(marketId);
@@ -33,18 +69,99 @@ export const MarketBuy = ({marketId, marketOutcome, outcomeLabel = "", sharesToT
     const maxTokenIn = price * 1.001  // Add 0.1% of slippage
     const maxIn: bigint = parseEther(maxTokenIn.toString());
 
-    const writeContractAsyncWithParams = () =>
-        writeContractAsync({
-            address: master.address,
-            abi: ABI,
-            functionName: "marketBuy",
-            args: [market, outcome, shares, maxIn],
-        });
     const handleWriteAction = async () => {
+        if (!publicClient || !master || !user?.wallet) return;
+
         try {
-            await writeTx(writeContractAsyncWithParams, {blockConfirmations: 1});
+            let provider: { request(args: { method: string; params?: any[] }): Promise<any> };
+            let address: string;
+
+            if (user.wallet.walletClientType === 'privy') {
+                const wallet = wallets[0];
+                provider = await wallet.getEthereumProvider();
+                address = wallet.address;
+            } else {
+                const wallet = wallets.find(w => w.walletClientType === user.wallet?.walletClientType);
+                if (!wallet) {
+                    throw new Error('Desired wallet not found');
+                }
+                provider = await wallet.getEthereumProvider();
+                address = wallet.address;
+            }
+
+            console.log("=== Wallet Details ===");
+            console.log("Wallet Address:", address);
+            console.log("Wallet Type:", user.wallet.walletClientType);
+
+            const tokenAddress = await master.read.token();
+            console.log("=== Token Details ===");
+            console.log("Token Contract:", tokenAddress);
+            
+            const balance = await publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'balanceOf',
+                args: [address as `0x${string}`],
+            });
+
+            const allowance = await publicClient.readContract({
+                address: tokenAddress,
+                abi: erc20Abi,
+                functionName: 'allowance',
+                args: [address as `0x${string}`, master.address],
+            });
+
+            console.log("Token Balance:", balance.toString());
+            console.log("Token Allowance:", allowance.toString());
+            console.log("Required Amount:", maxIn.toString());
+
+            if (allowance < maxIn) {
+                console.log("Insufficient allowance, approving tokens...");
+                
+                const approveTxData = encodeFunctionData({
+                    abi: erc20Abi,
+                    functionName: 'approve',
+                    args: [master.address, maxIn],
+                });
+
+                await writeTx(async () => {
+                    const tx = await provider.request({
+                        method: 'eth_sendTransaction',
+                        params: [{
+                            from: address,
+                            to: tokenAddress,
+                            data: approveTxData,
+                        }],
+                    });
+                    return tx as Hash;
+                }, { blockConfirmations: 1 });
+            }
+
+            const marketBuyTxData = encodeFunctionData({
+                abi: ABI,
+                functionName: "marketBuy",
+                args: [market, outcome, shares, maxIn],
+            });
+
+            await writeTx(async () => {
+                const tx = await provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: address,
+                        to: master.address,
+                        data: marketBuyTxData,
+                    }],
+                });
+                return tx as Hash;
+            }, { blockConfirmations: 1 });
+
         } catch (e) {
-            console.log("Unexpected error in writeTx", e);
+            console.log("=== Transaction Failed ===");
+            console.log("Error Type:", typeof e);
+            console.log("Error Details:", e);
+            if (e instanceof Error) {
+                console.log("Error Stack:", e.stack);
+            }
         }
     };
 

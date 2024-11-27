@@ -1,7 +1,9 @@
-import {formatEther, parseEther} from "viem";
-import {useReadContract, useWriteContract} from "wagmi";
+import {formatEther, parseEther, encodeFunctionData, Hash} from "viem";
+import {useReadContract, usePublicClient} from "wagmi";
 import {useScaffoldContract, useTransactor} from "~~/hooks/scaffold-eth";
 import {fromNumberToInt128, fromInt128toNumber} from "~~/utils/numbers"
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useState } from "react";
 
 type MarketSellProps = {
     marketId: number;
@@ -20,8 +22,10 @@ export const MarketSell = ({
                            }: MarketSellProps) => {
     const {data: master} = useScaffoldContract({contractName: "PrecogMasterV7"});
     const ABI = master ? master.abi : [];
-
-    const {writeContractAsync, isPending} = useWriteContract();
+    const { user } = usePrivy();
+    const { wallets } = useWallets();
+    const publicClient = usePublicClient();
+    const [isPending, setIsPending] = useState(false);
     const writeTx = useTransactor();
 
     const market = BigInt(marketId);
@@ -36,33 +40,83 @@ export const MarketSell = ({
         return (<span className="loading loading-spinner loading-sm"></span>);
     }
 
-    // Avoid showing sell button if account has no shares to sell
     if (outcomeBalance == BigInt(0)) {
-        return;
+        return null;
     }
 
     const price = priceInt128 ? fromInt128toNumber(priceInt128) : 1;
     const minTokenOut = price * 0.999  // Add 0.1% of slippage
     const minOut: bigint = parseEther(minTokenOut.toString());
 
-    const writeContractAsyncWithParams = () =>
-        writeContractAsync({
-            address: master.address,
-            abi: ABI,
-            functionName: "marketSell",
-            args: [market, outcome, shares, minOut],
-        });
     const handleWriteAction = async () => {
+        if (!publicClient || !master || !user?.wallet) return;
+        setIsPending(true);
+
         try {
-            await writeTx(writeContractAsyncWithParams, {blockConfirmations: 1});
+            let provider: { request(args: { method: string; params?: any[] }): Promise<any> };
+            let address: string;
+
+            if (user.wallet.walletClientType === 'privy') {
+                const wallet = wallets[0];
+                
+                const currentChainId = wallet.chainId;
+                console.log("Current Chain ID:", currentChainId);
+                
+                if (currentChainId !== '84532') {
+                    console.log("Switching to Base Sepolia...");
+                    await wallet.switchChain(84532);
+                    console.log("Switched to Base Sepolia");
+                }
+
+                provider = await wallet.getEthereumProvider();
+                address = wallet.address;
+            } else {
+                const wallet = wallets.find((w: { walletClientType: string }) => 
+                    w.walletClientType === user?.wallet?.walletClientType
+                );
+                if (!wallet) {
+                    throw new Error('Desired wallet not found');
+                }
+                provider = await wallet.getEthereumProvider();
+                address = wallet.address;
+            }
+
+            console.log("=== Wallet Details ===");
+            console.log("Wallet Address:", address);
+            console.log("Wallet Type:", user.wallet.walletClientType);
+
+            const marketSellTxData = encodeFunctionData({
+                abi: ABI,
+                functionName: "marketSell",
+                args: [market, outcome, shares, minOut],
+            });
+
+            await writeTx(async () => {
+                const tx = await provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: address,
+                        to: master.address,
+                        data: marketSellTxData,
+                    }],
+                });
+                return tx as Hash;
+            }, { blockConfirmations: 1 });
+
         } catch (e) {
-            console.log("Unexpected error in writeTx", e);
+            console.log("=== Transaction Failed ===");
+            console.log("Error Type:", typeof e);
+            console.log("Error Details:", e);
+            if (e instanceof Error) {
+                console.log("Error Stack:", e.stack);
+            }
+        } finally {
+            setIsPending(false);
         }
     };
 
     let outcomeText = `Sell ${outcomeLabel}`;
     if (sellAmount != sharesToTrade) {
-        // Case: selected "shares to trade" is bigger than the current balance to sell
         outcomeText = `${outcomeText} [${sellAmount}]`;
     }
     const sellReturn = sellAmount > 1 ? `return: ${price.toFixed(2)}` : price.toFixed(2);

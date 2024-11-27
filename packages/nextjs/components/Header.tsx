@@ -11,10 +11,10 @@ import {
     DocumentPlusIcon,
     HomeIcon,
 } from "@heroicons/react/24/outline";
-import {FaucetButton, RainbowKitCustomConnectButton} from "~~/components/scaffold-eth";
+import {FaucetButton} from "~~/components/scaffold-eth";
 import {useOutsideClick, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {useAccount} from "wagmi";
-
+import {PrivyCustomConnectButton} from "~~/components/scaffold-eth/PrivyCustomConnectButton";
 type HeaderMenuLink = {
     label: string;
     href: string;
@@ -153,7 +153,7 @@ export const Header = () => {
                 </ul>
             </div>
             <div className="navbar-end flex-grow mr-4">
-                <RainbowKitCustomConnectButton/>
+                <PrivyCustomConnectButton/>
                 <FaucetButton/>
             </div>
         </div>
