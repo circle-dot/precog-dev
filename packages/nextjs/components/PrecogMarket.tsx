@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ChartBarSquareIcon, InformationCircleIcon} from "@heroicons/react/24/outline";
+import {ChartBarSquareIcon, InformationCircleIcon, ShareIcon} from "@heroicons/react/24/outline";
 import {Address} from "~~/components/scaffold-eth";
 import {ContractName} from "~~/utils/scaffold-eth/contract";
 import {PrecogBalance} from "~~/components/PrecogBalance";
@@ -55,6 +55,19 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
         } else {
             setSharesToTrade(tradeOptions[newIndex]);
         }
+    };
+
+    const generateIframeCode = () => {
+        const baseUrl = window.location.origin;
+        const iframeCode = `<iframe 
+            src="${baseUrl}/embed?address=${market.address}"
+            width="400"
+            height="150"
+            frameborder="0"
+        ></iframe>`;
+        
+        navigator.clipboard.writeText(iframeCode);
+        // You may want to add a notification here to show the code was copied
     };
 
     if (!marketData || !accountShares || isLoading) {
@@ -140,6 +153,14 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                             Market Details
                         </button>
                     </Link>
+                    <button 
+                        className="btn btn-secondary btn-sm rounded-md" 
+                        onClick={generateIframeCode}
+                        title="Copy embed code"
+                    >
+                        <ShareIcon className="h-4 w-4"/>
+                        Share
+                    </button>
                 </div>
                 <div className="flex flex-col w-full items-center bg-base-300 py-1 rounded-md  overflow-auto">
                     <div className="flex flex-row gap-2 items-center">

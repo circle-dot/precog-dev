@@ -1,16 +1,15 @@
-import {getMetadata} from "~~/utils/scaffold-eth/getMetadata";
+"use client";
 import {Suspense} from 'react'
-
-export const metadata = getMetadata({
-    title: "Market",
-    description: "Precog Market details",
-});
+import {Header} from "~~/components/Header";
+import {Footer} from "~~/components/Footer";
 
 const MarketLayout = ({children}: { children: React.ReactNode }) => {
     return <>
+        <Header />
         <Suspense>
             {children}
         </Suspense>
+        <Footer />
     </>;
 };
 
