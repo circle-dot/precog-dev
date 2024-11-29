@@ -34,7 +34,7 @@ export const usePrecogMarketData = (address: Address | string | undefined) => {
     const closedDate = closed ? new Date(Number(closed) * 1000).toUTCString() : "";
 
     let marketOutcomes = marketMetadata[3].toString().split(",");
-    marketOutcomes.unshift(...[""]); // Add empty slot at the start to match market prices indexing
+    marketOutcomes.unshift(""); // Add empty slot at the start to match market prices indexing
     let predictionOutcome = "NN";
     let predictionPrice = 0;
     for (let i = 1; i < marketOutcomes.length; i++) {
@@ -61,6 +61,7 @@ export const usePrecogMarketData = (address: Address | string | undefined) => {
         result: marketResult,
         closedDate: closedDate
     };
+    // Only for debug
     // console.log('Market Data:', marketData);
 
     return marketData;

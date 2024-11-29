@@ -33,7 +33,7 @@ export const MarketPrices = ({address}: { address: AddressType }) => {
 
     // Parse data and calculate current market prediction
     const marketOutcomes = marketData[3].toString().split(",");
-    marketOutcomes.unshift(...[""]); // Add empty slot at the start to match market prices indexing
+    marketOutcomes.unshift(""); // Add empty slot at the start to match market prices indexing
     let predictionOutcome = "NN";
     let predictionPrice = 0;
     const buyData = []
