@@ -4100,6 +4100,7 @@ __metadata:
     abitype: 1.0.2
     autoprefixer: ^10.4.20
     blo: ~1.0.1
+    boring-avatars: ^1.11.2
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     daisyui: 4.12.10
@@ -7253,6 +7254,13 @@ __metadata:
   version: 5.2.1
   resolution: "bn.js@npm:5.2.1"
   checksum: 3dd8c8d38055fedfa95c1d5fc3c99f8dd547b36287b37768db0abab3c239711f88ff58d18d155dd8ad902b0b0cee973747b7ae20ea12a09473272b0201c9edd3
+  languageName: node
+  linkType: hard
+
+"boring-avatars@npm:^1.11.2":
+  version: 1.11.2
+  resolution: "boring-avatars@npm:1.11.2"
+  checksum: 209532b5717a4ab55f1e16cc49e192d7e78b09d46672507cea24559013e4ee60378e9aafa7589d493e5e47941c0494b37087b2ef503452515ccac4bedb999ef1
   languageName: node
   linkType: hard
 

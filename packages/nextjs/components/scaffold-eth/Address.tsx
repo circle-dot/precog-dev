@@ -8,7 +8,7 @@ import { hardhat } from "viem/chains";
 import { normalize } from "viem/ens";
 import { useEnsAvatar, useEnsName } from "wagmi";
 import { CheckCircleIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
-import { BlockieAvatar } from "~~/components/scaffold-eth";
+import { BeamAvatar } from "~~/components/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth";
 
@@ -93,9 +93,8 @@ export const Address = ({ address, disableAddressLink, format, size = "base" }: 
   return (
     <div className="flex items-center">
       <div className="flex-shrink-0">
-        <BlockieAvatar
+        <BeamAvatar
           address={checkSumAddress}
-          ensImage={ensAvatar}
           size={(blockieSizeMap[size] * 24) / blockieSizeMap["base"]}
         />
       </div>
