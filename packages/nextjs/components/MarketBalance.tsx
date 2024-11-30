@@ -31,6 +31,7 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
     // Get and parse needed data
     const redeemedAmount = formatEther(accountShares[4]);
     const outcomeBalances = accountShares[5];
+    // Only for debug
     // console.log("outcomes", outcomes);
     // console.log("outcomeBalances", outcomeBalances);
 

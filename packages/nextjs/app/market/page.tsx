@@ -20,7 +20,8 @@ const MarketDetails: NextPage = () => {
     if (selectedAddress && !isSelected) {
         setMarketAddress(selectedAddress);
         setIsSelected(true);
-        console.log('Selected market:', selectedAddress)
+        // Only for debug
+        // console.log("Selected market:", selectedAddress);
     }
 
     return (

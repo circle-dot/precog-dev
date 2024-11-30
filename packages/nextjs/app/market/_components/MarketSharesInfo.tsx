@@ -33,7 +33,7 @@ export const MarketSharesInfo = ({address}: { address: Address }) => {
 
     // Parse and format received data to display
     const marketOutcomes = marketData[3].toString().split(",");
-    marketOutcomes.unshift(...[""]); // Add empty slot at the start to match outcome indexing
+    marketOutcomes.unshift(""); // Add empty slot at the start to match outcome indexing
     const outcomeBalances = []
     for (let i = 1; i < marketOutcomes.length; i++) {
         const outcome = marketOutcomes[i];
