@@ -11,6 +11,7 @@ import scaffoldConfig from "~~/scaffold.config";
 import {MarketBalance} from "~~/components/MarketBalance";
 import { usePrivy,useWallets } from "@privy-io/react-auth";
 import React, {useState} from "react";
+import {EmbedPreviewModal} from "~~/components/ui/EmbedPreviewModal";
 
 type MarketProps = {
     contractName: ContractName;
@@ -47,7 +48,7 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
     const toggleExtraInfo = () => {
         setShowExtraInfo(!showExtraInfo)
     };
-
+    const [showEmbedModal, setShowEmbedModal] = useState<boolean>(false);
     const tradeOptions = [1, 5, 10, 100];
     const [sharesToTrade, setSharesToTrade] = useState<number>(scaffoldConfig.marketSharesToTrade || 1);
     const updateSharesToTrade = () => {
@@ -59,18 +60,10 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
         }
     };
 
-    const generateIframeCode = () => {
-        const baseUrl = window.location.origin;
-        const iframeCode = `<iframe 
-            src="${baseUrl}/embed?address=${market.address}"
-            width="400"
-            height="140"
-            frameborder="0"
-        ></iframe>`;
-        
-        navigator.clipboard.writeText(iframeCode);
-        // You may want to add a notification here to show the code was copied
-    };
+    const handleShareClick = () => {
+        setShowEmbedModal(true);
+      };
+
 
     if (!marketData || !accountShares || isLoading) {
         return (
@@ -157,12 +150,13 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                     </Link>
                     <button 
                         className="btn btn-secondary btn-sm rounded-md" 
-                        onClick={generateIframeCode}
-                        title="Copy embed code"
+                        onClick={handleShareClick}
+                        title="Embed market"
                     >
                         <ShareIcon className="h-4 w-4"/>
                         Share
                     </button>
+
                 </div>
                 <div className="flex flex-col w-full items-center bg-base-300 py-1 rounded-md  overflow-auto">
                     <div className="flex flex-row gap-2 items-center">
@@ -209,6 +203,14 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                     </div>
                 </div>
             </div>
+            <EmbedPreviewModal
+              isOpen={showEmbedModal}
+              onClose={() => setShowEmbedModal(false)}
+              marketName={market.name}
+              marketAddress={market.address as string}
+              prediction={marketPrediction}
+              baseUrl={window.location.origin}
+            />
         </div>
     );
 };

@@ -5,6 +5,7 @@ import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 import { usePrecogMarketData } from "~~/hooks/usePrecogMarketData";
 import { useEffect, useState, Suspense } from "react";
 import PredictionMarketWidget from "~~/components/ui/prediction-market-widget";
+import React from "react";
 // Add type definition
 type MarketStateData = {
   id: bigint;
@@ -22,6 +23,41 @@ function EmbedContent() {
   const [baseUrl, setBaseUrl] = useState("");
   const searchParams = useSearchParams();
   const address = searchParams.get('address');
+  const referralCode = searchParams.get('ref');
+  
+  // Get theme parameters
+  const themeParam = searchParams.get('theme');
+  const bgColor = searchParams.get('bg');
+  const textColor = searchParams.get('text');
+  const accentColor = searchParams.get('accent');
+
+  // Determine theme configuration
+  const theme = React.useMemo(() => {
+    if (bgColor && textColor && accentColor) {
+      // Custom theme
+      return {
+        backgroundColor: decodeURIComponent(bgColor),
+        textColor: decodeURIComponent(textColor),
+        accentColor: decodeURIComponent(accentColor)
+      };
+    }
+
+    // Preset themes
+    if (themeParam === 'light') {
+      return {
+        backgroundColor: '#FFFFFF',
+        textColor: '#1C2537',
+        accentColor: '#ff6b4a'
+      };
+    }
+
+    // Default dark theme
+    return {
+      backgroundColor: '#1C2537',
+      textColor: '#FFFFFF',
+      accentColor: '#ff6b4a'
+    };
+  }, [themeParam, bgColor, textColor, accentColor]);
 
   useEffect(() => {
     setBaseUrl(window.location.origin);
@@ -62,12 +98,9 @@ function EmbedContent() {
         outcomeName={outcome}
         imageUrl="/precogLogo.png"
         marketUrl={`${baseUrl}/market?address=${address}`}
+        referralCode={referralCode || undefined}
         resolution={marketStateData?.result}
-        theme={{
-          backgroundColor: '#1C2537',
-          textColor: '#FFFFFF',
-          accentColor: '#ff6b4a'
-        }}
+        theme={theme}
       />
     </div>
   );
