@@ -5,6 +5,7 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
 import { TransactorFuncOptions } from "~~/utils/scaffold-eth/contract";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 /**
  * Custom notification content for TXs.
@@ -37,15 +38,40 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
   const { data } = useWalletClient();
   const { authenticated } = usePrivy();
   const { wallets } = useWallets();
+  const { targetNetwork } = useTargetNetwork();
   const activePrivyWallet = wallets[0];
+  
+  // Track if a network switch is in progress
+  let isNetworkSwitching = false;
 
   // If using Privy wallet
   if (authenticated && activePrivyWallet) {
     const getPrivyWalletClient = async () => {
+      // First ensure we're on the right network
+      const currentChainId = parseInt(activePrivyWallet.chainId);
+      if (currentChainId !== targetNetwork.id && !isNetworkSwitching) {
+        try {
+          isNetworkSwitching = true;
+          await activePrivyWallet.switchChain(targetNetwork.id);
+          // Wait a bit for the network switch to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error: any) {
+          // Ignore the "already pending" error
+          if (!error.message?.includes("already pending")) {
+            notification.error("Failed to switch network");
+            throw error;
+          }
+          // Wait for pending switch to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } finally {
+          isNetworkSwitching = false;
+        }
+      }
+
       const provider = await activePrivyWallet.getEthereumProvider();
       return createWalletClient({
         account: activePrivyWallet.address as `0x${string}`,
-        chain: wagmiConfig.chains[0],
+        chain: targetNetwork,
         transport: custom(provider),
       });
     };
