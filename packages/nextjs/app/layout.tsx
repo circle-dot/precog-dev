@@ -1,4 +1,3 @@
-import "@rainbow-me/rainbowkit/styles.css";
 import {Metadata, Viewport} from "next";
 import {ScaffoldEthAppWithProviders} from "~~/components/ScaffoldEthAppWithProviders";
 import {ThemeProvider} from "~~/components/ThemeProvider";

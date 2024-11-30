@@ -95,6 +95,7 @@ const CreateMarket: NextPage = () => {
                 const [hours, minutes] = startTime.split(":").map(Number);
                 const newStartDate = new Date(Date.UTC(year, (month - 1), day, hours, minutes));
                 startTimestamp = Math.round(newStartDate.getTime() / 1000);
+                // Only for debug
                 // console.log("New start date:", newStartDate, startTimestamp, startDate, startTime);
             }
             if (endDate && endTime) {
@@ -102,6 +103,7 @@ const CreateMarket: NextPage = () => {
                 const [hours, minutes] = endTime.split(":").map(Number);
                 const newEndDate = new Date(Date.UTC(year, (month - 1), day, hours, minutes));
                 endTimestamp = Math.round(newEndDate.getTime() / 1000);
+                // Only for debug
                 // console.log("New end date:", newEndDate, endTimestamp, endDate, endTime);
             }
             if (outcomes) {

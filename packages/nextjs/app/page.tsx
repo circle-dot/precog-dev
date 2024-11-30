@@ -7,6 +7,8 @@ import {ContractName} from "~~/utils/scaffold-eth/contract";
 import {ContractCard} from "~~/app/debug/_components/contract/ContractCard";
 import {PrecogMarket} from "~~/components/PrecogMarket";
 import React from "react";
+import {Header} from "~~/components/Header";
+import {Footer} from "~~/components/Footer";
 
 const contractsData = getLatestContracts();
 const contractNames = Object.keys(contractsData) as ContractName[];
@@ -22,6 +24,7 @@ const Home: NextPage = () => {
 
     return (
         <>
+            <Header />
             <div className="flex items-center flex-col flex-grow pt-2">
                 <div className="w-full px-12">
                     <h1 className="text-center mb-3">
@@ -48,6 +51,7 @@ const Home: NextPage = () => {
                     </div>
                 </div>
             </div>
+            <Footer />
         </>
     );
 };

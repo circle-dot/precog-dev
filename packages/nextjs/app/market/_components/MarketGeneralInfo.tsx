@@ -48,18 +48,17 @@ export const MarketGeneralInfo = ({address}: { address: AddressType }) => {
     const endDate = new Date(Number(ends) * 1000).toUTCString();
 
     const outcomeLabels = outcomes.toString().split(",");
-    outcomeLabels.unshift(...[""]); // Add empty slot at the start to match outcome indexing
+    outcomeLabels.unshift(""); // Add empty slot at the start to match outcome indexing
     let outcomeDetails = "";
     for (let i = 1; i < outcomeLabels.length; i++) {
         outcomeDetails += ` [${i}] ${outcomeLabels[i]} , `;
     }
     outcomeDetails = outcomeDetails.substring(0, outcomeDetails.length - 2);
 
-    const marketResult = result && Number(result) > 0 ? (Number(result) == 1 ? 'YES' : 'NO') : '-';
-
+    const resultIndex = Number(result);
+    const marketResult = result && resultIndex > 0 ? `[${resultIndex}] ${outcomeLabels[resultIndex]}` : '-';
 
     const closedDate = closed ? new Date(Number(closed) * 1000).toUTCString() : '-';
-
 
     return (
         <>

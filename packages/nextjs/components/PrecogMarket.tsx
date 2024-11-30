@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ChartBarSquareIcon, InformationCircleIcon} from "@heroicons/react/24/outline";
+import {ChartBarSquareIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import {Address} from "~~/components/scaffold-eth";
 import {ContractName} from "~~/utils/scaffold-eth/contract";
 import {PrecogBalance} from "~~/components/PrecogBalance";
@@ -9,9 +9,10 @@ import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {usePrecogMarketData} from "~~/hooks/usePrecogMarketData";
 import scaffoldConfig from "~~/scaffold.config";
 import {MarketBalance} from "~~/components/MarketBalance";
-import React, {useState} from "react";
 import { usePrivy,useWallets } from "@privy-io/react-auth";
-
+import React, {useState} from "react";
+import {EmbedPreviewModal} from "~~/components/ui/EmbedPreviewModal";
+import { Code } from "lucide-react";
 type MarketProps = {
     contractName: ContractName;
     id: number;
@@ -22,7 +23,8 @@ type MarketProps = {
  */
 export const PrecogMarket = ({contractName, id}: MarketProps) => {
     const {data: marketData, isLoading: isLoading} = useScaffoldReadContract({
-        contractName: contractName, functionName: "markets", args: [BigInt(id)]
+        // @ts-ignore
+        contractName: contractName, functionName: "markets", args: [BigInt(id)] as const
     });
     const marketStateData = usePrecogMarketData(marketData?.[7]);
     // @ts-ignore
@@ -38,14 +40,15 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
     const walletAddress = (user?.wallet?.address || wallets[0]?.address) as `0x${string}`;
 
     const {data: accountShares} = useScaffoldReadContract({
-        contractName: contractName, functionName: "marketAccountShares", args: [BigInt(id), walletAddress]
+        // @ts-ignore
+        contractName: contractName, functionName: "marketAccountShares", args: [BigInt(id), walletAddress] as const
     });
 
     const [showExtraInfo, setShowExtraInfo] = useState<boolean>(false);
     const toggleExtraInfo = () => {
         setShowExtraInfo(!showExtraInfo)
     };
-
+    const [showEmbedModal, setShowEmbedModal] = useState<boolean>(false);
     const tradeOptions = [1, 5, 10, 100];
     const [sharesToTrade, setSharesToTrade] = useState<number>(scaffoldConfig.marketSharesToTrade || 1);
     const updateSharesToTrade = () => {
@@ -56,6 +59,11 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
             setSharesToTrade(tradeOptions[newIndex]);
         }
     };
+
+    const handleShareClick = () => {
+        setShowEmbedModal(true);
+      };
+
 
     if (!marketData || !accountShares || isLoading) {
         return (
@@ -140,6 +148,15 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                             Market Details
                         </button>
                     </Link>
+                    <button 
+                        className="btn btn-secondary btn-sm rounded-md" 
+                        onClick={handleShareClick}
+                        title="Embed market"
+                    >
+                        <Code className="h-4 w-4"/>
+                        Share
+                    </button>
+
                 </div>
                 <div className="flex flex-col w-full items-center bg-base-300 py-1 rounded-md  overflow-auto">
                     <div className="flex flex-row gap-2 items-center">
@@ -154,13 +171,13 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                             <button className="btn btn-xs" onClick={updateSharesToTrade}>{sharesToTradeText}</button>
                         </div>
                         <div className="flex m-auto gap-1 px-2">
-                            {marketOutcomes.map((label, index) => (
+                            {marketOutcomes.map((label: string, index: number) => (
                                 <MarketBuy key={index} marketId={id} marketOutcome={index + 1}
                                            outcomeLabel={label} sharesToTrade={sharesToTrade}/>
                             ))}
                         </div>
                         <div className="flex m-auto gap-2 px-2">
-                            {marketOutcomes.map((label, index) => (
+                            {marketOutcomes.map((label: string, index: number) => (
                                 <MarketSell key={index} marketId={id} marketOutcome={index + 1} outcomeLabel={label}
                                             outcomeBalance={outcomeBalances[index + 1]}
                                             sharesToTrade={sharesToTrade}/>
@@ -186,6 +203,14 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                     </div>
                 </div>
             </div>
+            <EmbedPreviewModal
+              isOpen={showEmbedModal}
+              onClose={() => setShowEmbedModal(false)}
+              marketName={market.name}
+              marketAddress={market.address as string}
+              prediction={marketPrediction}
+              baseUrl={window.location.origin}
+            />
         </div>
     );
 };

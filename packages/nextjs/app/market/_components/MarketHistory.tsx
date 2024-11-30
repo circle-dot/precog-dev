@@ -33,7 +33,7 @@ export const MarketHistory = ({address}: { address: Address }) => {
 
     // Decode chain data
     const outcomeLabels = marketData[3].toString().split(",");
-    outcomeLabels.unshift(...[""]); // Add empty slot at the start to match outcome indexing
+    outcomeLabels.unshift(""); // Add empty slot at the start to match outcome indexing
     let eventLogs;
     try {
         eventLogs = contractLogs.map((log) => {
@@ -55,31 +55,35 @@ export const MarketHistory = ({address}: { address: Address }) => {
         let eventDetails;
         if (log.eventName == "SharesBought") {
             const account = log.args.account;
-            const outcome = log.transaction.functionArgs ? Number(log.transaction.functionArgs[1]) : 0;
+            const outcome = log.args.outcome ? Number(log.args.outcome) : 0;
             const amount = Number(log.args.amount) / 10 ** 18;
             const tokens = (Number(log.args.tokenIn) / 10 ** 18).toFixed(2);
-            const outcomeLabel = outcomeLabels[outcome] || " NN";
-            eventDetails = `${amount} ${outcomeLabel}, In: ${tokens} PRE, Acc: ${account}`
+            const outcomeLabel = outcomeLabels[outcome] || "NN";
+            eventDetails = `${amount} ${outcomeLabel}, In: ${tokens} PRE, Acc: ${account}`;
 
         } else if (log.eventName == "SharesSold") {
             const account = log.args.account;
-            const outcome = log.transaction.functionArgs ? Number(log.transaction.functionArgs[1]) : 0;
+            const outcome = log.args.outcome ? Number(log.args.outcome) : 0;
             const amount = Number(log.args.amount) / 10 ** 18;
             const tokens = (Number(log.args.tokenOut) / 10 ** 18).toFixed(2);
-            const outcomeLabel = outcomeLabels[outcome] || " NN";
+            const outcomeLabel = outcomeLabels[outcome] || "NN";
             eventDetails = `${amount} ${outcomeLabel}, Out: ${tokens} PRE, Acc: ${account}`
 
         } else if (log.eventName == "SharesRedeemed") {
+            // Dev note: keeping this flow independent to customize it in the future
             const account = log.args.account;
+            const outcome = log.args.outcome ? Number(log.args.outcome) : 0;
             const amount = Number(log.args.amount) / 10 ** 18;
             const tokens = (Number(log.args.tokenOut) / 10 ** 18).toFixed(2);
-            eventDetails = `${amount}, Out: ${tokens} PRE, Acc: ${account}`
+            const outcomeLabel = outcomeLabels[outcome] || "NN";
+            eventDetails = `${amount} ${outcomeLabel}, Out: ${tokens} PRE, Acc: ${account}`;
 
         } else {
             eventDetails = `${log.args}`
         }
 
         events.push({date: eventDate, type: eventType, details: eventDetails, txHash: txHash});
+        // Only for debug
         // console.log("LOG:", log);
     }
     events.reverse();
