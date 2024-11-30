@@ -37,7 +37,7 @@ export default function PredictionMarketWidget({
   console.log(outcomeName)
   return (
     <div 
-      className="rounded-xl p-4 w-[400px] h-[140px] relative flex flex-col justify-between"
+      className=" p-4 w-[400px] h-[140px] relative flex flex-col justify-between"
       style={{ backgroundColor: theme.backgroundColor }}
     >
       {/* Top section with image and question */}

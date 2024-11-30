@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {ChartBarSquareIcon, InformationCircleIcon, ShareIcon} from "@heroicons/react/24/outline";
+import {ChartBarSquareIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import {Address} from "~~/components/scaffold-eth";
 import {ContractName} from "~~/utils/scaffold-eth/contract";
 import {PrecogBalance} from "~~/components/PrecogBalance";
@@ -12,7 +12,7 @@ import {MarketBalance} from "~~/components/MarketBalance";
 import { usePrivy,useWallets } from "@privy-io/react-auth";
 import React, {useState} from "react";
 import {EmbedPreviewModal} from "~~/components/ui/EmbedPreviewModal";
-
+import { Code } from "lucide-react";
 type MarketProps = {
     contractName: ContractName;
     id: number;
@@ -153,7 +153,7 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                         onClick={handleShareClick}
                         title="Embed market"
                     >
-                        <ShareIcon className="h-4 w-4"/>
+                        <Code className="h-4 w-4"/>
                         Share
                     </button>
 
