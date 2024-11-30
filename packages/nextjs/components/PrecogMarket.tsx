@@ -9,8 +9,8 @@ import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {usePrecogMarketData} from "~~/hooks/usePrecogMarketData";
 import scaffoldConfig from "~~/scaffold.config";
 import {MarketBalance} from "~~/components/MarketBalance";
-import React, {useState} from "react";
 import { usePrivy,useWallets } from "@privy-io/react-auth";
+import React, {useState} from "react";
 
 type MarketProps = {
     contractName: ContractName;
@@ -22,7 +22,8 @@ type MarketProps = {
  */
 export const PrecogMarket = ({contractName, id}: MarketProps) => {
     const {data: marketData, isLoading: isLoading} = useScaffoldReadContract({
-        contractName: contractName, functionName: "markets", args: [BigInt(id)]
+        // @ts-ignore
+        contractName: contractName, functionName: "markets", args: [BigInt(id)] as const
     });
     const marketStateData = usePrecogMarketData(marketData?.[7]);
     // @ts-ignore
@@ -38,7 +39,8 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
     const walletAddress = (user?.wallet?.address || wallets[0]?.address) as `0x${string}`;
 
     const {data: accountShares} = useScaffoldReadContract({
-        contractName: contractName, functionName: "marketAccountShares", args: [BigInt(id), walletAddress]
+        // @ts-ignore
+        contractName: contractName, functionName: "marketAccountShares", args: [BigInt(id), walletAddress] as const
     });
 
     const [showExtraInfo, setShowExtraInfo] = useState<boolean>(false);
@@ -62,7 +64,7 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
         const iframeCode = `<iframe 
             src="${baseUrl}/embed?address=${market.address}"
             width="400"
-            height="150"
+            height="140"
             frameborder="0"
         ></iframe>`;
         
@@ -175,13 +177,13 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                             <button className="btn btn-xs" onClick={updateSharesToTrade}>{sharesToTradeText}</button>
                         </div>
                         <div className="flex m-auto gap-1 px-2">
-                            {marketOutcomes.map((label, index) => (
+                            {marketOutcomes.map((label: string, index: number) => (
                                 <MarketBuy key={index} marketId={id} marketOutcome={index + 1}
                                            outcomeLabel={label} sharesToTrade={sharesToTrade}/>
                             ))}
                         </div>
                         <div className="flex m-auto gap-2 px-2">
-                            {marketOutcomes.map((label, index) => (
+                            {marketOutcomes.map((label: string, index: number) => (
                                 <MarketSell key={index} marketId={id} marketOutcome={index + 1} outcomeLabel={label}
                                             outcomeBalance={outcomeBalances[index + 1]}
                                             sharesToTrade={sharesToTrade}/>
