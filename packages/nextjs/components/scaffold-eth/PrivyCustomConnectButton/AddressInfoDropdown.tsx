@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
-import { getAddress } from "viem";
+import { getAddress, isAddress } from "viem";
 import { Address } from "viem";
+import { normalize } from "viem/ens";
 import { usePrivy } from "@privy-io/react-auth";
+import { useEnsAvatar, useEnsName } from "wagmi";
 import {
   ArrowLeftOnRectangleIcon,
   ArrowTopRightOnSquareIcon,
@@ -20,32 +22,63 @@ type AddressInfoDropdownProps = {
   address: Address;
   blockExplorerAddressLink: string | undefined;
   displayName: string;
-  ensAvatar?: string;
 };
 
 export const AddressInfoDropdown = ({
   address,
-  ensAvatar,
   displayName,
   blockExplorerAddressLink,
 }: AddressInfoDropdownProps) => {
   const { logout } = usePrivy();
   const checkSumAddress = getAddress(address);
   const [addressCopied, setAddressCopied] = useState(false);
+  const [ens, setEns] = useState<string | null>();
+  const [ensAvatar, setEnsAvatar] = useState<string | null>();
   const dropdownRef = useRef<HTMLDetailsElement>(null);
+
+  const { data: fetchedEns } = useEnsName({
+    address: checkSumAddress,
+    chainId: 1,
+    query: {
+      enabled: isAddress(checkSumAddress ?? ""),
+    },
+  });
+
+  const { data: fetchedEnsAvatar } = useEnsAvatar({
+    name: fetchedEns ? normalize(fetchedEns) : undefined,
+    chainId: 1,
+    query: {
+      enabled: Boolean(fetchedEns),
+      gcTime: 30_000,
+    },
+  });
+
+  useEffect(() => {
+    setEns(fetchedEns);
+  }, [fetchedEns]);
+
+  useEffect(() => {
+    setEnsAvatar(fetchedEnsAvatar);
+  }, [fetchedEnsAvatar]);
   
   const closeDropdown = () => {
     dropdownRef.current?.removeAttribute("open");
   };
   useOutsideClick(dropdownRef, closeDropdown);
 
+  const displayAddress = ens || (checkSumAddress?.slice(0, 6) + "..." + checkSumAddress?.slice(-4));
+
   return (
     <>
       <details ref={dropdownRef} className="dropdown dropdown-end leading-3">
         <summary tabIndex={0} className="btn btn-secondary btn-sm pl-0 pr-2 shadow-md dropdown-toggle gap-0 !h-auto">
-          <BeamAvatar address={checkSumAddress} size={30} ensImage={ensAvatar} />
+          {ensAvatar ? (
+            <img src={ensAvatar} alt={ens || address} className="w-[30px] h-[30px] rounded-full" />
+          ) : (
+            <BeamAvatar address={checkSumAddress} size={30} />
+          )}
           <span className="ml-2 mr-1">
-            {isENS(displayName) ? displayName : checkSumAddress?.slice(0, 6) + "..." + checkSumAddress?.slice(-4)}
+            {isENS(displayName) ? displayName : displayAddress}
           </span>
           <ChevronDownIcon className="h-6 w-4 ml-2 sm:ml-0" />
         </summary>

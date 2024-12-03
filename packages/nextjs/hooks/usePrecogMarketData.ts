@@ -1,33 +1,49 @@
 import {Address, formatEther} from "viem";
-import {useReadContract} from "wagmi";
+import {useReadContracts} from "wagmi";
 import {useScaffoldContract, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 
 export const usePrecogMarketData = (address: Address | string | undefined) => {
     const {data: marketContract} = useScaffoldContract({contractName: "PrecogMarketV7"});
-
-    const market = address ? address as Address : '0x0000000000000000000000000000000000000000';
+    const market = address ? (address as Address) : '0x0000000000000000000000000000000000000000';
     const ABI = marketContract ? marketContract.abi : [];
 
-    // Get general market data
-    const {data: marketId} = useReadContract({abi: ABI, address: market, functionName: 'id'});
-    const {data: owner} = useReadContract({abi: ABI, address: market, functionName: 'owner'});
-    const {data: token} = useReadContract({abi: ABI, address: market, functionName: 'token'});
-    const {data: starts} = useReadContract({abi: ABI, address: market, functionName: 'startTimestamp'});
-    const {data: ends} = useReadContract({abi: ABI, address: market, functionName: 'endTimestamp'});
-    const {data: oracle} = useReadContract({abi: ABI, address: market, functionName: 'oracle'});
-    const {data: closed} = useReadContract({abi: ABI, address: market, functionName: 'closeTimestamp'});
-    const {data: result} = useReadContract({abi: ABI, address: market, functionName: 'result'});
+    // Create multicall request for all market data
+    const marketRequests = [
+        {address: market, abi: ABI, functionName: 'id'},
+        {address: market, abi: ABI, functionName: 'owner'},
+        {address: market, abi: ABI, functionName: 'token'},
+        {address: market, abi: ABI, functionName: 'startTimestamp'},
+        {address: market, abi: ABI, functionName: 'endTimestamp'},
+        {address: market, abi: ABI, functionName: 'oracle'},
+        {address: market, abi: ABI, functionName: 'closeTimestamp'},
+        {address: market, abi: ABI, functionName: 'result'}
+    ] as const;
 
-    // Get prices and outcome labels
+    const {data: marketResults} = useReadContracts({
+        contracts: marketRequests
+    });
+
     const {data: marketMetadata} = useScaffoldReadContract({
-        contractName: "PrecogMasterV7", functionName: "markets", args: [marketId]
-    });
-    const {data: marketPrices, isLoading: isLoading} = useScaffoldReadContract({
-        contractName: "PrecogMasterV7", functionName: "marketPrices", args: [marketId]
+        contractName: "PrecogMasterV7", functionName: "markets", args: [marketResults?.[0]?.result]
     });
 
-    // Check that all data was loaded (currently avoiding any calculation when market is not closed)
-    if (isLoading || !marketMetadata || !marketPrices || result === undefined) return {};
+    const {data: marketPrices, isLoading} = useScaffoldReadContract({
+        contractName: "PrecogMasterV7", functionName: "marketPrices", args: [marketResults?.[0]?.result]
+    });
+
+    // Check that all data was loaded
+    if (isLoading || !marketMetadata || !marketPrices || !marketResults) return {};
+
+    const [
+        {result: marketId},
+        {result: owner},
+        {result: token},
+        {result: starts},
+        {result: ends},
+        {result: oracle},
+        {result: closed},
+        {result: result}
+    ] = marketResults;
 
     const startDate = new Date(Number(starts) * 1000).toUTCString();
     const endDate = new Date(Number(ends) * 1000).toUTCString();
@@ -35,34 +51,31 @@ export const usePrecogMarketData = (address: Address | string | undefined) => {
 
     let marketOutcomes = marketMetadata[3].toString().split(",");
     marketOutcomes.unshift(""); // Add empty slot at the start to match market prices indexing
+
     let predictionOutcome = "NN";
     let predictionPrice = 0;
     for (let i = 1; i < marketOutcomes.length; i++) {
         const outcome = marketOutcomes[i];
         const buyPrice = Number(formatEther(marketPrices[0][i]));
 
-        // Calculate prediction (higher outcome one share price)
         if (buyPrice > predictionPrice) {
             predictionOutcome = outcome;
             predictionPrice = buyPrice;
         }
     }
+
     const prediction = `${predictionOutcome} (${(predictionPrice * 100).toFixed(1)}%)`;
     const marketResult = result && Number(result) > 0 ? marketOutcomes[Number(result)] : '';
 
-    const marketData = {
+    return {
         id: marketId,
-        owner: owner,
-        token: token,
-        startDate: startDate,
-        endDate: endDate,
-        oracle: oracle,
-        prediction: prediction,
+        owner,
+        token,
+        startDate,
+        endDate,
+        oracle,
+        prediction,
         result: marketResult,
-        closedDate: closedDate
+        closedDate
     };
-    // Only for debug
-    // console.log('Market Data:', marketData);
-
-    return marketData;
 };
