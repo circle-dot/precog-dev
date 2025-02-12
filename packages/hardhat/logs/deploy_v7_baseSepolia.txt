@@ -14,8 +14,7 @@ marto@MR1:/mnt/e/dev/precog-backend$ yarn deploy --network baseSepolia
      Owner: 0x16D24dE99e3282F153B72229a3c23959cC20FdA3
 
 
-deploying "PrecogMasterV7" (tx: 0x15837e5776142d9de6f0a1a65963a483f238b2566d0f60663c1122d1c52f82be)...:
- deployed at 0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4 with 4083814 gas
+deploying "PrecogMasterV7" (tx: 0x15837e5776142d9de6f0a1a65963a483f238b2566d0f60663c1122d1c52f82be)...: deployed at 0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4 with 4083814 gas
 
 > PrecogMasterV7 found! (new deploy: true)
      Contract: 0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4
@@ -23,8 +22,7 @@ deploying "PrecogMasterV7" (tx: 0x15837e5776142d9de6f0a1a65963a483f238b2566d0f60
       markets: 0n
 
 
-deploying "PrecogMarketV7" (tx: 0x02fc255699cefd78b653e129d551e40c4164e5c740ef6f2d1cbafe6d7d82f21b)...:
- deployed at 0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE with 3538113 gas
+deploying "PrecogMarketV7" (tx: 0x02fc255699cefd78b653e129d551e40c4164e5c740ef6f2d1cbafe6d7d82f21b)...: deployed at 0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE with 3538113 gas
 
 > PrecogMarketV7 found! (new deploy: true)
      Contract: 0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE

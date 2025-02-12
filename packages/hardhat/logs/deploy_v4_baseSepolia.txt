@@ -14,15 +14,13 @@ No need to generate any newer typings.
   Decimals: 18n
      Owner: 0x3f408C67cE37eA69e1FEd59ABA78389EdA3d5b9c
 
-deploying "PrecogMasterV4" (tx: 0xc0b4cec6c60d1d68d30674bc7f931b6c899081611e61833d604e249914dd5ff5)...:
- deployed at 0x1eB088E48341F22385c14E2bD25D7Eccc6BB496B with 3274437 gas
+deploying "PrecogMasterV4" (tx: 0xc0b4cec6c60d1d68d30674bc7f931b6c899081611e61833d604e249914dd5ff5)...: deployed at 0x1eB088E48341F22385c14E2bD25D7Eccc6BB496B with 3274437 gas
 > PrecogMasterV4 found!
      Contract: 0x1eB088E48341F22385c14E2bD25D7Eccc6BB496B
         token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
       markets: 0n
 
-deploying "PrecogMarketV4" (tx: 0x11ff7bd2c888c479af96e58665c610961baf77e3354640217801d3a640321638)...:
- deployed at 0xE1781EF8d232b31aADB34E313d129b56c0913015 with 3365436 gas
+deploying "PrecogMarketV4" (tx: 0x11ff7bd2c888c479af96e58665c610961baf77e3354640217801d3a640321638)...: deployed at 0xE1781EF8d232b31aADB34E313d129b56c0913015 with 3365436 gas
 > PrecogMarketV4 found!
      Contract: 0xE1781EF8d232b31aADB34E313d129b56c0913015
         token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888

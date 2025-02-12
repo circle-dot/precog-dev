@@ -201,7 +201,7 @@ contract PrecogMasterV7 is AccessControl {
     }
 
     /**
-     * @notice Gets market buy and sell prices for all outcomes in the desired market
+     * @notice Gets market buy and sell prices for all outcomes of the desired market
      * @dev Helper function to fast calculate market prediction and spreads
      * @param marketId unique market identifier to trade
      * @return buyPrices buy price of 1 share for all outcomes (indexed by outcome)
@@ -254,7 +254,7 @@ contract PrecogMasterV7 is AccessControl {
     }
 
     /**
-     * @notice Gets the current market state info
+     * @notice Gets the current market state info of the desired market
      * @dev Helper function to show general market shares info
      * @param marketId unique market identifier to trade
      * @return totalShares Current total shares minted for all outcomes of the market
@@ -267,6 +267,22 @@ contract PrecogMasterV7 is AccessControl {
     returns (int128 totalShares, int128[] memory sharesBalances, int128 cost, uint256 totalBuys, uint256 totalSells) {
         IPrecogMarket createdMarket = IPrecogMarket(markets[marketId].market);
         (totalShares, sharesBalances, cost, totalBuys, totalSells) = createdMarket.getMarketInfo();
+    }
+
+    /**
+     * @notice Gets the collateral info of the desired market
+     * @dev Helper function to show data of a collateral of a market
+     * @param marketId unique market identifier to trade
+     * @return collateral Contract address of the market
+     * @return name Token name of the market
+     * @return symbol Token symbol of the market
+     * @return decimals Token decimals of the market
+     */
+    function marketCollateralInfo(uint256 marketId) external view
+    returns (address collateral, string memory name, string memory symbol, uint8 decimals) {
+        IPrecogMarket createdMarket = IPrecogMarket(markets[marketId].market);
+        IPrecogToken collateral = IPrecogToken(createdMarket.token());
+        return (address(collateral), collateral.name(), collateral.symbol(), collateral.decimals());
     }
 
     /**

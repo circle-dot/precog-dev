@@ -21,7 +21,7 @@ const aux2PrivateKey: string = "0x7c852118294e51e653712a81e05800f419141751be58f6
 
 // If not set, it uses the hardhat account private key.
 const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY ?? ciPrivateKey;
-// If not set, it uses a public api key
+// If not set, it uses a Scafold-eth public api key
 const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 const basescanApiKey = process.env.BASESCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
@@ -30,17 +30,6 @@ const basescanApiKey = process.env.BASESCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68
 const config: HardhatUserConfig = {
   solidity: {
     compilers : [
-      //   // To enable this, use: "@openzeppelin/contracts": "~4.8.1" on package.json
-      // {
-      //   version: "0.8.17",
-      //   settings: {
-      //     optimizer: {
-      //       enabled: true,
-      //       // https://docs.soliditylang.org/en/latest/using-the-compiler.html#optimizer-options
-      //       runs: 200,
-      //     },
-      //   },
-      // },
       {
         version: "0.7.6",
         settings: {
@@ -64,10 +53,11 @@ const config: HardhatUserConfig = {
     hardhat: {
       // allowUnlimitedContractSize: true,
       forking: {
-        // url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,  // Ethereum Mainnet
+        // url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
         // url: `https://base-mainnet.g.alchemy.com/v2/${providerApiKey}`,  // Base Mainnet
-        url: `https://base-sepolia.g.alchemy.com/v2/${providerApiKey}`,  // Sepolia Base Testnet
-        // url: "https://rpc.ankr.com/filecoin"  // Filecoin Mainnet
+        // url: `https://base-sepolia.g.alchemy.com/v2/${providerApiKey}`,  // Base Sepolia
+        url: `https://worldchain-mainnet.g.alchemy.com/v2/${providerApiKey}`,  // World Mainnet
+        // url: `https://worldchain-sepolia.g.alchemy.com/v2/${providerApiKey}`,  // World Sepolia
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
       accounts: [
@@ -126,11 +116,19 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
     },
     base: {
-      url: "https://mainnet.base.org",
+      url: `https://base-mainnet.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
+    },
+    world: {
+      url: `https://worldchain-mainnet.g.alchemy.com/v2/${providerApiKey}`,
+      accounts: [deployerPrivateKey],
+    },
+    worldSepolia: {
+      url: `https://worldchain-sepolia.g.alchemy.com/v2/${providerApiKey}`,
       accounts: [deployerPrivateKey],
     },
     baseSepolia: {
-      url: "https://base-sepolia.g.alchemy.com/v2/${providerApiKey}",
+      url: `https://base-sepolia.g.alchemy.com/v2/${providerApiKey}`,
       accounts: [deployerPrivateKey],
     },
     scrollSepolia: {

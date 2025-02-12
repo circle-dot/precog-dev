@@ -2,7 +2,6 @@ import {useState} from "react";
 import {Address} from "viem";
 import {useReadContract, useWriteContract} from "wagmi";
 import {useScaffoldContract, useTransactor} from "~~/hooks/scaffold-eth";
-import {usePrecogLogs} from "~~/hooks/usePrecogLogs";
 
 export const MarketRedeemBatch = ({marketAddress, connectedAddress}: {
     marketAddress: Address,
@@ -10,20 +9,13 @@ export const MarketRedeemBatch = ({marketAddress, connectedAddress}: {
 }) => {
     const {data: marketContract} = useScaffoldContract({contractName: "PrecogMarketV7"});
     const ABI = marketContract ? marketContract.abi : [];
-    const {data: marketId} = useReadContract({abi: ABI, address: marketAddress, functionName: 'id'});
     const {data: oracle} = useReadContract({abi: ABI, address: marketAddress, functionName: 'oracle'});
-    const {data: marketResult, isLoading: isMarketResultLoading} = useReadContract({
-            abi: ABI, address: marketAddress, functionName: 'result'
-        }
-    );
 
-    const contractLogs = usePrecogLogs(marketAddress);
     const [accounts, setAccounts] = useState<string>("");
-    const [wasAutoFilled, setWasAutoFilled] = useState<boolean>(false);
     const {writeContractAsync, isPending} = useWriteContract();
     const writeTx = useTransactor();
 
-    if (marketId == undefined || connectedAddress == undefined || oracle == undefined || isMarketResultLoading) {
+    if (connectedAddress == undefined || oracle == undefined) {
         return (
             <span>Fetching data...</span>
         )
@@ -40,7 +32,7 @@ export const MarketRedeemBatch = ({marketAddress, connectedAddress}: {
             address: marketAddress,
             abi: ABI,
             functionName: "redeemBatch",
-            args: [accountBatch],
+            args: [accountBatch as `0x${string}`[]],
         });
     }
 
@@ -51,26 +43,6 @@ export const MarketRedeemBatch = ({marketAddress, connectedAddress}: {
             console.log("Unexpected error in writeTx", e);
         }
     };
-
-    // Auto-detect result winners to fill Redeem Batch
-    if (marketResult != undefined && !wasAutoFilled && contractLogs.length > 0) {
-        const inputTag = document.getElementById("batchAccounts") as HTMLInputElement;
-        if (inputTag && marketResult > 0) {
-            console.log('Redeem Batch: auto detection started!');
-            inputTag.disabled = true;
-            const filteredLogs = contractLogs.filter(log => log.transaction.functionArgs?.[1] === marketResult);
-            const logAccounts = filteredLogs.map(l => l.transaction.from);
-            const uniqueAccounts = Array.from(new Set(logAccounts));
-            if (uniqueAccounts.length > 0) {
-                const accountsText = uniqueAccounts.toString()
-                setAccounts(accountsText);
-                setWasAutoFilled(true);
-                inputTag.value = accountsText;
-                inputTag.disabled = false;
-                console.log('Redeem Batch (auto detected):', uniqueAccounts);
-            }
-        }
-    }
 
     return (
         <>

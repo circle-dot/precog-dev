@@ -8,6 +8,21 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  */
 interface IPrecogToken is IERC20 {
     /**
+     * @dev Returns the name of the token.
+     */
+    function name() external view returns (string memory);
+
+    /**
+     * @dev Returns the symbol of the token.
+     */
+    function symbol() external view returns (string memory);
+
+    /**
+     * @dev Returns the decimals places of the token.
+     */
+    function decimals() external view returns (uint8);
+
+    /**
      * @notice Mint new tokens for the specified address (limited to only owner)
      * @param to The address of the new tokens receiver
      * @param amount The amount of tokens to be minted

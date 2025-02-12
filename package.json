@@ -33,6 +33,7 @@
     "precommit": "lint-staged",
     "prepare": "install-self-peers -- --ignore-scripts",
     "start": "yarn workspace @se-2/nextjs dev",
+    "dev": "yarn workspace @se-2/nextjs dev",
     "lint": "yarn hardhat:lint && yarn next:lint",
     "clean": "yarn hardhat:clean",
     "test": "yarn hardhat:test",
@@ -48,8 +49,8 @@
   },
   "devDependencies": {
     "lint-staged": "~13.2.2",
-    "next": "~14.2.6",
-    "vercel": "~35.0.2"
+    "next": "~14.2.22",
+    "vercel": "~39.2.2"
   },
   "packageManager": "yarn@3.2.3"
 }

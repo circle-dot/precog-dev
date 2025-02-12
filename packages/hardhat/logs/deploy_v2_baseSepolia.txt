@@ -18,15 +18,13 @@ No need to generate any newer typings.
      Owner: 0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E
 
 
-deploying "ConditionalTokens" (tx: 0x70eca15a7c7397b3236e81c70b8b27526cfe5c0cfc4070c5f835fd9f52bb4e34)...:
- deployed at 0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b with 3581192 gas
+deploying "ConditionalTokens" (tx: 0x70eca15a7c7397b3236e81c70b8b27526cfe5c0cfc4070c5f835fd9f52bb4e34)...: deployed at 0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b with 3581192 gas
 
 > ConditionalTokens deployed!
      Contract: 0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b
 
 
-deploying "PrecogMasterV2" (tx: 0x996e4e77d5e0a4385538d804d5bc2c7730461e0c44cb5766f9cb55fa5f21eebb)...:
- deployed at 0x0D512A2176737Fdb5C9973DB92fB100A234cD738 with 5536982 gas
+deploying "PrecogMasterV2" (tx: 0x996e4e77d5e0a4385538d804d5bc2c7730461e0c44cb5766f9cb55fa5f21eebb)...: deployed at 0x0D512A2176737Fdb5C9973DB92fB100A234cD738 with 5536982 gas
 
 > PrecogMasterV2 deployed!
      Contract: 0x0D512A2176737Fdb5C9973DB92fB100A234cD738

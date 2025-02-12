@@ -20,18 +20,26 @@ export const MarketBuy = ({marketId, marketOutcome, outcomeLabel = "", sharesToT
     const market = BigInt(marketId);
     const outcome = BigInt(marketOutcome);
     const shares = fromNumberToInt128(sharesToTrade);
-    const {data: priceInt128, isLoading: isPriceLoading} = useReadContract({
+
+    const {data: priceInt128, isLoading: isPriceLoading, error} = useReadContract({
         abi: ABI, address: master?.address, functionName: 'marketBuyPrice', args: [market, outcome, shares]
     });
+
+    if (error) {
+        return (
+            <span className="leading-4">No price</span>
+        );
+    }
+
+    const price = priceInt128 ? fromInt128toNumber(priceInt128) : 1;
+    const maxTokenIn = price * 1.001  // Add 0.1% of slippage
+    const maxIn: bigint = parseEther(maxTokenIn.toString());
 
     if (isPriceLoading || !master) {
         return (
             <span className="loading loading-spinner loading-sm"></span>
         );
     }
-    const price = priceInt128 ? fromInt128toNumber(priceInt128) : 1;
-    const maxTokenIn = price * 1.001  // Add 0.1% of slippage
-    const maxIn: bigint = parseEther(maxTokenIn.toString());
 
     const writeContractAsyncWithParams = () =>
         writeContractAsync({

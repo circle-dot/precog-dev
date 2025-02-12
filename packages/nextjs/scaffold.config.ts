@@ -4,6 +4,7 @@ export type ScaffoldConfig = {
     targetNetworks: readonly chains.Chain[];
     pollingInterval: number;
     alchemyApiKey: string;
+    nodeProviderUrl: string;
     walletConnectProjectId: string;
     onlyLocalBurnerWallet: boolean;
     marketSharesToTrade: number;
@@ -11,18 +12,21 @@ export type ScaffoldConfig = {
 
 const scaffoldConfig = {
     // The networks on which your DApp is live
-    targetNetworks: [chains.baseSepolia],
+    targetNetworks: [chains.base],
+    // targetNetworks: [chains.baseSepolia],
     // targetNetworks: [chains.hardhat],
 
     // The interval at which your front-end polls the RPC servers for new data
     // it has no effect if you only target the local network (default is 4000)
-    pollingInterval: 10000,
+    pollingInterval: 20000,
 
     // This is ours Alchemy's default API key.
     // You can get your own at https://dashboard.alchemyapi.io
     // It's recommended to store it in an env variable:
     // .env.local for local testing, and in the Vercel/system env config for live apps.
     alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF",
+
+    nodeProviderUrl: process.env.NEXT_PUBLIC_NODE_PROVIDER_URL || "http://localhost:8545",
 
     // This is ours WalletConnect's default project ID.
     // You can get your own at https://cloud.walletconnect.com

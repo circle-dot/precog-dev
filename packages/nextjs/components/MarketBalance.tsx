@@ -53,8 +53,8 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
     }
 
     // Check if there is no balance to show
-    if (!shares) {
-        return (<span className="text-sm">-</span>);
+    if (shares.length == 0) {
+        return (<span className="text-sm">Nothing yet</span>);
     }
 
     return (

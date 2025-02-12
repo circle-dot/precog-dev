@@ -265,7 +265,8 @@ describe("Precog Master V7", function () {
                 name, description, category, outcomes, startTimestamp, endTimestamp, creator, funding, overround
             );
             const createdMarkets: bigint = await master.createdMarkets();
-            const createdMarket: any[] = await master.markets(0);
+            const createdMarketId = Number(createdMarkets) - 1;
+            const createdMarket: any[] = await master.markets(createdMarketId);
             const marketName = createdMarket[0];
             const marketDescription = createdMarket[1];
             const marketCategory = createdMarket[2];
@@ -274,9 +275,19 @@ describe("Precog Master V7", function () {
             const marketEnd = createdMarket[5];
             const marketCreatorAddress = createdMarket[6];
             const marketAddress = createdMarket[7];
+
+            const createdMarketCollateralInfo = await master.marketCollateralInfo(createdMarketId);
+            const marketCollateralAddress = createdMarketCollateralInfo[0];
+            const marketCollateralName = createdMarketCollateralInfo[1];
+            const marketCollateralSymbol = createdMarketCollateralInfo[2];
+            const marketCollateralDecimals = createdMarketCollateralInfo[3];
+
             if (detailsEnabled) {
-                console.log(`\t| Market -> name: ${marketName}, creator: ${marketCreatorAddress}`);
                 console.log(`\t| Market Address: ${marketAddress}`);
+                console.log(`\t| Market -> name: ${marketName}, creator: ${marketCreatorAddress}`);
+                console.log(`\t| Start: ${marketStart}, End: ${marketEnd}`);
+                console.log(`\t| Collateral Address: ${marketCollateralAddress}`);
+                console.log(`\t| Collateral -> name: ${marketCollateralName}, decimals: ${marketCollateralDecimals}`);
             }
 
             expect(createdMarkets).to.equal(1);
@@ -287,6 +298,8 @@ describe("Precog Master V7", function () {
             expect(marketStart).to.equal(startTimestamp);
             expect(marketEnd).to.equal(endTimestamp);
             expect(marketCreatorAddress).to.equal(creator);
+            expect(marketCollateralAddress).to.equal(await pre.getAddress());
+            expect(marketCollateralSymbol).to.equal(await pre.symbol());
         })
 
         it("| Admin accounts can update a created prediction market", async function () {
@@ -663,16 +676,26 @@ describe("Precog Master V7", function () {
                 funding, overround, collateralToken, collateralFunder, marketOracle
             );
             const createdMarkets: bigint = await master.createdMarkets();
-            const createdMarket: any[] = await master.markets(1);
+            const createdMarketId = Number(createdMarkets) - 1;
+            const createdMarket: any[] = await master.markets(createdMarketId);
             const marketName = createdMarket[0];
             const marketStart = createdMarket[4];
             const marketEnd = createdMarket[5];
             const marketCreatorAddress = createdMarket[6];
             const marketAddress = createdMarket[7];
+
+            const createdMarketCollateralInfo = await master.marketCollateralInfo(createdMarketId);
+            const marketCollateralAddress = createdMarketCollateralInfo[0];
+            const marketCollateralName = createdMarketCollateralInfo[1];
+            const marketCollateralSymbol = createdMarketCollateralInfo[2];
+            const marketCollateralDecimals = createdMarketCollateralInfo[3];
+
             if (detailsEnabled) {
-                console.log(`\t| Market -> name: ${marketName}, creator: ${marketCreatorAddress}`);
                 console.log(`\t| Market Address: ${marketAddress}`);
+                console.log(`\t| Market -> name: ${marketName}, creator: ${marketCreatorAddress}`);
                 console.log(`\t| Start: ${marketStart}, End: ${marketEnd}`);
+                console.log(`\t| Collateral Address: ${marketCollateralAddress}`);
+                console.log(`\t| Collateral -> name: ${marketCollateralName}, decimals: ${marketCollateralDecimals}`);
             }
 
             expect(createdMarkets).to.equal(2);
@@ -680,6 +703,8 @@ describe("Precog Master V7", function () {
             expect(marketStart).to.equal(startTimestamp);
             expect(marketEnd).to.equal(endTimestamp);
             expect(marketCreatorAddress).to.equal(creator);
+            expect(marketCollateralAddress).to.equal(collateralToken);
+            expect(marketCollateralSymbol).to.equal(await dai.symbol());
         })
 
         it("| Accounts can BUY shares with DAI on a custom market", async function () {

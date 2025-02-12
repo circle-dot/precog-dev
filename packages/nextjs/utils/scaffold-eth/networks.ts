@@ -39,6 +39,12 @@ export const getAlchemyHttpUrl = (chainId: number) => {
     : undefined;
 };
 
+export const getQuickNodeHttpUrl = (chainId: number) => {
+  return scaffoldConfig.nodeProviderUrl && scaffoldConfig.nodeProviderUrl.includes(RPC_CHAIN_NAMES[chainId])
+      ? scaffoldConfig.nodeProviderUrl
+      : undefined;
+};
+
 export const NETWORKS_EXTRA_DATA: Record<string, ChainAttributes> = {
   [chains.hardhat.id]: {
     color: "#b8af0c",

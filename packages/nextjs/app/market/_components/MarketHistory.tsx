@@ -15,10 +15,10 @@ export const MarketHistory = ({address}: { address: Address }) => {
     });
     const contractLogs = usePrecogLogs(address);
 
-    if (isLoading) {
+    if (isLoading || contractLogs == undefined) {
         return (
             <div className="flex flex-col px-2">
-                <span>Fetching data...</span>
+                <span>Fetching data (may take a minute)...</span>
             </div>
         );
     }
@@ -63,7 +63,7 @@ export const MarketHistory = ({address}: { address: Address }) => {
 
         } else if (log.eventName == "SharesSold") {
             const account = log.args.account;
-            const outcome = log.args.outcome ? Number(log.args.outcome) : 0;
+            const outcome = log.transaction.functionArgs ? Number(log.transaction.functionArgs[1]) : 0;
             const amount = Number(log.args.amount) / 10 ** 18;
             const tokens = (Number(log.args.tokenOut) / 10 ** 18).toFixed(2);
             const outcomeLabel = outcomeLabels[outcome] || "NN";

@@ -33,7 +33,7 @@ export const MarketSharesInfo = ({address}: { address: Address }) => {
 
     // Parse and format received data to display
     const marketOutcomes = marketData[3].toString().split(",");
-    marketOutcomes.unshift(""); // Add empty slot at the start to match outcome indexing
+    marketOutcomes.unshift(""); // Add empty slot at the start to match market prices indexing
     const outcomeBalances = []
     for (let i = 1; i < marketOutcomes.length; i++) {
         const outcome = marketOutcomes[i];
@@ -54,11 +54,11 @@ export const MarketSharesInfo = ({address}: { address: Address }) => {
                     <span className="font-bold accent-blue-600">{totalShares}</span>
                     <span>(</span>
                     {outcomeBalances.map((value, index) => (
-                        <>
+                        <div key={index}>
                             <span>{value.outcome}:</span>
                             <span className="font-bold accent-blue-600">{value.balance}</span>
                             {index < outcomeBalances.length - 1 && <span>,</span>}
-                        </>
+                        </div>
                     ))}
                     <span>)</span>
                 </div>

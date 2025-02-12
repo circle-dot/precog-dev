@@ -14,8 +14,7 @@ No need to generate any newer typings.
   Decimals: 18n
      Owner: 0x1eB088E48341F22385c14E2bD25D7Eccc6BB496B
 
-deploying "PrecogMarketV5" (tx: 0xc9805a3225fb1e03ef4bd511651b8eae511386c261eee84a9793edf771589ad4)...:
- deployed at 0x95d4E2E5c49a76c35E52932FC668fe2D31D35F9B with 3363708 gas
+deploying "PrecogMarketV5" (tx: 0xc9805a3225fb1e03ef4bd511651b8eae511386c261eee84a9793edf771589ad4)...: deployed at 0x95d4E2E5c49a76c35E52932FC668fe2D31D35F9B with 3363708 gas
 
 > PrecogMarketV5 found!
      Contract: 0x95d4E2E5c49a76c35E52932FC668fe2D31D35F9B

@@ -18,15 +18,13 @@ No need to generate any newer typings.
 > ConditionalTokens found!
      Contract: 0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b
 
-deploying "PrecogMasterV3" (tx: 0x36b12bbd4863385376739f0ef74cfc086adcd6e1cfb2b40b4ce23e9e1db4cf89)...:
- deployed at 0x3f408C67cE37eA69e1FEd59ABA78389EdA3d5b9c with 2963976 gas
+deploying "PrecogMasterV3" (tx: 0x36b12bbd4863385376739f0ef74cfc086adcd6e1cfb2b40b4ce23e9e1db4cf89)...: deployed at 0x3f408C67cE37eA69e1FEd59ABA78389EdA3d5b9c with 2963976 gas
 > PrecogMasterV3 found!
      Contract: 0x3f408C67cE37eA69e1FEd59ABA78389EdA3d5b9c
         token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888
       markets: 0n
 
-deploying "PrecogMarketV3" (tx: 0xe7fe5207eeac24d2b345b462d5965c8b1885f0cac1378353f6ddf25d3bebbb69)...:
- deployed at 0x77AeDD00A0F057aEb140319920BcD555D8273A62 with 3002816 gas
+deploying "PrecogMarketV3" (tx: 0xe7fe5207eeac24d2b345b462d5965c8b1885f0cac1378353f6ddf25d3bebbb69)...: deployed at 0x77AeDD00A0F057aEb140319920BcD555D8273A62 with 3002816 gas
 > PrecogMarketV3 found!
      Contract: 0x77AeDD00A0F057aEb140319920BcD555D8273A62
         token: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888

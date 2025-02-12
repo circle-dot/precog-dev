@@ -1,5 +1,5 @@
 import {ethers, getChainId} from "hardhat";
-import {PrecogMasterV3, PrecogMarketV3, ConditionalTokens} from "../typechain-types";
+import {PrecogMasterV3, PrecogMarketV3, ConditionalTokens} from "../../typechain-types";
 
 function fromInt128toNumber(a: bigint): number {
     return Number(BigInt(a)) / Number((BigInt(2) ** BigInt(64)));

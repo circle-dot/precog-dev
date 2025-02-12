@@ -9,7 +9,7 @@ const localUrl = `http://localhost:${process.env.PORT || 3000}`;
 const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : localUrl;
 const imageUrl = `${baseUrl}/precogShare.png`;
 
-const title = "Precog Core";
+const title = "Precog Dev";
 const titleTemplate = "%s | Precog";
 const description = "Prediction markets platform";
 

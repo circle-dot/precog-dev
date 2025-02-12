@@ -1,13 +1,13 @@
 import Link from "next/link";
-import {ChartBarSquareIcon, InformationCircleIcon} from "@heroicons/react/24/outline";
+import {ChartBarSquareIcon, InformationCircleIcon, LinkIcon} from "@heroicons/react/24/outline";
 import {Address} from "~~/components/scaffold-eth";
 import {ContractName} from "~~/utils/scaffold-eth/contract";
 import {PrecogBalance} from "~~/components/PrecogBalance";
-import {MarketBuy} from "~~/components/MarketBuy";
-import {MarketSell} from "~~/components/MarketSell";
+// import scaffoldConfig from "~~/scaffold.config";  // Deprecated (due to performance issues)
+// import {MarketBuy} from "~~/components/MarketBuy";  // Deprecated (due to performance issues)
+// import {MarketSell} from "~~/components/MarketSell";  // Deprecated (due to performance issues)
 import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {usePrecogMarketData} from "~~/hooks/usePrecogMarketData";
-import scaffoldConfig from "~~/scaffold.config";
 import {MarketBalance} from "~~/components/MarketBalance";
 import {useAccount} from "wagmi";
 import React, {useState} from "react";
@@ -42,16 +42,17 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
         setShowExtraInfo(!showExtraInfo)
     };
 
-    const tradeOptions = [1, 5, 10, 100];
-    const [sharesToTrade, setSharesToTrade] = useState<number>(scaffoldConfig.marketSharesToTrade || 1);
-    const updateSharesToTrade = () => {
-        const newIndex = tradeOptions.indexOf(sharesToTrade) + 1;
-        if (newIndex == tradeOptions.length) {
-            setSharesToTrade(tradeOptions[0]);
-        } else {
-            setSharesToTrade(tradeOptions[newIndex]);
-        }
-    };
+    // Deprecated (due to performance issues)
+    // const tradeOptions = [1, 10, 100];
+    // const [sharesToTrade, setSharesToTrade] = useState<number>(scaffoldConfig.marketSharesToTrade || 1);
+    // const updateSharesToTrade = () => {
+    //     const newIndex = tradeOptions.indexOf(sharesToTrade) + 1;
+    //     if (newIndex == tradeOptions.length) {
+    //         setSharesToTrade(tradeOptions[0]);
+    //     } else {
+    //         setSharesToTrade(tradeOptions[newIndex]);
+    //     }
+    // };
 
     if (!marketData || !accountShares || isLoading) {
         return (
@@ -76,15 +77,17 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
 
     // const marketOutcomes = ["50+ Cut", "25 Cut", "Other"]; // Code just for testing
     const marketOutcomes = marketData[3].toString().split(",");
-    const outcomeBalances = typeof accountShares[5] === "bigint" ? [] : accountShares[5];
-    const sharesToTradeText = sharesToTrade == 1 ? `${sharesToTrade} share` : `${sharesToTrade} shares`;
+
+    // Deprecated (due to performance issues)
+    // const outcomeBalances = typeof accountShares[5] === "bigint" ? [] : accountShares[5];
+    // const sharesToTradeText = sharesToTrade == 1 ? `${sharesToTrade} share` : `${sharesToTrade} shares`;
 
     // @ts-ignore
     return (
         <div className="flex flex-col bg-base-100 px-3 py-5 text-center min-w-96 w-[420px] rounded-xl">
             <div className="flex flex-col gap-2">
-                <div className="flex flex-row gap-1 p-1 min-h-24 justify-center items-center">
-                    <span className="font-bold text-[1.6em]">{market.name}</span>
+                <div className="flex flex-row gap-1 p-1 min-h-[115px] justify-center items-center">
+                    <span className="font-bold text-[1.5em]">{market.name}</span>
                     <span className="cursor-pointer" title="Show market metadata">
                         <InformationCircleIcon onClick={toggleExtraInfo} className="h-6 w-6"/>
                     </span>
@@ -129,43 +132,26 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                         </div>
                     </div>
                 )}
-                <div className="flex flex-row gap-2 pb-2 justify-center">
-                    <Link href={"/market?address=" + market.address}>
-                        <button className="btn btn-secondary btn-sm rounded-md">
-                            <ChartBarSquareIcon className="h-4 w-4"/>
-                            Market Details
-                        </button>
-                    </Link>
-                </div>
-                <div className="flex flex-col w-full items-center bg-base-300 py-1 rounded-md  overflow-auto">
+                <div className="flex flex-col w-full items-center bg-base-300 py-2 rounded-md  overflow-auto">
                     <div className="flex flex-row gap-2 items-center">
                         <span className="text-sm">Prediction:</span>
-                        <span className="font-bold text-sm">{marketPrediction}</span>
+                        <span className="font-bold text-base">{marketPrediction}</span>
                     </div>
                 </div>
                 {!marketResult ?
                     <div
-                        className="flex flex-col gap-1 w-full bg-base-300 py-2 rounded-md overflow-auto min-h-[170px]">
-                        <div className="flex items-start px-2">
-                            <button className="btn btn-xs" onClick={updateSharesToTrade}>{sharesToTradeText}</button>
-                        </div>
-                        <div className="flex m-auto gap-1 px-2">
-                            {marketOutcomes.map((label, index) => (
-                                <MarketBuy key={index} marketId={id} marketOutcome={index + 1}
-                                           outcomeLabel={label} sharesToTrade={sharesToTrade}/>
-                            ))}
-                        </div>
-                        <div className="flex m-auto gap-2 px-2">
-                            {marketOutcomes.map((label, index) => (
-                                <MarketSell key={index} marketId={id} marketOutcome={index + 1} outcomeLabel={label}
-                                            outcomeBalance={outcomeBalances[index + 1]}
-                                            sharesToTrade={sharesToTrade}/>
-                            ))}
-                        </div>
+                        className="flex flex-col gap-1 w-full bg-base-300 py-2 rounded-md overflow-auto min-h-[140px]">
+                        <p>Buys & Sells enabled!</p>
+                        <Link target="_blank" href="https://core.precog.market/" className="cursor-pointer">
+                            <button className="btn btn-sm font-normal gap-1 w-60 mx-auto">
+                                <LinkIcon className="h-4 w-4"/>
+                                Trade on Precog Core
+                            </button>
+                        </Link>
                     </div>
                     :
-                    <div className="flex flex-col w-full bg-base-300 px-1 py-2 rounded-md min-h-[170px]">
-                        <div className="flex flex-col m-auto gap-1 pt-2 pb-3 items-center">
+                    <div className="flex flex-col w-full bg-base-300 px-1 py-2 rounded-md min-h-[140px]">
+                        <div className="flex flex-col gap-1 pt-2 pb-3 items-center">
                             <span>Result:</span>
                             <span className="font-bold text-4xl">{marketResult}</span>
                             <span className="text-sm">Reported: {marketClosedDate}</span>
@@ -173,13 +159,18 @@ export const PrecogMarket = ({contractName, id}: MarketProps) => {
                     </div>
                 }
                 <div className="flex flex-col w-full items-center bg-base-300 py-1 rounded-md  overflow-auto">
-                    <div className="flex flex-row gap-2 items-center">
-                        <span className="font-bold text-sm">You:</span>
-                        <PrecogBalance address={connectedAddress}/>
-                        <span className="text-sm">|</span>
-                        <span className="font-bold text-sm">Shares:</span>
+                    <div className="flex flex-row gap-2 items-center min-h-[30px]">
+                        <span className="font-bold text-sm min-w-[90px]">Your Shares:</span>
                         <MarketBalance id={id} address={connectedAddress} outcomes={marketOutcomes}/>
                     </div>
+                </div>
+                <div className="flex flex-row gap-2 w-full">
+                    <Link href={"/market?address=" + market.address} className="w-full">
+                        <button className="btn btn-accent btn-sm rounded-md py-1 w-full">
+                            <ChartBarSquareIcon className="h-4 w-4"/>
+                            Market Details
+                        </button>
+                    </Link>
                 </div>
             </div>
         </div>

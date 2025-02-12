@@ -7,7 +7,7 @@ export function getAllContracts() {
 }
 
 export function getLatestContracts() {
-    const latestContracts = ["PrecogToken", "PrecogMasterV7", "PrecogMarketV7"];
+    const latestContracts = ["LatentToken", "PrecogToken", "PrecogMasterV7", "PrecogMarketV7"];
     let contractsData = contracts?.[scaffoldConfig.targetNetworks[0].id];
     contractsData = contractsData ? filterProperties(contractsData, latestContracts): {};
     return contractsData;

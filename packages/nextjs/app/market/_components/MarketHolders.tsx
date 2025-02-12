@@ -2,7 +2,6 @@ import {Address as AddressType} from "viem";
 import {useScaffoldContract, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {usePrecogLogs} from "~~/hooks/usePrecogLogs";
 import {useReadContract} from "wagmi";
-import {PrecogBalance} from "~~/components/PrecogBalance";
 import {MarketBalance} from "~~/components/MarketBalance";
 import {Address} from "~~/components/scaffold-eth";
 
@@ -12,23 +11,24 @@ export const MarketHolders = ({address}: { address: AddressType }) => {
         contractName: "PrecogMarketV7"
     });
     const marketABI = marketContract ? marketContract.abi : [];
-    const contractLogs = usePrecogLogs(address);
     const {data: marketId, isLoading: isIdLoading} = useReadContract(
         {abi: marketABI, address: address, functionName: 'id'}
     );
     const {data: marketData, isLoading: isDataLoading} = useScaffoldReadContract({
         contractName: "PrecogMasterV7", functionName: "markets", args: [marketId]
     });
+    const contractLogs = usePrecogLogs(address);
+    const isFetchingLogs = contractLogs == undefined;
 
-    if (isMarketLoading || isIdLoading || isDataLoading) {
+    if (isMarketLoading || isIdLoading || isDataLoading || isFetchingLogs) {
         return (
             <div className="flex flex-col px-2">
-                <span>Fetching data...</span>
+                <span>Fetching data (may take a minute)...</span>
             </div>
         );
     }
 
-    if (!marketContract || contractLogs.length == 0 || marketId == undefined || !marketData) {
+    if (contractLogs.length == 0 || !marketContract || marketId == undefined || !marketData) {
         return (
             <div className="flex flex-col px-2">
                 <strong>No data found (yet)</strong>
@@ -36,8 +36,8 @@ export const MarketHolders = ({address}: { address: AddressType }) => {
         );
     }
 
-    // Parse and format received data to display
-    const logAccounts = contractLogs.map(log => log.transaction.from);
+    // Parse and format received data to display (TODO this could be optimized a lot!)
+    const logAccounts = contractLogs.filter(log => log.transaction).map(log => log.transaction.from);
     const uniqueAccounts = Array.from(new Set(logAccounts));
     const marketOutcomes = marketData[3].toString().split(",");
 
@@ -46,12 +46,11 @@ export const MarketHolders = ({address}: { address: AddressType }) => {
             {uniqueAccounts.map((address, i) => (
                 <div key={i} className='flex flex-row gap-2 px-1 w-fit'>
                     <span>{i + 1}-</span>
-                    <Address address={address} size={"base"}/>
-                    <span>[</span>
-                    <PrecogBalance address={address}/>
-                    <span>,</span>
+                    <div className="min-w-[140px]">
+                        <Address address={address} size={"base"}/>
+                    </div>
+                    <span className="">Shares:</span>
                     <MarketBalance id={marketId} address={address} outcomes={marketOutcomes}/>
-                    <span>]</span>
                 </div>
             ))}
         </div>

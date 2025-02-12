@@ -17,8 +17,12 @@ const CreateMarket: NextPage = () => {
         {contractName: "PrecogMasterV7"}
     );
 
+    // TODO Add update support on this page or maybe clone this one
+
     const {writeContractAsync, isPending} = useWriteContract();
     const writeTx = useTransactor();
+    const defaultCreator = "0x0000000000000000000000000000000000000000";
+    const defaultCollateral = "0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888";
 
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
@@ -27,7 +31,8 @@ const CreateMarket: NextPage = () => {
     const [startTime, setStartTime] = useState<string>();
     const [endDate, setEndDate] = useState<string>();
     const [endTime, setEndTime] = useState<string>();
-    const [creator, setCreator] = useState<string>(connectedAddress || "");
+    const [creator, setCreator] = useState<string>(connectedAddress || defaultCreator);
+    const [collateral, setCollateral] = useState<string>(defaultCollateral || defaultCollateral);
     const [outcomes, setOutcomes] = useState<string>("YES,NO");
     const [funding, setFunding] = useState<number>(2000);
     let startTimestamp = 0;
@@ -36,6 +41,9 @@ const CreateMarket: NextPage = () => {
 
     // Fixed related parameters
     const overRound = possibleOutcomes.length * 100;
+
+    // Only for debug
+    // console.log('Selected Address:', connectedAddress);
 
     useEffect(() => {
         // Autofill start and end date inputs with today values
@@ -69,23 +77,47 @@ const CreateMarket: NextPage = () => {
         )
     }
 
-    const writeContractAsyncWithParams = () =>
-        writeContractAsync({
-            address: master.address,
-            abi: master.abi,
-            functionName: "createMarket",
-            args: [
-                name,
-                description,
-                category,
-                possibleOutcomes,
-                BigInt(startTimestamp),
-                BigInt(endTimestamp),
-                creator,
-                BigInt(funding * 10 ** 18),
-                BigInt(overRound)
-            ],
-        });
+    if (creator === defaultCreator && connectedAddress && connectedAddress !== defaultCreator) {
+        setCreator(connectedAddress);
+    }
+
+    const writeContractAsyncWithParams = () => {
+        // Check if we need to create a custom market (need pre-approve of collateral)
+        if (collateral === defaultCollateral) {
+            return writeContractAsync({
+                address: master.address, abi: master.abi, functionName: "createMarket",
+                args: [
+                    name,
+                    description,
+                    category,
+                    possibleOutcomes,
+                    BigInt(startTimestamp),
+                    BigInt(endTimestamp),
+                    creator as `0x${string}`,
+                    BigInt(funding * 10 ** 18),
+                    BigInt(overRound)
+                ]
+            });
+        } else {
+            return writeContractAsync({
+                address: master.address, abi: master.abi, functionName: "createCustomMarket",
+                args: [
+                    name,
+                    description,
+                    category,
+                    possibleOutcomes,
+                    BigInt(startTimestamp),
+                    BigInt(endTimestamp),
+                    creator as `0x${string}`,
+                    BigInt(funding * 10 ** 18),
+                    BigInt(overRound),
+                    collateral as `0x${string}`,  //collateralToken
+                    creator as `0x${string}`,  // collateralFunder
+                    creator as `0x${string}`  // marketOracle
+                ],
+            });
+        }
+    }
 
     const handleWriteAction = async () => {
         try {
@@ -110,10 +142,11 @@ const CreateMarket: NextPage = () => {
                 possibleOutcomes = outcomes.split(",").map(value => value.trim());
             }
 
-            console.log("Creating new market...");
+            console.log(`Creating new ${collateral !== defaultCollateral ? "custom" : ""} market...`);
             console.log("> Name:", name, ", Description:", description, ", Category:", category);
             console.log("> Outcomes:", possibleOutcomes);
             console.log("> StartTimestamp:", startTimestamp, ", EndTimestamp:", endTimestamp);
+            console.log("> Collateral:", collateral);
             console.log("> Creator:", creator);
             console.log("> Funding:", BigInt(funding * 10 ** 18).toString(), "OverRound:", overRound);
 
@@ -179,23 +212,13 @@ const CreateMarket: NextPage = () => {
                         />
                         <span className="text-xs italic pl-3">Note: One word in plural tense.</span>
                     </div>
-                    <div className="flex flex-row">
-                        <div className="flex flex-col items-start px-2 w-1/2">
-                            <span className="text-sm font-bold">Outcomes</span>
-                            <input type="text" value={outcomes}
-                                   onChange={e => setOutcomes(e.target.value)}
-                                   className="input border border-primary rounded-xl w-full"
-                            />
-                            <span className="text-xs italic pl-3">Note: Possible outcomes CSV.</span>
-                        </div>
-                        <div className="flex flex-col items-start px-2 w-1/2">
-                            <span className="text-sm font-bold">Funding (PRE)</span>
-                            <input type="number" min="2" value={funding}
-                                   onChange={e => setFunding(Number(e.target.value))}
-                                   className="input border border-primary rounded-xl w-full"
-                            />
-                            <span className="text-xs italic pl-3">Note: Amount of tokens to mint.</span>
-                        </div>
+                    <div className="flex flex-col items-start px-2">
+                        <span className="text-sm font-bold">Outcomes</span>
+                        <input type="text" value={outcomes}
+                               onChange={e => setOutcomes(e.target.value)}
+                               className="input border border-primary rounded-xl w-full"
+                        />
+                        <span className="text-xs italic pl-3">Note: Possible outcomes CSV (eg: YES, NO, MAYBE).</span>
                     </div>
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Start Date (GMT)</span>
@@ -228,6 +251,21 @@ const CreateMarket: NextPage = () => {
                             <AddressInput value={creator} onChange={setCreator}/>
                         </div>
                         <span className="text-xs italic pl-3">Note: External or internal Market creator wallet.</span>
+                    </div>
+                    <div className="flex flex-col items-start px-2">
+                        <span className="text-sm font-bold">Collateral Token</span>
+                        <div className="w-full py-1">
+                            <AddressInput value={collateral} onChange={setCollateral}/>
+                        </div>
+                        <span className="text-xs italic pl-3">Note: Address of ERC20 Token</span>
+                    </div>
+                    <div className="flex flex-col items-start px-2">
+                        <span className="text-sm font-bold">Funding Collateral (amount)</span>
+                        <input type="number" min="2" value={funding}
+                               onChange={e => setFunding(Number(e.target.value))}
+                               className="input border border-primary rounded-xl w-full"
+                        />
+                        <span className="text-xs italic pl-3">Note: Tokens to mint or TransferFrom creator (need approve)</span>
                     </div>
                     <div className="flex flex-col items-center p-3 w-full">
                         <button className="btn btn-primary rounded-xl" onClick={handleWriteAction} disabled={isPending}>

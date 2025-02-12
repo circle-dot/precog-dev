@@ -23,10 +23,7 @@ const Home: NextPage = () => {
     return (
         <>
             <div className="flex items-center flex-col flex-grow pt-2">
-                <div className="w-full px-12">
-                    <h1 className="text-center mb-3">
-                        <span className="block text-2xl font-bold">Prediction Markets</span>
-                    </h1>
+                <div className="w-full px-12 pt-5">
                     {!totalMarkets &&
                         <div className="flex flex-wrap justify-center py-40">No created markets yet!</div>
                     }

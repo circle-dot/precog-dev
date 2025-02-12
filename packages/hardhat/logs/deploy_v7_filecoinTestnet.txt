@@ -8,9 +8,7 @@ No need to generate any newer typings.
    Balance: 5.0 FIL
      Nonce: 0
 
-deploying "PrecogToken" (tx: 0x8253b27c9f9f234d6d58e9cd95a985584c2b70b0c2385240fd5244102c6daa19)...
-0x8253b27c9f9f234d6d58e9cd95a985584c2b70b0c2385240fd5244102c6daa19:
- deployed at 0x369003E80753191330CaD59dD61b4C518730B402 with 67076243 gas
+deploying "PrecogToken" (tx: 0x8253b27c9f9f234d6d58e9cd95a985584c2b70b0c2385240fd5244102c6daa19)...0x8253b27c9f9f234d6d58e9cd95a985584c2b70b0c2385240fd5244102c6daa19: deployed at 0x369003E80753191330CaD59dD61b4C518730B402 with 67076243 gas
 
 > PrecogToken found! (new deploy: true)
   Contract: 0x369003E80753191330CaD59dD61b4C518730B402
@@ -20,8 +18,7 @@ deploying "PrecogToken" (tx: 0x8253b27c9f9f234d6d58e9cd95a985584c2b70b0c2385240f
      Owner: 0x9475A4C1BF5Fc80aE079303f14B523da19619c16
 
 
-deploying "PrecogMasterV7" (tx: 0x7c03101076f3033d7bf68fe1ed480e4ce13e1ad70be5a7ab832de70aa2f8d20b)...:
- deployed at 0xE31b4C49FA1732b2f7d4165A36Eb133d6ed39661 with 131772505 gas
+deploying "PrecogMasterV7" (tx: 0x7c03101076f3033d7bf68fe1ed480e4ce13e1ad70be5a7ab832de70aa2f8d20b)...: deployed at 0xE31b4C49FA1732b2f7d4165A36Eb133d6ed39661 with 131772505 gas
 
 > PrecogMasterV7 found! (new deploy: true)
      Contract: 0xE31b4C49FA1732b2f7d4165A36Eb133d6ed39661
@@ -29,8 +26,7 @@ deploying "PrecogMasterV7" (tx: 0x7c03101076f3033d7bf68fe1ed480e4ce13e1ad70be5a7
       markets: 0n
 
 
-deploying "PrecogMarketV7" (tx: 0x5486b711bb9d75c0b61251edc46d69651a26063accc618309bd9f6a830ea5a50)...:
- deployed at 0x4F8c5006171641Ee7Ad2DBC26e4e9e0e6008979f with 120206476 gas
+deploying "PrecogMarketV7" (tx: 0x5486b711bb9d75c0b61251edc46d69651a26063accc618309bd9f6a830ea5a50)...: deployed at 0x4F8c5006171641Ee7Ad2DBC26e4e9e0e6008979f with 120206476 gas
 
 > PrecogMarketV7 found! (new deploy: true)
      Contract: 0x4F8c5006171641Ee7Ad2DBC26e4e9e0e6008979f

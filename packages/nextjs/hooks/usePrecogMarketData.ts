@@ -33,7 +33,7 @@ export const usePrecogMarketData = (address: Address | string | undefined) => {
     const endDate = new Date(Number(ends) * 1000).toUTCString();
     const closedDate = closed ? new Date(Number(closed) * 1000).toUTCString() : "";
 
-    let marketOutcomes = marketMetadata[3].toString().split(",");
+    const marketOutcomes = marketMetadata[3].toString().split(",");
     marketOutcomes.unshift(""); // Add empty slot at the start to match market prices indexing
     let predictionOutcome = "NN";
     let predictionPrice = 0;
