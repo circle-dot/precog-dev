@@ -16,6 +16,18 @@ const blockCache = new Map();
 //     return new Promise((resolve) => setTimeout(resolve, ms));
 // }
 
+function getPrecogDeployBlock(chainId: number): number {
+    let blockNumber = 0  // Default value
+    if (chainId == 8453) {
+        blockNumber = 25593661;  // PrecogMaster deploy block (Base Mainnet)
+    } else if (chainId == 84532) {
+        blockNumber = 13935354;
+    } else {
+        console.log(`Precog deploy log not found (invalid chain id): ${chainId}`);
+    }
+    return blockNumber
+}
+
 async function fetchTransaction(client: any, hash: string): Promise<any> {
     if (txCache.has(hash)) {
         console.log(`Tx found on cache (${hash})`);
@@ -59,14 +71,15 @@ export const usePrecogLogs = (address: Address) => {
                 return;
             }
             alreadyCalled = true;
-            console.log('Fetching logs...');
-
-            // const startBlock = 13935354n;  // PrecogMaster deploy block (Base Sepolia)
-            const startBlock = 25593661;  // PrecogMaster deploy block (Base Mainnet)
+            const startBlock = getPrecogDeployBlock(targetNetwork.id);
             const endBlock = Number(await client.getBlockNumber());
+            let chunkSize = Math.round((endBlock - startBlock) / 20);
+            chunkSize = Math.max(chunkSize, 5000);
+            chunkSize = Math.min(chunkSize, 100000);
+            console.log(`Fetching block logs (start: ${startBlock}, end: ${endBlock}, chunk: ${chunkSize})...`);
             // const startBlock = 25803661;  // Just for testing
             // const endBlock =   25903660;  // Just for testing
-            const chunkSize = 10000;
+            // const chunkSize = 10000;  // Just for testing
             let allLogs: PrecogLog[] = [];
 
             try {
@@ -114,7 +127,7 @@ export const usePrecogLogs = (address: Address) => {
 
         fetchLogs();
 
-    }, [address, client]);
+    }, [address, client, targetNetwork.id]);
 
     return logs;
 };

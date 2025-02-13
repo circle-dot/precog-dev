@@ -14,7 +14,7 @@ const ADMIN_ROLE = "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693
 
 const MarketDetails: NextPage = () => {
     const {address: connectedAddress} = useAccount();
-    const defaultMarket = "0xeAC0A79718b127733427bcAe73cdd0ABe2e7005a" as `0x${string}`;  // MarketV7 Id: 0
+    const defaultMarket = "0x8a82D617ad02016dB4E80b01Bb54C04b888aC004" as `0x${string}`;  // MarketV7 Id: 0
     const [marketAddress, setMarketAddress] = useState<`0x${string}`>(defaultMarket);
     const [isSelected, setIsSelected] = useState(false);
 
