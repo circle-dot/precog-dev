@@ -33,11 +33,11 @@
     "use-debounce": "~8.0.4",
     "usehooks-ts": "2.13.0",
     "viem": "2.8.16",
-    "wagmi": "2.5.12",
+    "wagmi": "2.14.15",
     "zustand": "~4.1.2"
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "~4.1.1",
+    "@trivago/prettier-plugin-sort-imports": "~4.3.0",
     "@types/node": "^17.0.45",
     "@types/nprogress": "^0",
     "@types/react": "^18.0.21",
