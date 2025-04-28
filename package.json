@@ -1,6 +1,6 @@
 {
   "name": "precog",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "private": true,
   "workspaces": {
     "packages": [
@@ -44,13 +44,30 @@
     "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo",
     "verify": "yarn workspace @se-2/hardhat verify"
   },
-  "resolutions": {
-    "usehooks-ts@^2.7.2": "patch:usehooks-ts@npm:^2.7.2#./.yarn/patches/usehooks-ts-npm-2.7.2-fceffe0e43.patch"
-  },
   "devDependencies": {
     "lint-staged": "~13.2.2",
     "next": "~14.2.26",
-    "vercel": "~39.2.2"
+    "vercel": "~41.6.2"
+  },
+  "resolutions": {
+    "elliptic": "^6.6.1",
+    "@babel/traverse": "^7.23.2",
+    "@babel/runtime": "^7.26.10",
+    "@babel/helpers": "^7.26.10",
+    "serialize-javascript": "^6.0.2",
+    "webpack": "^5.94.0",
+    "secp256k1": "^5.0.1",
+    "braces": "^3.0.3",
+    "undici": "^5.28.5",
+    "cookie": "^0.7.0",
+    "rollup": "^2.79.2",
+    "ws": "^8.17.1",
+    "esbuild": "^0.25.0",
+    "path-to-regexp": "^6.3.0",
+    "tar": "^6.2.1",
+    "debug": "^4.3.1",
+    "semver": "^7.5.2",
+    "axios": "^1.8.2"
   },
   "packageManager": "yarn@3.2.3"
 }
