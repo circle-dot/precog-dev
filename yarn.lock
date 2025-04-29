@@ -3565,7 +3565,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:^3.4.2-solc-0.7":
+"@openzeppelin/contracts@npm:~3.4.2-solc-0.7":
   version: 3.4.2
   resolution: "@openzeppelin/contracts@npm:3.4.2"
   checksum: 0c90f029fe50a49643588e4c8670dae3bbf31795133a6ddce9bdcbc258486332700bb732287baabf7bf807f39182fe8ea2ffa19aa5caf359b1b9c0f083280748
@@ -4034,7 +4034,7 @@ __metadata:
     "@nomicfoundation/hardhat-ethers": ~3.0.8
     "@nomicfoundation/hardhat-network-helpers": ~1.0.12
     "@nomicfoundation/hardhat-verify": ~2.0.3
-    "@openzeppelin/contracts": ^3.4.2-solc-0.7
+    "@openzeppelin/contracts": ~3.4.2-solc-0.7
     "@typechain/ethers-v5": ~10.1.0
     "@typechain/ethers-v6": ~0.5.1
     "@typechain/hardhat": ~9.1.0
