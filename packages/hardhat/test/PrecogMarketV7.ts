@@ -1085,7 +1085,7 @@ describe("Precog Market V7", function () {
 
             const priceInt128BeforeBuy: bigint = await quadMarket.buyPrice(outcome, fromNumberToInt128(1));
             const actualBuyPrice: number = fromInt128toNumber(priceInt128BeforeBuy);
-            if (detailsEnabled || true) {
+            if (detailsEnabled) {
                 console.log(`\t| Future Buy price (before buy): ${futureBuyPriceLocal} [local]`);
                 console.log(`\t| Future Buy price (before buy): ${futureBuyPrice} [chain]`);
                 console.log(`\t| Actual Buy price (after buy) : ${actualBuyPrice} [chain]`);
@@ -1259,7 +1259,8 @@ function marketCost(shares: number[], alpha: number): number {
     const beta = totalShares * alpha;
 
     // Calculate total collateral in the market
-    const sumTotal = shares.reduce((sum, s) => sum + Math.exp(s / beta), 0);
+    // Taking into account that zero share balance it is not a valid amount
+    const sumTotal = shares.reduce((sum, s) => s === 0 ? sum : sum + Math.exp(s / beta), 0);
     return beta * Math.log(sumTotal);
 }
 
@@ -1272,10 +1273,10 @@ function marketCost(shares: number[], alpha: number): number {
  * @param amount - Total amount of shares to be traded in the market (positive for BUYs and negative for SELLs)
  */
 function marketCostAfterTrade(shares: number[], alpha: number, outcome: number, amount: number): number {
-    // Create new variable to avoid updating shares balances received
+    // Create a new variable to avoid updating shares balances received
     const newShares = [...shares];
 
-    // Register trade on share balance for received outcome
+    // Register trade on share balance for the received outcome
     newShares[outcome] += amount;
 
     // Get total collateral in the market after the trade
