@@ -3,6 +3,7 @@ This repository contains the all smart contracts for the Precog forecasting prot
 <hr/>
 
 #### Prediction Markets and LMSR theory:
+- [Cultivate Labs: Types of Prediction Markets](https://www.cultivatelabs.com/crowdsourced-forecasting-guide/what-are-the-different-types-of-prediction-markets)
 - [Research Corner: Gates Building Prediction Market](https://www.cs.utexas.edu/news/2012/research-corner-gates-building-prediction-market)
 - [Augur: LMSR and LS-LMSR](https://augur.mystrikingly.com/blog/augur-s-automated-market-maker-the-ls-lmsr)
 - [Precog: Interactive LMSR pricing](https://www.desmos.com/calculator/jvy0ci53lm)
@@ -16,15 +17,15 @@ This repository contains the all smart contracts for the Precog forecasting prot
 
 ## Mainnet Deployments (Base)
 - **PrecogMaster**: [0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E](https://basescan.org/address/0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E)
-- **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://basescan.org/address/0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888)
-- **PrecogMarket**: [0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b](https://basescan.org/address/0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b)
+- **PrecogMarket**: [0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b](https://basescan.org/address/0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b) (Recipe for all markets)
+- **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://basescan.org/address/0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888) (Not used)
 > Core backend site: [**Precog Core**](https://core.precog.market/)
 <hr/>
 
 ## Testnet deployed (Base Sepolia)
 - **PrecogMasterV7**: [0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4](https://sepolia.basescan.org/address/0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4)
-- **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://sepolia.basescan.org/address/0x7779ec685aa0bf5483b3e0c15daf246d2d978888)
-- **PrecogMarketV7**: [0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE](https://sepolia.basescan.org/address/0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE) (recipe for all markets)
+- **PrecogMarketV7**: [0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE](https://sepolia.basescan.org/address/0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE) (Recipe for all markets)
+- **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://sepolia.basescan.org/address/0x7779ec685aa0bf5483b3e0c15daf246d2d978888) (Not used)
 > Core backend site: [**Precog Core Staging**](https://staging-core.precog.market/) 
 <hr/>
 
