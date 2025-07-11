@@ -44,7 +44,7 @@ export const debugLink: HeaderMenuLink = {
 
 export const createLink: HeaderMenuLink = {
     label: "Create Market",
-    href: "/create",
+    href: "/create-market",
     icon: <DocumentPlusIcon className="h-4 w-4"/>
 };
 
