@@ -61,6 +61,7 @@
     "base-x": "^3.0.11",
     "braces": "^3.0.3",
     "brace-expansion": "^2.0.2",
+    "nanoid": "^3.3.8",
     "undici": "^5.28.5",
     "cookie": "^0.7.0",
     "rollup": "^2.79.2",
