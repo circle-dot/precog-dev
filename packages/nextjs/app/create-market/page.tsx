@@ -17,9 +17,7 @@ const CreateMarket: NextPage = () => {
         { contractName: "PrecogMasterV7" }
     );
 
-    // TODO Add update support on this page or maybe clone this one
-
-    const { writeContractAsync, isPending } = useWriteContract();
+    const {writeContractAsync, isPending} = useWriteContract();
     const writeTx = useTransactor();
     const defaultCreator = "0x0000000000000000000000000000000000000000";
     const defaultCollateral = "0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888";
