@@ -123,58 +123,29 @@ export const MarketList = ({ markets }: MarketListProps) => {
             }}
           />
           <div className="collapse-title peer-checked:bg-base-200/10 text-xs">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               <div className="flex-grow min-w-0">
                 <h3 className="text-lg font-bold text-base-content/70 truncate" title={market.name}>
-                  <span className="text-base-content/70 mr-2">[MKT_ID:{market.marketId}]</span>
+                  <span className="text-base-content/70 mr-2">[{market.marketId}]</span>
                   {market.name}
                 </h3>
-                <p className="text-xs uppercase text-base-content/70 tracking-widest pl-2 m-0" title={market.category}>
-                  &gt;&gt; {market.category}
-                </p>
               </div>
-              <div className="flex-shrink-0 ml-4 font-bold">
-                {new Date() > new Date(Number(market.endTimestamp) * 1000) ? (
-                  <span className="text-neutral-content/50">[CLOSED]</span>
-                ) : (
-                  <span className="text-success animate-pulse">[ACTIVE]</span>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
-              <div className="flex flex-col border border-base-content/20 p-2 rounded-md">
+              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                 <div
-                  className="flex items-center gap-2"
-                  title={`Start Date: ${new Date(Number(market.startTimestamp) * 1000).toUTCString()}`}
+                  className="flex items-center gap-2 text-xs"
+                  title={`Start: ${new Date(
+                    Number(market.startTimestamp) * 1000,
+                  ).toUTCString()}, End: ${new Date(Number(market.endTimestamp) * 1000).toUTCString()}`}
                 >
-                  <span className="text-base-content/70">STARTS:</span>
                   <span className="font-semibold text-success">{formatTimestamp(market.startTimestamp)}</span>
-                </div>
-                <div
-                  className="flex items-center gap-2"
-                  title={`End Date: ${new Date(Number(market.endTimestamp) * 1000).toUTCString()}`}
-                >
-                  <span className="text-base-content/70">ENDS:</span>
+                  <span className="text-base-content/70">-</span>
                   <span className="font-semibold text-error">{formatTimestamp(market.endTimestamp)}</span>
                 </div>
-              </div>
-
-              <div className="border border-base-content/20 p-2 rounded-md">
-                <p className="text-base-content/70 m-0">POSSIBLE_OUTCOMES [{market.outcomes.length}]:</p>
-                <div
-                  className="flex flex-wrap gap-x-4 gap-y-1 items-center font-semibold"
-                  title={market.outcomes.join(", ")}
-                >
-                  {market.outcomes.slice(0, 3).map((outcome, i) => (
-                    <span key={i} className="truncate text-base-content">
-                      &gt; {outcome}
-                    </span>
-                  ))}
-                  {market.outcomes.length > 3 && (
-                    <span className="text-base-content/70 text-xs font-normal">
-                      [+{market.outcomes.length - 3} MORE]
-                    </span>
+                <div className="font-bold">
+                  {new Date() > new Date(Number(market.endTimestamp) * 1000) ? (
+                    <span className="text-error">[CLOSED]</span>
+                  ) : (
+                    <span className="text-success animate-pulse">[ACTIVE]</span>
                   )}
                 </div>
               </div>
@@ -183,7 +154,7 @@ export const MarketList = ({ markets }: MarketListProps) => {
           <div className="collapse-content bg-base-300/20 text-sm">
             <div className="pt-4 flex flex-col gap-2">
               <div className="p-4 border border-dashed border-base-content/20 rounded-md">
-                <p className="text-base-content">
+                <p className="text-base-content m-0">
                   <span className="font-bold text-base-content/70">[MARKET_DESCRIPTION]:</span>
                   {market.description}
                 </p>
