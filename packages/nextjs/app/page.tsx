@@ -1,52 +1,48 @@
 "use client";
 
-import type {NextPage} from "next";
-import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
-import {getLatestContracts} from "~~/utils/scaffold-eth/contractsData";
-import {ContractName} from "~~/utils/scaffold-eth/contract";
-import {ContractCard} from "~~/app/debug/_components/contract/ContractCard";
-import {PrecogMarket} from "~~/components/PrecogMarket";
+import type { NextPage } from "next";
+import { getLatestContracts } from "~~/utils/scaffold-eth/contractsData";
+import { ContractName } from "~~/utils/scaffold-eth/contract";
+import { ContractCard } from "~~/app/debug/_components/contract/ContractCard";
 import React from "react";
+import { usePrecogMarkets } from "~~/hooks/usePrecogMarketData";
+import { MarketList } from "~~/components/MarketList";
 
 const contractsData = getLatestContracts();
 const contractNames = Object.keys(contractsData) as ContractName[];
 
 const Home: NextPage = () => {
-    const contractTargetName = "PrecogMasterV7";
+  const { data, isLoading, error } = usePrecogMarkets();
 
-    const {data: createdMarkets} = useScaffoldReadContract({
-        contractName: contractTargetName, functionName: "createdMarkets"
-    });
-    const totalMarkets = createdMarkets ? Number(createdMarkets) : 0;
-    const marketIds = Array.from({length: totalMarkets}, (_, i) => i).reverse();
-
-    return (
-        <>
-            <div className="flex items-center flex-col flex-grow pt-2">
-                <div className="w-full px-12 pt-5">
-                    {!totalMarkets &&
-                        <div className="flex flex-wrap justify-center py-40">No created markets yet!</div>
-                    }
-                    <div className="flex flex-wrap justify-center items-start gap-8">
-                        {marketIds.map((marketId, index) => (
-                            <PrecogMarket key={index} contractName={contractTargetName} id={marketId}/>
-                        ))}
-                    </div>
-
-                </div>
-                <div className="flex-grow bg-base-300 w-full mt-6 px-6 pt-3 pb-6">
-                    <div className="text-center mb-3">
-                        <span className="block text-xl font-bold">Deployed Contracts</span>
-                    </div>
-                    <div className="flex justify-center items-center gap-8 flex-col-reverse sm:flex-row-reverse">
-                        {contractNames.map((contractName, index) => (
-                            <ContractCard key={index} contractName={contractName}/>
-                        ))}
-                    </div>
-                </div>
+  return (
+    <>
+      <div className="flex items-center flex-col flex-grow pt-2">
+        <div className="w-full px-4 md:px-12 pt-5">
+          {isLoading && (
+            <div className="flex flex-wrap justify-center py-40">
+              <p className="font-mono text-2xl text-accent animate-pulse">-- LOADING MARKETS --</p>
             </div>
-        </>
-    );
+          )}
+          {error && (
+            <div className="flex flex-wrap justify-center py-40">
+              <p className="font-mono text-2xl text-error">--! ERROR: COULD NOT LOAD MARKETS !--</p>
+            </div>
+          )}
+          {data && <MarketList markets={data.markets} />}
+        </div>
+        <div className="flex-grow bg-base-300 w-full mt-16 px-6 pt-3 pb-6 border-t-2 border-primary/20">
+          <div className="text-center mb-3">
+            <span className="block text-xl font-bold font-mono text-secondary">[ DEPLOYED CONTRACTS ]</span>
+          </div>
+          <div className="flex justify-center items-center gap-8 flex-col-reverse sm:flex-row-reverse">
+            {contractNames.map(contractName => (
+              <ContractCard key={contractName} contractName={contractName} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Home;

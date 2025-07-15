@@ -1,68 +1,87 @@
-import {Address, formatEther} from "viem";
-import {useReadContract} from "wagmi";
-import {useScaffoldContract, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
+import { useQuery } from '@tanstack/react-query';
+import { usePublicClient } from 'wagmi';
+import { useScaffoldContract } from './scaffold-eth';
+import { Address } from 'viem';
 
-export const usePrecogMarketData = (address: Address | string | undefined) => {
-    const {data: marketContract} = useScaffoldContract({contractName: "PrecogMarketV7"});
+export type MarketInfo = {
+  marketId: number;
+  name: string;
+  description: string;
+  category: string;
+  outcomes: string[];
+  startTimestamp: bigint;
+  endTimestamp: bigint;
+  creator: Address;
+  market: Address;
+};
 
-    const market = address ? address as Address : '0x0000000000000000000000000000000000000000';
-    const ABI = marketContract ? marketContract.abi : [];
+export const usePrecogMarkets = () => {
+  const { data: masterContract } = useScaffoldContract({
+    contractName: "PrecogMasterV7",
+  });
+  const publicClient = usePublicClient();
 
-    // Get general market data
-    const {data: marketId} = useReadContract({abi: ABI, address: market, functionName: 'id'});
-    const {data: owner} = useReadContract({abi: ABI, address: market, functionName: 'owner'});
-    const {data: token} = useReadContract({abi: ABI, address: market, functionName: 'token'});
-    const {data: starts} = useReadContract({abi: ABI, address: market, functionName: 'startTimestamp'});
-    const {data: ends} = useReadContract({abi: ABI, address: market, functionName: 'endTimestamp'});
-    const {data: oracle} = useReadContract({abi: ABI, address: market, functionName: 'oracle'});
-    const {data: closed} = useReadContract({abi: ABI, address: market, functionName: 'closeTimestamp'});
-    const {data: result} = useReadContract({abi: ABI, address: market, functionName: 'result'});
+  return useQuery({
+    queryKey: ["markets"],
+    queryFn: async () => {
+      if (!masterContract?.address || !publicClient) return { markets: [], totalMarkets: 0n };
 
-    // Get prices and outcome labels
-    const {data: marketMetadata} = useScaffoldReadContract({
-        contractName: "PrecogMasterV7", functionName: "markets", args: [marketId]
-    });
-    const {data: marketPrices, isLoading: isLoading} = useScaffoldReadContract({
-        contractName: "PrecogMasterV7", functionName: "marketPrices", args: [marketId]
-    });
+      // Get total markets count
+      const totalMarkets = (await publicClient.readContract({
+        address: masterContract.address,
+        abi: masterContract.abi,
+        functionName: "createdMarkets",
+      })) as bigint;
 
-    // Check that all data was loaded (currently avoiding any calculation when market is not closed)
-    if (isLoading || !marketMetadata || !marketPrices || result === undefined) return {};
+      if (totalMarkets === 0n) {
+        return { markets: [], totalMarkets };
+      }
 
-    const startDate = new Date(Number(starts) * 1000).toUTCString();
-    const endDate = new Date(Number(ends) * 1000).toUTCString();
-    const closedDate = closed ? new Date(Number(closed) * 1000).toUTCString() : "";
+      // Create array of all market IDs to fetch in descending order
+      const marketIds = Array.from({ length: Number(totalMarkets) }, (_, i) => totalMarkets - 1n - BigInt(i));
 
-    const marketOutcomes = marketMetadata[3].toString().split(",");
-    marketOutcomes.unshift(""); // Add empty slot at the start to match market prices indexing
-    let predictionOutcome = "NN";
-    let predictionPrice = 0;
-    for (let i = 1; i < marketOutcomes.length; i++) {
-        const outcome = marketOutcomes[i];
-        const buyPrice = Number(formatEther(marketPrices[0][i]));
+      // Prepare multicall contracts array
+      const marketRequests = marketIds.map(
+        marketId =>
+          ({
+            address: masterContract.address,
+            abi: masterContract.abi,
+            functionName: "markets",
+            args: [marketId],
+          } as const),
+      );
 
-        // Calculate prediction (higher outcome one share price)
-        if (buyPrice > predictionPrice) {
-            predictionOutcome = outcome;
-            predictionPrice = buyPrice;
-        }
-    }
-    const prediction = `${predictionOutcome} (${(predictionPrice * 100).toFixed(1)}%)`;
-    const marketResult = result && Number(result) > 0 ? marketOutcomes[Number(result)] : '';
+      // Execute multicall
+      const marketsData = await publicClient.multicall({
+        contracts: marketRequests,
+        allowFailure: true,
+      });
 
-    const marketData = {
-        id: marketId,
-        owner: owner,
-        token: token,
-        startDate: startDate,
-        endDate: endDate,
-        oracle: oracle,
-        prediction: prediction,
-        result: marketResult,
-        closedDate: closedDate
-    };
-    // Only for debug
-    // console.log('Market Data:', marketData);
+      // Process results
+      const markets = marketsData
+        .map((result, index) => {
+          if (!result.status || !result.result) return null;
 
-    return marketData;
+          const marketData = result.result as [string, string, string, string, bigint, bigint, Address, Address];
+          return {
+            marketId: Number(marketIds[index]),
+            name: marketData[0],
+            description: marketData[1],
+            category: marketData[2],
+            outcomes: marketData[3].split(","),
+            startTimestamp: marketData[4],
+            endTimestamp: marketData[5],
+            creator: marketData[6],
+            market: marketData[7],
+          } as MarketInfo;
+        })
+        .filter((market): market is MarketInfo => market !== null);
+
+      return {
+        markets,
+        totalMarkets,
+      };
+    },
+    enabled: !!masterContract?.address && !!publicClient,
+  });
 };
