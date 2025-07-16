@@ -1,25 +1,49 @@
 import { useState } from "react";
 import { formatEther } from "viem";
-import { useAccount } from "wagmi";
-import { Address } from "~~/components/scaffold-eth";
-import { MarketInfo, usePrecogMarketDetails } from "~~/hooks/usePrecogMarketData";
+import { MarketInfo, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
 
-const fromFixed64x64 = (value: bigint | undefined): string => {
-  if (typeof value === "undefined" || value === null) return "N/A";
-  const ONE = 1n << 64n;
-  const integerPart = value / ONE;
-  const fractionalPart = value % ONE;
-  const fractionalString = ((fractionalPart * 10n ** 6n) / ONE).toString().padStart(6, "0");
-  return `${integerPart}.${fractionalString}`;
+
+const MarketExtraDetails = ({ market }: { market: MarketInfo }) => {
+  if (!market.marketInfo || !market.token) {
+    return (
+      <div className="flex justify-center items-center pt-4 flex-col">
+        <p className="text-error">--! ERROR: COULD NOT LOAD MARKET INFO !--</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 border-t border-base-content/20 pt-4 flex flex-col gap-4 text-xs">
+      {market.marketInfo && (
+        <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Collateral Token:</span> {market.token}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Shares:</span> {market.marketInfo[0]?.toString()}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
+            {market.marketInfo[1]?.join(", ")}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
+            {market.marketInfo[2]?.toString()}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Buys:</span> {market.marketInfo[3]?.toString()}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Sells:</span> {market.marketInfo[4]?.toString()}
+          </p>
+        </div>
+      )}
+    </div>
+  );
 };
 
-const MarketDetails = ({ market, isVisible }: { market: MarketInfo; isVisible: boolean }) => {
-  const { address: userAddress } = useAccount();
-  const { collateralTokenAddress, outcomeData, isLoading, isError, errors } = usePrecogMarketDetails(
-    market.market,
-    market.outcomes,
-    isVisible,
-  );
+const MarketPrices = ({ market, isVisible }: { market: MarketInfo; isVisible: boolean }) => {
+  const { outcomeData, isLoading, isError } = usePrecogMarketPrices(market.market, market.outcomes, isVisible);
 
   if (!isVisible) return null;
 
@@ -32,51 +56,115 @@ const MarketDetails = ({ market, isVisible }: { market: MarketInfo; isVisible: b
   }
 
   if (isError) {
-    console.error("Error loading market details:", {
-      marketAddress: market.market,
-      userAddress,
-      errors,
-    });
     return (
       <div className="flex justify-center items-center pt-4 flex-col">
-        <p className="text-error">--! ERROR: COULD NOT LOAD MARKET DETAILS !--</p>
-        <p className="text-error text-xs font-mono">Check console for more details</p>
+        <p className="text-error">--! ERROR: COULD NOT LOAD PRICES !--</p>
       </div>
     );
   }
 
   return (
     <div className="mt-4 border-t border-base-content/20 pt-4 flex flex-col gap-4">
-      <div className="flex items-center gap-2 text-xs">
-        <span className="font-bold text-base-content/70">COLLATERAL_TOKEN:</span>
-        {collateralTokenAddress && <Address address={collateralTokenAddress} size="xs" />}
-      </div>
-
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto p-2 border border-dashed border-base-content/20 rounded-md">
         <table className="table table-sm w-full">
           <thead>
             <tr>
               <th>Outcome</th>
               <th className="text-right">Buy Price</th>
               <th className="text-right">Sell Price</th>
-              {userAddress && <th className="text-right">Your Balance</th>}
+              <th className="text-right">Total Shares</th>
             </tr>
           </thead>
           <tbody>
-            {outcomeData.slice(1).map((outcome, i) => (
+            {outcomeData.map((outcome, i) => (
               <tr key={i}>
                 <td className="font-semibold">{outcome.name}</td>
-                <td className="text-right font-mono">{fromFixed64x64(outcome.buyPrice)}</td>
-                <td className="text-right font-mono">{fromFixed64x64(outcome.sellPrice)}</td>
-                {userAddress && (
-                  <td className="text-right font-mono">
-                    {outcome.balance !== undefined ? formatEther(outcome.balance) : "N/A"}
-                  </td>
-                )}
+                <td className="text-right font-mono">{outcome.buyPrice ? formatEther(outcome.buyPrice) : "N/A"}</td>
+                <td className="text-right font-mono">{outcome.sellPrice ? formatEther(outcome.sellPrice) : "N/A"}</td>
+                <td className="text-right font-mono">
+                  {market.marketInfo ? formatEther(market.marketInfo[1][i + 1]) : "N/A"}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+};
+
+const MarketItem = ({ market }: { market: MarketInfo }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showPrices, setShowPrices] = useState(false);
+  const { status, className } = getMarketStatus(market.startTimestamp, market.endTimestamp);
+
+  const formatDate = (timestamp: bigint) => {
+    return new Date(Number(timestamp) * 1000).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <div className="collapse collapse-arrow bg-base-100 border-2 border-dashed border-primary/20 hover:border-primary/60 transition-colors duration-300 rounded-lg shadow-lg shadow-primary/10">
+      <input type="checkbox" className="peer" checked={isOpen} onChange={e => setIsOpen(e.target.checked)} />
+      <div className="collapse-title peer-checked:bg-base-200/10 text-xs">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-bold text-base-content/70 truncate" title={market.name}>
+              <span className="text-base-content/70 mr-2">[{market.marketId}]</span>
+              {market.name}
+            </h3>
+            <div className="flex gap-2 text-sm">
+              <span>
+                <span className="text-success">{formatDate(market.startTimestamp)}</span> → <span className="text-error">{formatDate(market.endTimestamp)}</span>
+              </span>
+            </div>
+          </div>
+          <div className="font-bold">
+            <span className={className}>[{status}]</span>
+          </div>
+        </div>
+      </div>
+      <div className="collapse-content bg-base-300/20 text-sm">
+        <div className="pt-4 flex flex-col gap-4">
+          <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+            <div>
+              <span className="font-bold text-base-content/70">[MARKET_DESCRIPTION]: </span>
+              {market.description}
+            </div>
+            <div>
+              <span className="font-bold text-base-content/70">[CATEGORY]: </span>
+              {market.category}
+            </div>
+            <div>
+              <span className="font-bold text-base-content/70">[OUTCOMES]: </span>
+              {market.outcomes.join(", ")}
+            </div>
+            <div>
+              <span className="font-bold text-base-content/70">[CREATOR]: </span>
+              {market.creator}
+            </div>
+            <div>
+              <span className="font-bold text-base-content/70">[MARKET_CONTRACT]: </span>
+              {market.market}
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <button className="btn btn-sm btn-primary" onClick={() => setShowDetails(!showDetails)}>
+              {showDetails ? "Hide" : "Show"} Market Info
+            </button>
+            <button className="btn btn-sm btn-primary" onClick={() => setShowPrices(!showPrices)}>
+              {showPrices ? "Hide" : "Show"} Prices
+            </button>
+          </div>
+
+          {showDetails && <MarketExtraDetails market={market} />}
+          {showPrices && <MarketPrices market={market} isVisible={showPrices} />}
+        </div>
       </div>
     </div>
   );
@@ -87,8 +175,6 @@ type MarketListProps = {
 };
 
 export const MarketList = ({ markets }: MarketListProps) => {
-  const [openMarketId, setOpenMarketId] = useState<number | null>(null);
-
   if (markets.length === 0) {
     return (
       <div className="flex flex-wrap justify-center py-40">
@@ -97,83 +183,40 @@ export const MarketList = ({ markets }: MarketListProps) => {
     );
   }
 
-  const formatTimestamp = (timestamp: bigint) => {
-    const date = new Date(Number(timestamp) * 1000);
-    const YYYY = date.getFullYear();
-    const MM = String(date.getMonth() + 1).padStart(2, "0");
-    const DD = String(date.getDate()).padStart(2, "0");
-    const hh = String(date.getHours()).padStart(2, "0");
-    const mm = String(date.getMinutes()).padStart(2, "0");
-    return `${YYYY}-${MM}-${DD} ${hh}:${mm}`;
-  };
-
   return (
     <div className="w-full flex flex-col gap-4 font-mono">
       {markets.map(market => (
-        <div
-          key={market.market}
-          className="collapse collapse-arrow bg-base-100 border-2 border-dashed border-primary/20 hover:border-primary/60 transition-colors duration-300 rounded-lg shadow-lg shadow-primary/10"
-        >
-          <input
-            type="checkbox"
-            className="peer"
-            checked={openMarketId === market.marketId}
-            onChange={e => {
-              setOpenMarketId(e.target.checked ? market.marketId : null);
-            }}
-          />
-          <div className="collapse-title peer-checked:bg-base-200/10 text-xs">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <div className="flex-grow min-w-0">
-                <h3 className="text-lg font-bold text-base-content/70 truncate" title={market.name}>
-                  <span className="text-base-content/70 mr-2">[{market.marketId}]</span>
-                  {market.name}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                <div
-                  className="flex items-center gap-2 text-xs"
-                  title={`Start: ${new Date(
-                    Number(market.startTimestamp) * 1000,
-                  ).toUTCString()}, End: ${new Date(Number(market.endTimestamp) * 1000).toUTCString()}`}
-                >
-                  <span className="font-semibold text-success">{formatTimestamp(market.startTimestamp)}</span>
-                  <span className="text-base-content/70">-</span>
-                  <span className="font-semibold text-error">{formatTimestamp(market.endTimestamp)}</span>
-                </div>
-                <div className="font-bold">
-                  {new Date() > new Date(Number(market.endTimestamp) * 1000) ? (
-                    <span className="text-error">[CLOSED]</span>
-                  ) : (
-                    <span className="text-success animate-pulse">[ACTIVE]</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="collapse-content bg-base-300/20 text-sm">
-            <div className="pt-4 flex flex-col gap-2">
-              <div className="p-4 border border-dashed border-base-content/20 rounded-md">
-                <p className="text-base-content m-0">
-                  <span className="font-bold text-base-content/70">[MARKET_DESCRIPTION]:</span>
-                  {market.description}
-                </p>
-              </div>
-              <div className="flex justify-between items-center text-xs pt-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-base-content/70">CREATOR:</span>
-                  <Address address={market.creator} size="xs" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base-content/70">CONTRACT:</span>
-                  <Address address={market.market} size="xs" />
-                </div>
-              </div>
-              <MarketDetails market={market} isVisible={openMarketId === market.marketId} />
-            </div>
-          </div>
-        </div>
+        <MarketItem key={market.market} market={market} />
       ))}
     </div>
   );
 };
+
+
+const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  
+  if (now < startTimestamp) {
+    return { status: "CREATED", className: "text-info" };
+  } else if (now >= startTimestamp && now < endTimestamp) {
+    return { status: "OPEN", className: "text-success animate-pulse" };
+  } else {
+    return { status: "CLOSED", className: "text-error" };
+  }
+};
+
+/**
+ *  Converts an int128 (signed 64.64 bit fixed point number) to a number
+ *  @param value number to be converted (usually from PrecogMarket or PrecogMaster contracts)
+ */
+export const fromInt128toNumber = (value: bigint): number => {
+  return Number(BigInt(value)) / Number((BigInt(2) ** BigInt(64)));
+}
+
+/**
+ *  Converts a number to int128 (signed 64.64 bit fixed point number)
+ *  @param value number to be converted (usually to use at PrecogMarket or PrecogMaster contracts)
+ */
+export const fromNumberToInt128 = (value: number): bigint => {
+  return BigInt(value) * (BigInt(2) ** BigInt(64));
+}

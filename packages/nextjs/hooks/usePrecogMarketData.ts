@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAccount, usePublicClient, useReadContracts } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
+import { useAccount, usePublicClient } from "wagmi";
 import { useScaffoldContract } from "./scaffold-eth";
 import { Address } from "viem";
 
@@ -13,18 +13,24 @@ export type MarketInfo = {
   endTimestamp: bigint;
   creator: Address;
   market: Address;
+  token: Address;
+  marketInfo: readonly [bigint, readonly bigint[], bigint, bigint, bigint] | undefined;
 };
 
 export const usePrecogMarkets = () => {
   const { data: masterContract } = useScaffoldContract({
     contractName: "PrecogMasterV7",
   });
+  const { data: marketContract } = useScaffoldContract({
+    contractName: "PrecogMarketV7",
+  });
   const publicClient = usePublicClient();
+  const { chain } = useAccount();
 
   return useQuery({
-    queryKey: ["markets"],
+    queryKey: ["markets", chain?.id],
     queryFn: async () => {
-      if (!masterContract?.address || !publicClient) return { markets: [], totalMarkets: 0n };
+      if (!masterContract?.address || !publicClient || !marketContract?.abi) return { markets: [], totalMarkets: 0n };
 
       // Get total markets count
       const totalMarkets = (await publicClient.readContract({
@@ -58,7 +64,7 @@ export const usePrecogMarkets = () => {
       });
 
       // Process results
-      const markets = marketsData
+      let markets = marketsData
         .map((result, index) => {
           if (!result.status || !result.result) return null;
 
@@ -77,94 +83,138 @@ export const usePrecogMarkets = () => {
         })
         .filter((market): market is MarketInfo => market !== null);
 
+      // multicall for extra market info
+      const extraInfoRequests = markets.flatMap(market => [
+        {
+          address: market.market,
+          abi: marketContract.abi,
+          functionName: "getMarketInfo",
+        },
+        {
+          address: market.market,
+          abi: marketContract.abi,
+          functionName: "token",
+        },
+      ]);
+
+      const extraInfoData = await publicClient.multicall({
+        contracts: extraInfoRequests,
+        allowFailure: true,
+      });
+
+      markets = markets.map((market, index) => {
+        const marketInfoResult = extraInfoData[index * 2];
+        const tokenResult = extraInfoData[index * 2 + 1];
+
+        const marketInfo =
+          marketInfoResult.status === "success"
+            ? (marketInfoResult.result as readonly [bigint, readonly bigint[], bigint, bigint, bigint])
+            : undefined;
+
+        const token = tokenResult.status === "success" ? (tokenResult.result as Address) : "0x0";
+
+        return {
+          ...market,
+          marketInfo,
+          token,
+        };
+      });
+
       return {
         markets,
         totalMarkets,
       };
     },
-    enabled: !!masterContract?.address && !!publicClient,
+    enabled: !!masterContract?.address && !!publicClient && !!marketContract?.abi,
     refetchOnWindowFocus: false,
-    refetchInterval: 60000 // 10 minute
+    refetchInterval: 60000, // 1 minute
   });
 };
 
-export const usePrecogMarketDetails = (marketAddress: Address, outcomes: string[], enabled: boolean) => {
+export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[], enabled: boolean) => {
   const { address: userAddress } = useAccount();
-
+  const publicClient = usePublicClient();
   const { data: marketContract } = useScaffoldContract({
     contractName: "PrecogMarketV7",
   });
 
-  const contractReadsEnabled = !!marketContract?.abi && enabled;
+  const query = useQuery({
+    queryKey: ["marketPrices", marketAddress, userAddress],
+    queryFn: async () => {
+      if (!publicClient || !marketContract?.abi) {
+        throw new Error("Public client or market contract ABI not available");
+      }
 
-  const {
-    data: multicallData,
-    isError,
-    isLoading,
-    error: multicallError,
-  } = useReadContracts({
-    contracts: [
-      {
-        address: marketAddress,
-        abi: marketContract?.abi,
-        functionName: "getPrices",
-      },
-      {
-        address: marketAddress,
-        abi: marketContract?.abi,
-        functionName: "token",
-      },
-      {
-        address: marketAddress,
-        abi: marketContract?.abi,
-        functionName: "getAccountOutcomeBalances",
-        args: [userAddress],
-      },
-    ],
-    query: {
-      enabled: contractReadsEnabled,
-      refetchOnWindowFocus: false,
-      refetchInterval: 60000 // 10 minutes
+      const multicallContracts: any[] = [
+        {
+          address: marketAddress,
+          abi: marketContract.abi,
+          functionName: "getPrices",
+        },
+      ];
+
+      if (userAddress) {
+        multicallContracts.push({
+          address: marketAddress,
+          abi: marketContract.abi,
+          functionName: "getAccountOutcomeBalances",
+          args: [userAddress],
+        });
+      }
+
+      const multicallData = await publicClient.multicall({
+        contracts: multicallContracts,
+        allowFailure: true,
+      });
+
+      const pricesResult = multicallData[0];
+      const balancesResult = userAddress ? multicallData[1] : undefined;
+
+      const outcomeData: {
+        name: string;
+        buyPrice?: bigint;
+        sellPrice?: bigint;
+        balance?: bigint;
+      }[] = [];
+
+      if (outcomes && pricesResult?.status === "success" && (!userAddress || balancesResult?.status === "success")) {
+        const prices = pricesResult.result as [bigint[], bigint[]];
+        const balances = balancesResult?.result as bigint[] | undefined;
+
+        for (let i = 0; i < outcomes.length; i++) {
+          outcomeData.push({
+            name: outcomes[i],
+            buyPrice: prices[0]?.[i + 1],
+            sellPrice: prices[1]?.[i + 1],
+            balance: balances?.[i],
+          });
+        }
+      }
+
+      const isAnyError = multicallData.some(d => d.status === "failure");
+
+      return {
+        outcomeData,
+        isError: isAnyError,
+        errors: {
+          prices: pricesResult?.error,
+          balances: balancesResult?.error,
+        },
+      };
     },
+    enabled: enabled && !!publicClient && !!marketContract?.abi,
+    refetchOnWindowFocus: false,
+    refetchInterval: 60000, // 1 minute
   });
 
-  const pricesResult = multicallData?.[0];
-  const tokenResult = multicallData?.[1];
-  const balancesResult = multicallData?.[2];
-
-  const outcomeData: {
-    name: string;
-    buyPrice?: bigint;
-    sellPrice?: bigint;
-    balance?: bigint;
-  }[] = [];
-
-  if (outcomes && pricesResult?.status === "success" && (!userAddress || balancesResult?.status === "success")) {
-    const prices = pricesResult.result as [bigint[], bigint[]];
-    const balances = balancesResult?.result as bigint[] | undefined;
-
-    for (let i = 0; i < outcomes.length; i++) {
-      outcomeData.push({
-        name: outcomes[i],
-        buyPrice: prices[0]?.[i],
-        sellPrice: prices[1]?.[i],
-        balance: balances?.[i],
-      });
-    }
-  }
-
-  const isAnyError = isError || multicallData?.some(d => d.status === "failure");
-
   return {
-    collateralTokenAddress: tokenResult?.result as Address | undefined,
-    outcomeData,
-    isLoading,
-    isError: isAnyError,
+    outcomeData: query.data?.outcomeData ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError || !!query.data?.isError,
     errors: {
-      multicall: multicallError,
-      prices: pricesResult?.error,
-      token: tokenResult?.error,
-      balances: balancesResult?.error,
+      multicall: query.error,
+      prices: query.data?.errors?.prices,
+      balances: query.data?.errors?.balances,
     },
   };
 };
