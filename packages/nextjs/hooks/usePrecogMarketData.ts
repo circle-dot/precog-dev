@@ -196,26 +196,38 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
             abi: marketContract.abi,
             functionName: "getPrices",
           },
+          {
+            address: marketAddress,
+            abi: marketContract.abi,
+            functionName: "getMarketInfo",
+          },
         ],
         allowFailure: true,
       });
 
-      const pricesResult = multicallData[0];
+      const [pricesResult, marketInfoResult] = multicallData;
 
       const outcomeData: {
         name: string;
         buyPrice?: bigint;
         sellPrice?: bigint;
+        shares?: bigint;
       }[] = [];
 
       if (outcomes && pricesResult?.status === "success") {
         const prices = pricesResult.result as [bigint[], bigint[]];
+        const marketInfo =
+          marketInfoResult?.status === "success"
+            ? (marketInfoResult.result as readonly [bigint, readonly bigint[], bigint, bigint, bigint])
+            : undefined;
+        const shares = marketInfo?.[1];
 
         for (let i = 0; i < outcomes.length; i++) {
           outcomeData.push({
             name: outcomes[i],
             buyPrice: prices[0]?.[i + 1],
             sellPrice: prices[1]?.[i + 1],
+            shares: shares?.[i + 1],
           });
         }
       }
@@ -227,6 +239,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
         isError: isAnyError,
         errors: {
           prices: pricesResult?.error,
+          marketInfo: marketInfoResult?.error,
         },
       };
     },
@@ -242,6 +255,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
     errors: {
       multicall: query.error,
       prices: query.data?.errors?.prices,
+      marketInfo: query.data?.errors?.marketInfo,
     },
   };
 };

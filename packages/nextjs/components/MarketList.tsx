@@ -2,20 +2,43 @@ import { useState } from "react";
 import { formatEther } from "viem";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import { MarketDetails, MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
+import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
+import { MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
 import { fromInt128toNumber } from "~~/utils/numbers";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 
-const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: MarketDetails }) => {
+const MarketExtraDetails = ({ market }: { market: MarketInfo }) => {
+  const {
+    data: details,
+    isLoading,
+    isError,
+  } = usePrecogMarketDetails(market.marketId, market.market, true);
+  const { targetNetwork } = useTargetNetwork();
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center pt-4">
+        <span className="loading loading-spinner loading-md"></span>
+      </div>
+    );
+  }
+
+  if (isError || !details) {
+    return (
+      <div className="flex justify-center items-center pt-4 flex-col">
+        <p className="text-error">--! ERROR: COULD NOT LOAD MARKET TRADING INFO !--</p>
+      </div>
+    );
+  }
+
   const { marketInfo, token, tokenSymbol, marketResultInfo } = details;
   const status = getDetailedMarketStatus(market.startTimestamp, market.endTimestamp, marketResultInfo[0]);
-  const { targetNetwork } = useTargetNetwork();
 
   return (
     <div className="flex flex-col gap-2">
       <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
       <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-      <p className="m-0">
+        <p className="m-0">
           <span className="font-bold text-base-content/70">Market Status:</span> {status}
         </p>
         <p className="m-0">
@@ -46,7 +69,8 @@ const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: 
       <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
       <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Trading Starts:</span> {formatDate(market.startTimestamp, true)}
+          <span className="font-bold text-base-content/70">Trading Starts:</span>{" "}
+          {formatDate(market.startTimestamp, true)}
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
@@ -87,18 +111,8 @@ const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: 
   );
 };
 
-const MarketPrices = ({
-  market,
-  details,
-  isVisible,
-}: {
-  market: MarketInfo;
-  details: MarketDetails;
-  isVisible: boolean;
-}) => {
-  const { outcomeData, isLoading, isError } = usePrecogMarketPrices(market.market, market.outcomes, isVisible);
-
-  if (!isVisible) return null;
+const MarketPrices = ({ market }: { market: MarketInfo }) => {
+  const { outcomeData, isLoading, isError } = usePrecogMarketPrices(market.market, market.outcomes, true);
 
   if (isLoading) {
     return (
@@ -151,7 +165,7 @@ const MarketPrices = ({
               <span className="px-2">|</span>
               <span>SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}</span>
               <span className="px-2">|</span>
-              <span>SHARES: {details.marketInfo ? fromInt128toNumber(details.marketInfo[1][i + 1]) : "N/A"}</span>
+              <span>SHARES: {outcome.shares ? fromInt128toNumber(outcome.shares) : "N/A"}</span>
             </div>
           </div>
         ))}
@@ -160,16 +174,13 @@ const MarketPrices = ({
   );
 };
 
-const MarketItem = ({ market }: { market: MarketInfo }) => {
+const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwork: ChainWithAttributes }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
 
-  const { data: details, isLoading } = usePrecogMarketDetails(market.marketId, market.market, showDetails || showPrices);
-
   const { status, className } = getMarketStatus(market.startTimestamp, market.endTimestamp);
 
-  const { targetNetwork } = useTargetNetwork();
 
   return (
     <div className="collapse collapse-arrow bg-base-100 transition-colors duration-300 rounded-lg shadow-lg shadow-primary/10">
@@ -195,47 +206,47 @@ const MarketItem = ({ market }: { market: MarketInfo }) => {
       </div>
       <div className="collapse-content bg-base-300/20 text-sm">
         <div className="pt-4 flex flex-col gap-4">
-       <div className="gap-2 flex flex-col">
-       <h4 className="font-bold text-base-content/70 m-0">:: Market Basic Info ::</h4>
-          <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
-            <div>
-              <span className="font-bold text-base-content/70">[MARKET_DESCRIPTION]: </span>
-              {market.description}
-            </div>
-            <div>
-              <span className="font-bold text-base-content/70">[CATEGORY]: </span>
-              {market.category}
-            </div>
-            <div>
-              <span className="font-bold text-base-content/70">[OUTCOMES]: </span>
-              {market.outcomes.join(", ")}
-            </div>
-            <div>
-              <span className="font-bold text-base-content/70">[CREATOR]: </span>
-              <a
-                href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:underline"
-              >
-                {market.creator}
-                <ArrowTopRightOnSquareIcon className="w-3 h-3" />
-              </a>
-            </div>
-            <div>
-              <span className="font-bold text-base-content/70">[MARKET_CONTRACT]: </span>
-              <a
-                href={getBlockExplorerAddressLink(targetNetwork, market.market)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:underline"
-              >
-                {market.market}
-                <ArrowTopRightOnSquareIcon className="w-3 h-3" />
-              </a>
+          <div className="gap-2 flex flex-col">
+            <h4 className="font-bold text-base-content/70 m-0">:: Market Basic Info ::</h4>
+            <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+              <div>
+                <span className="font-bold text-base-content/70">[MARKET_DESCRIPTION]: </span>
+                {market.description}
+              </div>
+              <div>
+                <span className="font-bold text-base-content/70">[CATEGORY]: </span>
+                {market.category}
+              </div>
+              <div>
+                <span className="font-bold text-base-content/70">[OUTCOMES]: </span>
+                {market.outcomes.join(", ")}
+              </div>
+              <div>
+                <span className="font-bold text-base-content/70">[CREATOR]: </span>
+                <a
+                  href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 hover:underline"
+                >
+                  {market.creator}
+                  <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                </a>
+              </div>
+              <div>
+                <span className="font-bold text-base-content/70">[MARKET_CONTRACT]: </span>
+                <a
+                  href={getBlockExplorerAddressLink(targetNetwork, market.market)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 hover:underline"
+                >
+                  {market.market}
+                  <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                </a>
+              </div>
             </div>
           </div>
-       </div>
 
           <div className="flex gap-4 pt-4">
             <button className="btn btn-sm btn-primary" onClick={() => setShowDetails(!showDetails)}>
@@ -246,17 +257,8 @@ const MarketItem = ({ market }: { market: MarketInfo }) => {
             </button>
           </div>
 
-          {isLoading && (showDetails || showPrices) && (
-            <div className="flex justify-center items-center pt-4">
-              <span className="loading loading-spinner loading-md"></span>
-            </div>
-          )}
-          {details && (
-            <>
-              {showDetails && <MarketExtraDetails market={market} details={details} />}
-              {showPrices && <MarketPrices market={market} details={details} isVisible={showPrices} />}
-            </>
-          )}
+          {showDetails && <MarketExtraDetails market={market} />}
+          {showPrices && <MarketPrices market={market} />}
         </div>
       </div>
     </div>
@@ -268,6 +270,8 @@ type MarketListProps = {
 };
 
 export const MarketList = ({ markets }: MarketListProps) => {
+  const { targetNetwork } = useTargetNetwork();
+
   if (markets.length === 0) {
     return (
       <div className="flex flex-wrap justify-center py-40">
@@ -279,7 +283,7 @@ export const MarketList = ({ markets }: MarketListProps) => {
   return (
     <div className="w-full flex flex-col gap-4 font-mono">
       {markets.map(market => (
-        <MarketItem key={market.market} market={market} />
+        <MarketItem key={market.market} market={market} targetNetwork={targetNetwork} />
       ))}
     </div>
   );
@@ -325,17 +329,6 @@ const formatSharesBalances = (sharesArray: readonly bigint[] | undefined): strin
   const balances = Array.from(sharesArray.slice(1)).map(fromInt128toNumber);
     
   return balances.join(", ");
-};
-
-/**
- *  Type guard to check if the market info is valid
- *  @param market market info
- */
-const isValidMarketInfo = (
-  market: MarketInfo,
-  details?: MarketDetails,
-): details is MarketDetails => {
-  return Boolean(details?.marketInfo && details?.token && details?.tokenSymbol);
 };
 
 /**
