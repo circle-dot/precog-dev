@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { formatEther } from "viem";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { MarketDetails, MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
 import { fromInt128toNumber } from "~~/utils/numbers";
+import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 
 const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: MarketDetails }) => {
   const { marketInfo, token, tokenSymbol, marketResultInfo } = details;
   const status = getDetailedMarketStatus(market.startTimestamp, market.endTimestamp, marketResultInfo[0]);
+  const { targetNetwork } = useTargetNetwork();
 
   return (
     <div className="flex flex-col gap-2">
@@ -16,9 +20,7 @@ const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: 
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
-          {marketResultInfo[0] === 0n
-            ? "[PENDING_RESOLUTION]"
-            : market.outcomes[Number(marketResultInfo[0]) - 1]}
+          {marketResultInfo[0] === 0n ? "[PENDING_RESOLUTION]" : market.outcomes[Number(marketResultInfo[0]) - 1]}
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Resolution Time:</span>{" "}
@@ -26,7 +28,19 @@ const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: 
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Reporter:</span>{" "}
-          {marketResultInfo[0] === 0n ? "[PENDING_RESOLUTION]" : marketResultInfo[2]}
+          {marketResultInfo[0] === 0n ? (
+            "[PENDING_RESOLUTION]"
+          ) : (
+            <a
+              href={getBlockExplorerAddressLink(targetNetwork, marketResultInfo[2])}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:underline"
+            >
+              {marketResultInfo[2]}
+              <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            </a>
+          )}
         </p>
       </div>
       <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
@@ -38,7 +52,17 @@ const MarketExtraDetails = ({ market, details }: { market: MarketInfo; details: 
           <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
         </p>
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Collateral Token:</span> {token} ({tokenSymbol})
+          <span className="font-bold text-base-content/70">Collateral Token:</span>{" "}
+          <a
+            href={getBlockExplorerAddressLink(targetNetwork, token)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:underline"
+          >
+            {token}
+            <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+          </a>{" "}
+          ({tokenSymbol})
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
@@ -145,6 +169,8 @@ const MarketItem = ({ market }: { market: MarketInfo }) => {
 
   const { status, className } = getMarketStatus(market.startTimestamp, market.endTimestamp);
 
+  const { targetNetwork } = useTargetNetwork();
+
   return (
     <div className="collapse collapse-arrow bg-base-100 transition-colors duration-300 rounded-lg shadow-lg shadow-primary/10">
       <input type="checkbox" className="peer" checked={isOpen} onChange={e => setIsOpen(e.target.checked)} />
@@ -186,11 +212,27 @@ const MarketItem = ({ market }: { market: MarketInfo }) => {
             </div>
             <div>
               <span className="font-bold text-base-content/70">[CREATOR]: </span>
-              {market.creator}
+              <a
+                href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:underline"
+              >
+                {market.creator}
+                <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+              </a>
             </div>
             <div>
               <span className="font-bold text-base-content/70">[MARKET_CONTRACT]: </span>
-              {market.market}
+              <a
+                href={getBlockExplorerAddressLink(targetNetwork, market.market)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:underline"
+              >
+                {market.market}
+                <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+              </a>
             </div>
           </div>
        </div>
