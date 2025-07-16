@@ -13,16 +13,18 @@ export type MarketInfo = {
   endTimestamp: bigint;
   creator: Address;
   market: Address;
+};
+
+export type MarketDetails = {
+  marketInfo: readonly [bigint, readonly bigint[], bigint, bigint, bigint];
   token: Address;
-  marketInfo: readonly [bigint, readonly bigint[], bigint, bigint, bigint] | undefined;
+  tokenSymbol: string;
+  marketResultInfo: readonly [bigint, bigint, Address];
 };
 
 export const usePrecogMarkets = () => {
   const { data: masterContract } = useScaffoldContract({
     contractName: "PrecogMasterV7",
-  });
-  const { data: marketContract } = useScaffoldContract({
-    contractName: "PrecogMarketV7",
   });
   const publicClient = usePublicClient();
   const { chain } = useAccount();
@@ -30,7 +32,7 @@ export const usePrecogMarkets = () => {
   return useQuery({
     queryKey: ["markets", chain?.id],
     queryFn: async () => {
-      if (!masterContract?.address || !publicClient || !marketContract?.abi) return { markets: [], totalMarkets: 0n };
+      if (!masterContract?.address || !publicClient) return { markets: [], totalMarkets: 0n };
 
       // Get total markets count
       const totalMarkets = (await publicClient.readContract({
@@ -64,7 +66,7 @@ export const usePrecogMarkets = () => {
       });
 
       // Process results
-      let markets = marketsData
+      const markets = marketsData
         .map((result, index) => {
           if (!result.status || !result.result) return null;
 
@@ -79,114 +81,141 @@ export const usePrecogMarkets = () => {
             endTimestamp: marketData[5],
             creator: marketData[6],
             market: marketData[7],
-          } as MarketInfo;
+          };
         })
         .filter((market): market is MarketInfo => market !== null);
-
-      // multicall for extra market info
-      const extraInfoRequests = markets.flatMap(market => [
-        {
-          address: market.market,
-          abi: marketContract.abi,
-          functionName: "getMarketInfo",
-        },
-        {
-          address: market.market,
-          abi: marketContract.abi,
-          functionName: "token",
-        },
-      ]);
-
-      const extraInfoData = await publicClient.multicall({
-        contracts: extraInfoRequests,
-        allowFailure: true,
-      });
-
-      markets = markets.map((market, index) => {
-        const marketInfoResult = extraInfoData[index * 2];
-        const tokenResult = extraInfoData[index * 2 + 1];
-
-        const marketInfo =
-          marketInfoResult.status === "success"
-            ? (marketInfoResult.result as readonly [bigint, readonly bigint[], bigint, bigint, bigint])
-            : undefined;
-
-        const token = tokenResult.status === "success" ? (tokenResult.result as Address) : "0x0";
-
-        return {
-          ...market,
-          marketInfo,
-          token,
-        };
-      });
 
       return {
         markets,
         totalMarkets,
       };
     },
-    enabled: !!masterContract?.address && !!publicClient && !!marketContract?.abi,
+    enabled: !!masterContract?.address && !!publicClient,
     refetchOnWindowFocus: false,
     refetchInterval: 60000, // 1 minute
   });
 };
 
+export const usePrecogMarketDetails = (marketId: number, marketAddress: Address, enabled: boolean) => {
+  const publicClient = usePublicClient();
+  const { data: marketContract } = useScaffoldContract({
+    contractName: "PrecogMarketV7",
+  });
+  const { data: masterContract } = useScaffoldContract({
+    contractName: "PrecogMasterV7",
+  });
+
+  return useQuery({
+    queryKey: ["marketDetails", marketAddress],
+    queryFn: async () => {
+      if (!publicClient || !marketContract?.abi || !masterContract?.abi || !masterContract?.address) {
+        throw new Error("Public client or contract ABIs not available");
+      }
+
+      const multicallData = await publicClient.multicall({
+        contracts: [
+          {
+            address: marketAddress,
+            abi: marketContract.abi,
+            functionName: "getMarketInfo",
+          },
+          {
+            address: marketAddress,
+            abi: marketContract.abi,
+            functionName: "token",
+          },
+          {
+            address: masterContract.address,
+            abi: masterContract.abi,
+            functionName: "marketResultInfo",
+            args: [BigInt(marketId)],
+          },
+        ],
+        allowFailure: true,
+      });
+
+      const [marketInfoResult, tokenResult, marketResultInfoResult] = multicallData;
+
+      const marketInfo =
+        marketInfoResult?.status === "success"
+          ? (marketInfoResult.result as (typeof marketInfoResult.result))
+          : undefined;
+      const token = tokenResult?.status === "success" ? (tokenResult.result as Address) : undefined;
+      const marketResultInfo =
+        marketResultInfoResult?.status === "success"
+          ? (marketResultInfoResult.result as (typeof marketResultInfoResult.result))
+          : undefined;
+
+      if (!marketInfo || !token || !marketResultInfo) {
+        throw new Error("Failed to fetch market details");
+      }
+
+      const tokenSymbol = (await publicClient.readContract({
+        address: token,
+        abi: [
+          {
+            inputs: [],
+            name: "symbol",
+            outputs: [{ name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+        ] as const,
+        functionName: "symbol",
+      })) as string;
+
+      return {
+        marketInfo,
+        token,
+        tokenSymbol,
+        marketResultInfo,
+      } as MarketDetails;
+    },
+    enabled: enabled && !!publicClient && !!marketContract?.abi && !!masterContract?.abi,
+    refetchOnWindowFocus: false,
+  });
+};
+
 export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[], enabled: boolean) => {
-  const { address: userAddress } = useAccount();
   const publicClient = usePublicClient();
   const { data: marketContract } = useScaffoldContract({
     contractName: "PrecogMarketV7",
   });
 
   const query = useQuery({
-    queryKey: ["marketPrices", marketAddress, userAddress],
+    queryKey: ["marketPrices", marketAddress],
     queryFn: async () => {
       if (!publicClient || !marketContract?.abi) {
         throw new Error("Public client or market contract ABI not available");
       }
 
-      const multicallContracts: any[] = [
-        {
-          address: marketAddress,
-          abi: marketContract.abi,
-          functionName: "getPrices",
-        },
-      ];
-
-      if (userAddress) {
-        multicallContracts.push({
-          address: marketAddress,
-          abi: marketContract.abi,
-          functionName: "getAccountOutcomeBalances",
-          args: [userAddress],
-        });
-      }
-
       const multicallData = await publicClient.multicall({
-        contracts: multicallContracts,
+        contracts: [
+          {
+            address: marketAddress,
+            abi: marketContract.abi,
+            functionName: "getPrices",
+          },
+        ],
         allowFailure: true,
       });
 
       const pricesResult = multicallData[0];
-      const balancesResult = userAddress ? multicallData[1] : undefined;
 
       const outcomeData: {
         name: string;
         buyPrice?: bigint;
         sellPrice?: bigint;
-        balance?: bigint;
       }[] = [];
 
-      if (outcomes && pricesResult?.status === "success" && (!userAddress || balancesResult?.status === "success")) {
+      if (outcomes && pricesResult?.status === "success") {
         const prices = pricesResult.result as [bigint[], bigint[]];
-        const balances = balancesResult?.result as bigint[] | undefined;
 
         for (let i = 0; i < outcomes.length; i++) {
           outcomeData.push({
             name: outcomes[i],
             buyPrice: prices[0]?.[i + 1],
             sellPrice: prices[1]?.[i + 1],
-            balance: balances?.[i],
           });
         }
       }
@@ -198,7 +227,6 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
         isError: isAnyError,
         errors: {
           prices: pricesResult?.error,
-          balances: balancesResult?.error,
         },
       };
     },
@@ -214,7 +242,6 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
     errors: {
       multicall: query.error,
       prices: query.data?.errors?.prices,
-      balances: query.data?.errors?.balances,
     },
   };
 };
