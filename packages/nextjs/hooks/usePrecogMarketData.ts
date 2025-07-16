@@ -3,7 +3,14 @@ import { useAccount, usePublicClient } from "wagmi";
 import { useScaffoldContract } from "./scaffold-eth";
 import { Address } from "viem";
 
-export type MarketInfo = {
+/**
+ * Core types for market data structures
+ */
+
+/**
+ * Represents the basic information of a prediction market
+ */
+export interface MarketInfo {
   marketId: number;
   name: string;
   description: string;
@@ -13,15 +20,26 @@ export type MarketInfo = {
   endTimestamp: bigint;
   creator: Address;
   market: Address;
-};
+}
 
-export type MarketDetails = {
+/**
+ * Represents detailed market information including trading stats and resolution data
+ * @property marketInfo - Tuple containing [totalShares, sharesBalances, lockedCollateral, totalBuys, totalSells]
+ * @property token - Address of the collateral token used for trading
+ * @property tokenSymbol - Symbol of the collateral token (e.g., "DAI")
+ * @property marketResultInfo - Tuple containing [outcome, resolutionTime, reporter]
+ */
+export interface MarketDetails {
   marketInfo: readonly [bigint, readonly bigint[], bigint, bigint, bigint];
   token: Address;
   tokenSymbol: string;
   marketResultInfo: readonly [bigint, bigint, Address];
-};
+}
 
+/**
+ * Hook to fetch all prediction markets from the master contract
+ * @returns Object containing markets array and total count
+ */
 export const usePrecogMarkets = () => {
   const { data: masterContract } = useScaffoldContract({
     contractName: "PrecogMasterV7",
@@ -34,7 +52,7 @@ export const usePrecogMarkets = () => {
     queryFn: async () => {
       if (!masterContract?.address || !publicClient) return { markets: [], totalMarkets: 0n };
 
-      // Get total markets count
+      // Get total markets count from master contract
       const totalMarkets = (await publicClient.readContract({
         address: masterContract.address,
         abi: masterContract.abi,
@@ -45,10 +63,10 @@ export const usePrecogMarkets = () => {
         return { markets: [], totalMarkets };
       }
 
-      // Create array of all market IDs to fetch in descending order
+      // Create array of market IDs in descending order (newest first)
       const marketIds = Array.from({ length: Number(totalMarkets) }, (_, i) => totalMarkets - 1n - BigInt(i));
 
-      // Prepare multicall contracts array
+      // Prepare multicall requests to fetch all markets data in a single call
       const marketRequests = marketIds.map(
         marketId =>
           ({
@@ -59,13 +77,13 @@ export const usePrecogMarkets = () => {
           } as const),
       );
 
-      // Execute multicall
+      // Execute multicall and process results
       const marketsData = await publicClient.multicall({
         contracts: marketRequests,
         allowFailure: true,
       });
 
-      // Process results
+      // Transform raw contract data into MarketInfo objects
       const markets = marketsData
         .map((result, index) => {
           if (!result.status || !result.result) return null;
@@ -92,10 +110,17 @@ export const usePrecogMarkets = () => {
     },
     enabled: !!masterContract?.address && !!publicClient,
     refetchOnWindowFocus: false,
-    refetchInterval: 60000, // 1 minute
+    refetchInterval: 300000, // Refresh every 5 minutes
   });
 };
 
+/**
+ * Hook to fetch detailed information about a specific market
+ * @param marketId - Unique identifier of the market
+ * @param marketAddress - Contract address of the market
+ * @param enabled - Whether to enable the query
+ * @returns Detailed market information including trading stats and resolution data
+ */
 export const usePrecogMarketDetails = (marketId: number, marketAddress: Address, enabled: boolean) => {
   const publicClient = usePublicClient();
   const { data: marketContract } = useScaffoldContract({
@@ -112,6 +137,7 @@ export const usePrecogMarketDetails = (marketId: number, marketAddress: Address,
         throw new Error("Public client or contract ABIs not available");
       }
 
+      // Fetch market details, token info, and result info in a single multicall
       const multicallData = await publicClient.multicall({
         contracts: [
           {
@@ -136,6 +162,7 @@ export const usePrecogMarketDetails = (marketId: number, marketAddress: Address,
 
       const [marketInfoResult, tokenResult, marketResultInfoResult] = multicallData;
 
+      // Extract and validate results
       const marketInfo =
         marketInfoResult?.status === "success"
           ? (marketInfoResult.result as (typeof marketInfoResult.result))
@@ -150,6 +177,7 @@ export const usePrecogMarketDetails = (marketId: number, marketAddress: Address,
         throw new Error("Failed to fetch market details");
       }
 
+      // Fetch token symbol from the collateral token contract
       const tokenSymbol = (await publicClient.readContract({
         address: token,
         abi: [
@@ -176,6 +204,13 @@ export const usePrecogMarketDetails = (marketId: number, marketAddress: Address,
   });
 };
 
+/**
+ * Hook to fetch current market prices and shares for all outcomes
+ * @param marketAddress - Contract address of the market
+ * @param outcomes - Array of outcome names
+ * @param enabled - Whether to enable the query
+ * @returns Current prices and shares for each outcome
+ */
 export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[], enabled: boolean) => {
   const publicClient = usePublicClient();
   const { data: marketContract } = useScaffoldContract({
@@ -189,6 +224,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
         throw new Error("Public client or market contract ABI not available");
       }
 
+      // Fetch prices and market info in a single multicall
       const multicallData = await publicClient.multicall({
         contracts: [
           {
@@ -207,6 +243,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
 
       const [pricesResult, marketInfoResult] = multicallData;
 
+      // Combine prices and shares data for each outcome
       const outcomeData: {
         name: string;
         buyPrice?: bigint;
@@ -222,6 +259,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
             : undefined;
         const shares = marketInfo?.[1];
 
+        // Map outcome data with corresponding prices and shares
         for (let i = 0; i < outcomes.length; i++) {
           outcomeData.push({
             name: outcomes[i],
@@ -245,7 +283,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
     },
     enabled: enabled && !!publicClient && !!marketContract?.abi,
     refetchOnWindowFocus: false,
-    refetchInterval: 60000, // 1 minute
+    refetchInterval: 300000, // Refresh every 5 minutes
   });
 
   return {
