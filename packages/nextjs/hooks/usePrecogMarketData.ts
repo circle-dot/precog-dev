@@ -27,7 +27,7 @@ export interface MarketInfo {
  * @property marketInfo - Tuple containing [totalShares, sharesBalances, lockedCollateral, totalBuys, totalSells]
  * @property token - Address of the collateral token used for trading
  * @property tokenSymbol - Symbol of the collateral token (e.g., "DAI")
- * @property marketResultInfo - Tuple containing [outcome, resolutionTime, reporter]
+ * @property marketResultInfo - Tuple containing [outcome, resolutionTime, oracleAddress]
  */
 export interface MarketDetails {
   marketInfo: readonly [bigint, readonly bigint[], bigint, bigint, bigint];

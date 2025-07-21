@@ -71,21 +71,21 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
           {/* Basic Market Info */}
           <div className="gap-2 flex flex-col">
             <h4 className="font-bold text-base-content/70 m-0">:: Market Basic Info ::</h4>
-            <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+            <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
               <div>
-                <span className="font-bold text-base-content/70">[MARKET_DESCRIPTION]: </span>
+                <span className="font-bold text-base-content/70">Market Description: </span>
                 {market.description}
               </div>
               <div>
-                <span className="font-bold text-base-content/70">[CATEGORY]: </span>
+                <span className="font-bold text-base-content/70">Category: </span>
                 {market.category}
               </div>
               <div>
-                <span className="font-bold text-base-content/70">[OUTCOMES]: </span>
+                <span className="font-bold text-base-content/70">Outcomes: </span>
                 {market.outcomes.join(", ")}
               </div>
               <div>
-                <span className="font-bold text-base-content/70">[CREATOR]: </span>
+                <span className="font-bold text-base-content/70">Creator: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
                   target="_blank"
@@ -97,7 +97,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                 </a>
               </div>
               <div>
-                <span className="font-bold text-base-content/70">[MARKET_CONTRACT]: </span>
+                <span className="font-bold text-base-content/70">Market Contract: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.market)}
                   target="_blank"
@@ -161,25 +161,26 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
   const status = getDetailedMarketStatus(market.startTimestamp, market.endTimestamp, marketResultInfo[0]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       {/* Market Resolution Section */}
-      <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
+    <div className="flex flex-col gap-4">
+    <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
       <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
         <p className="m-0">
           <span className="font-bold text-base-content/70">Market Status:</span> {status}
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
-          {marketResultInfo[0] === 0n ? "[PENDING_RESOLUTION]" : market.outcomes[Number(marketResultInfo[0]) - 1]}
+          {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Resolution Time:</span>{" "}
-          {marketResultInfo[0] === 0n ? "[PENDING_RESOLUTION]" : formatDate(marketResultInfo[1], true)}
+          {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
         </p>
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Reporter:</span>{" "}
+          <span className="font-bold text-base-content/70">Oracle:</span>{" "}
           {marketResultInfo[0] === 0n ? (
-            "[PENDING_RESOLUTION]"
+            "Pending Resolution"
           ) : (
             <a
               href={getBlockExplorerAddressLink(targetNetwork, marketResultInfo[2])}
@@ -193,9 +194,11 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
           )}
         </p>
       </div>
+    </div>
 
       {/* Market Trading Section */}
-      <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
+    <div className="flex flex-col gap-4">
+    <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
       <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
         <p className="m-0">
           <span className="font-bold text-base-content/70">Trading Starts:</span>{" "}
@@ -218,16 +221,8 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
           ({tokenSymbol})
         </p>
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
-          {formatMarketValue(marketInfo[0], fromInt128toNumber)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
-          {formatSharesBalances(marketInfo[1])}
-        </p>
-        <p className="m-0">
           <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
-          {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed(4))}
+          {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed())} ({tokenSymbol})
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Total Buys:</span> {formatMarketValue(marketInfo[3])}
@@ -235,7 +230,16 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
         <p className="m-0">
           <span className="font-bold text-base-content/70">Total Sells:</span> {formatMarketValue(marketInfo[4])}
         </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
+          {formatMarketValue(marketInfo[0], fromInt128toNumber)}
+        </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
+          {formatSharesBalances(marketInfo[1], market.outcomes)}
+        </p>
       </div>
+    </div>
     </div>
   );
 };
@@ -279,24 +283,22 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
   const winningProbability = calculateProbability(winningOutcome?.buyPrice);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <h4 className="font-bold text-base-content/70 m-0">:: Outcome Prices ::</h4>
+      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1 font-mono text-xs">
       {winningOutcome && (
         <div className="text-xs">
-          &gt; PREDICTION: {winningOutcome.name} ({winningProbability.toFixed(2)}%)
+        PREDICTION: {winningOutcome.name} ({winningProbability.toFixed(2)}%)
         </div>
       )}
-      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2 font-mono text-xs">
         {outcomeData.map((outcome, i) => (
           <div key={i}>
-            <div className="font-semibold text-base-content/80">{`> ${outcome.name}`}</div>
-            <div className="pl-4">
-              <span>BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}</span>
+            <span className="font-semibold text-base-content/80">{`> ${outcome.name}`}</span>
+            <span className="pl-2">
+              - BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}
               <span className="px-2">|</span>
-              <span>SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}</span>
-              <span className="px-2">|</span>
-              <span>SHARES: {outcome.shares ? fromInt128toNumber(outcome.shares) : "N/A"}</span>
-            </div>
+              SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}
+            </span>
           </div>
         ))}
       </div>
@@ -342,16 +344,20 @@ const getDetailedMarketStatus = (startTimestamp: bigint, endTimestamp: bigint, r
 
 /**
  * Formats the shares balances of a market
- * @param sharesArray array of shares balances (index 0 is skipped as it's a placeholder)
+ * @param sharesArray array of shares balances (index 0 is skipped as it's a 0-index based)
+ * @param outcomes The outcomes of the market
  * @returns Comma-separated string of share balances
  */
-const formatSharesBalances = (sharesArray: readonly bigint[] | undefined): string => {
-  if (!sharesArray) return "N/A";
+const formatSharesBalances = (
+  sharesArray: readonly bigint[] | undefined,
+  outcomes: readonly string[] | undefined,
+): string => {
+  if (!sharesArray || !outcomes) return "N/A";
 
-  // Skip the first element (placeholder) and convert the rest to numbers
+  // Skip the first element (0-index based) and convert the rest to numbers
   const balances = Array.from(sharesArray.slice(1)).map(fromInt128toNumber);
 
-  return balances.join(", ");
+  return balances.map((balance, index) => `${balance.toFixed()} (${outcomes[index]})`).join(" | ");
 };
 
 /**
