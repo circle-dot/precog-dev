@@ -251,18 +251,7 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
           <span className="font-bold text-base-content/70">Market Status:</span> {status}
         </p>
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
-          {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Resolution Time:</span>{" "}
-          {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
-        </p>
-        <p className="m-0">
           <span className="font-bold text-base-content/70">Oracle:</span>{" "}
-          {marketResultInfo[0] === 0n ? (
-            "Pending Resolution"
-          ) : (
             <a
               href={getBlockExplorerAddressLink(targetNetwork, marketResultInfo[2])}
               target="_blank"
@@ -272,7 +261,14 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
               {marketResultInfo[2]}
               <ArrowTopRightOnSquareIcon className="w-3 h-3" />
             </a>
-          )}
+        </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
+          {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
+        </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Resolution Date:</span>{" "}
+          {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
         </p>
       </div>
     </div>
