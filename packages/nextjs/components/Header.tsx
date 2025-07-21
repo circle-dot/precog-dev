@@ -4,13 +4,7 @@ import React, {useCallback, useRef, useState} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {
-    Bars3Icon,
-    BugAntIcon,
-    ChartBarSquareIcon,
-    DocumentPlusIcon,
-    HomeIcon,
-} from "@heroicons/react/24/outline";
+import { Bars3Icon, BugAntIcon, DocumentPlusIcon, HomeIcon } from "@heroicons/react/24/outline";
 import {FaucetButton, RainbowKitCustomConnectButton} from "~~/components/scaffold-eth";
 import {useOutsideClick, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {useAccount} from "wagmi";
@@ -28,12 +22,8 @@ export const defaultLinks: HeaderMenuLink[] = [
         label: "Home",
         href: "/",
         icon: <HomeIcon className="h-4 w-4"/>
-    },
-    {
-        label: "Market Details",
-        href: "/market",
-        icon: <ChartBarSquareIcon className="h-4 w-4"/>,
     }
+
 ]
 
 export const debugLink: HeaderMenuLink = {

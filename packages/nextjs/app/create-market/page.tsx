@@ -1,20 +1,20 @@
 "use client";
 
-import type {NextPage} from "next";
-import {useAccount, useWriteContract} from "wagmi";
-import {useScaffoldContract, useScaffoldReadContract, useTransactor} from "~~/hooks/scaffold-eth";
-import {notification} from "~~/utils/scaffold-eth";
-import {useEffect, useState} from "react";
-import {displayTxResult} from "~~/app/debug/_components/contract";
-import {AddressInput} from "~~/components/scaffold-eth";
+import type { NextPage } from "next";
+import { useAccount, useWriteContract } from "wagmi";
+import { useScaffoldContract, useScaffoldReadContract, useTransactor } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
+import { useEffect, useState } from "react";
+import { displayTxResult } from "~~/app/debug/_components/contract";
+import { AddressInput } from "~~/components/scaffold-eth";
 
 const CreateMarket: NextPage = () => {
-    const {address: connectedAddress} = useAccount();
-    const {data: createdMarkets} = useScaffoldReadContract({
+    const { address: connectedAddress } = useAccount();
+    const { data: createdMarkets } = useScaffoldReadContract({
         contractName: "PrecogMasterV7", functionName: "createdMarkets"
     });
-    const {data: master, isLoading: isMasterLoading} = useScaffoldContract(
-        {contractName: "PrecogMasterV7"}
+    const { data: master, isLoading: isMasterLoading } = useScaffoldContract(
+        { contractName: "PrecogMasterV7" }
     );
 
     const {writeContractAsync, isPending} = useWriteContract();
@@ -151,7 +151,7 @@ const CreateMarket: NextPage = () => {
             // Validate market parameters (could be improved a lot!)
             if (name && description && category && possibleOutcomes.length >= 2 &&
                 startTimestamp && endTimestamp && endTimestamp > startTimestamp) {
-                await writeTx(writeContractAsyncWithParams, {blockConfirmations: 1});
+                await writeTx(writeContractAsyncWithParams, { blockConfirmations: 1 });
 
                 console.log("New market created!");
 
@@ -189,32 +189,32 @@ const CreateMarket: NextPage = () => {
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Name</span>
                         <input type="text" value={name} onChange={e => setName(e.target.value)}
-                               placeholder="Will Argentina beat Colombia in the Copa America?"
-                               className="input border border-primary rounded-xl w-full"
+                            placeholder="Will Argentina beat Colombia in the Copa America?"
+                            className="input border border-primary rounded-xl w-full"
                         />
-                        <span className="text-xs italic pl-3">Note: should be in a YES/NO question form.</span>
+                        <span className="text-xs italic pl-3">Note: The first letter should be uppercase and should end with a question mark.</span>
                     </div>
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Description</span>
                         <textarea value={description} onChange={e => setDescription(e.target.value)}
-                                  placeholder="Winner at match conclusion (regular, extra-time and penalty shoot-out)."
-                                  className="input border border-primary rounded-xl px-4 py-2 min-h-24 w-full"
+                            placeholder="Winner at match conclusion (regular, extra-time and penalty shoot-out)."
+                            className="input border border-primary rounded-xl px-4 py-2 min-h-24 w-full"
                         />
                         <span className="text-xs italic pl-3">Note: should specify market resolve conditions.</span>
                     </div>
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Category</span>
                         <input type="text" placeholder="SPORTS" value={category}
-                               onChange={e => setCategory(e.target.value)}
-                               className="input border border-primary rounded-xl w-full"
+                            onChange={e => setCategory(e.target.value)}
+                            className="input border border-primary rounded-xl w-full"
                         />
                         <span className="text-xs italic pl-3">Note: One word in plural tense.</span>
                     </div>
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Outcomes</span>
                         <input type="text" value={outcomes}
-                               onChange={e => setOutcomes(e.target.value)}
-                               className="input border border-primary rounded-xl w-full"
+                            onChange={e => setOutcomes(e.target.value)}
+                            className="input border border-primary rounded-xl w-full"
                         />
                         <span className="text-xs italic pl-3">Note: Possible outcomes CSV (eg: YES, NO, MAYBE).</span>
                     </div>
@@ -222,10 +222,10 @@ const CreateMarket: NextPage = () => {
                         <span className="text-sm font-bold">Start Date (GMT)</span>
                         <div className="flex flex-row gap-4 w-full">
                             <input type="date" className="input border border-primary rounded-xl w-1/2"
-                                   value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                                value={startDate} onChange={(e) => setStartDate(e.target.value)}
                             />
                             <input type="time" className="input border border-primary rounded-xl w-1/2"
-                                   value={startTime} onChange={(e) => setStartTime(e.target.value)}
+                                value={startTime} onChange={(e) => setStartTime(e.target.value)}
                             />
                         </div>
                         <span className="text-xs italic pl-3">Note: when users can start buying shares.</span>
@@ -234,10 +234,10 @@ const CreateMarket: NextPage = () => {
                         <span className="text-sm font-bold">End Date (GMT)</span>
                         <div className="flex flex-row gap-4 w-full">
                             <input type="date" className="input border border-primary rounded-xl w-1/2"
-                                   value={endDate} onChange={(e) => setEndDate(e.target.value)}
+                                value={endDate} onChange={(e) => setEndDate(e.target.value)}
                             />
                             <input type="time" className="input border border-primary rounded-xl w-1/2"
-                                   value={endTime} onChange={(e) => setEndTime(e.target.value)}
+                                value={endTime} onChange={(e) => setEndTime(e.target.value)}
                             />
                         </div>
                         <span
@@ -246,22 +246,22 @@ const CreateMarket: NextPage = () => {
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Creator</span>
                         <div className="w-full py-1">
-                            <AddressInput value={creator} onChange={setCreator}/>
+                            <AddressInput value={creator} onChange={setCreator} />
                         </div>
                         <span className="text-xs italic pl-3">Note: External or internal Market creator wallet.</span>
                     </div>
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Collateral Token</span>
                         <div className="w-full py-1">
-                            <AddressInput value={collateral} onChange={setCollateral}/>
+                            <AddressInput value={collateral} onChange={setCollateral} />
                         </div>
                         <span className="text-xs italic pl-3">Note: Address of ERC20 Token</span>
                     </div>
                     <div className="flex flex-col items-start px-2">
                         <span className="text-sm font-bold">Funding Collateral (amount)</span>
                         <input type="number" min="2" value={funding}
-                               onChange={e => setFunding(Number(e.target.value))}
-                               className="input border border-primary rounded-xl w-full"
+                            onChange={e => setFunding(Number(e.target.value))}
+                            className="input border border-primary rounded-xl w-full"
                         />
                         <span className="text-xs italic pl-3">Note: Tokens to mint or TransferFrom creator (need approve)</span>
                     </div>

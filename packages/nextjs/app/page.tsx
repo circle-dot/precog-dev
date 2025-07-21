@@ -1,52 +1,59 @@
 "use client";
 
-import type {NextPage} from "next";
-import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
-import {getLatestContracts} from "~~/utils/scaffold-eth/contractsData";
-import {ContractName} from "~~/utils/scaffold-eth/contract";
-import {ContractCard} from "~~/app/debug/_components/contract/ContractCard";
-import {PrecogMarket} from "~~/components/PrecogMarket";
 import React from "react";
+import type { NextPage } from "next";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { MarketList } from "~~/components/MarketList";
+import { usePrecogMarkets } from "~~/hooks/usePrecogMarketData";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
+import { getLatestContracts } from "~~/utils/scaffold-eth/contractsData";
+import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth";
 
 const contractsData = getLatestContracts();
-const contractNames = Object.keys(contractsData) as ContractName[];
 
 const Home: NextPage = () => {
-    const contractTargetName = "PrecogMasterV7";
+  const { data, isLoading, error } = usePrecogMarkets();
+  const { targetNetwork } = useTargetNetwork();
 
-    const {data: createdMarkets} = useScaffoldReadContract({
-        contractName: contractTargetName, functionName: "createdMarkets"
-    });
-    const totalMarkets = createdMarkets ? Number(createdMarkets) : 0;
-    const marketIds = Array.from({length: totalMarkets}, (_, i) => i).reverse();
+  const precogMasterAddress = contractsData.PrecogMasterV7.address;
+  const explorerLink = getBlockExplorerAddressLink(targetNetwork, precogMasterAddress);
 
-    return (
-        <>
-            <div className="flex items-center flex-col flex-grow pt-2">
-                <div className="w-full px-12 pt-5">
-                    {!totalMarkets &&
-                        <div className="flex flex-wrap justify-center py-40">No created markets yet!</div>
-                    }
-                    <div className="flex flex-wrap justify-center items-start gap-8">
-                        {marketIds.map((marketId, index) => (
-                            <PrecogMarket key={index} contractName={contractTargetName} id={marketId}/>
-                        ))}
-                    </div>
-
-                </div>
-                <div className="flex-grow bg-base-300 w-full mt-6 px-6 pt-3 pb-6">
-                    <div className="text-center mb-3">
-                        <span className="block text-xl font-bold">Deployed Contracts</span>
-                    </div>
-                    <div className="flex justify-center items-center gap-8 flex-col-reverse sm:flex-row-reverse">
-                        {contractNames.map((contractName, index) => (
-                            <ContractCard key={index} contractName={contractName}/>
-                        ))}
-                    </div>
-                </div>
+  return (
+    <>
+      <div className="flex items-center flex-col flex-grow pt-2">
+        <div className="w-full px-4 md:px-12 pt-5">
+          {isLoading && (
+            <div className="flex flex-wrap justify-center py-40">
+              <p className="font-mono text-2xl text-accent animate-pulse">-- LOADING MARKETS --</p>
             </div>
-        </>
-    );
+          )}
+          {error && (
+            <div className="flex flex-wrap justify-center py-40">
+              <p className="font-mono text-2xl text-error">--! ERROR: COULD NOT LOAD MARKETS !--</p>
+            </div>
+          )}
+          {data && <MarketList markets={data.markets} />}
+        </div>
+        <div className="flex-grow bg-base-300 w-full mt-16 px-6 pt-3 pb-6 border-t-2 border-primary/20">
+          <div className="flex justify-center items-center">
+            <div className="font-mono text-center text-base flex flex-col sm:flex-row">
+              <span className="text-base-content/70 mr-2">Results fetched from</span>
+              <span className="font-bold text-base-content/70 mr-2">:: PrecogMasterV7 ::</span>
+              <a
+                href={explorerLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:underline text-accent flex-col sm:flex-row break-all"
+              >
+                {precogMasterAddress}
+                <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Home;
