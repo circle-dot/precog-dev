@@ -9,7 +9,7 @@ import { CommonInputProps, InputBase, isENS } from "~~/components/scaffold-eth";
 /**
  * Address input with ENS name resolution
  */
-export const AddressInput = ({ value, name, placeholder, onChange, disabled }: CommonInputProps<Address | string>) => {
+export const AddressInput = ({ value, name, placeholder, onChange, disabled, disableAutofocus = false }: CommonInputProps<Address | string> & { disableAutofocus?: boolean }) => {
   // Debounce the input to keep clean RPC calls when resolving ENS names
   // If the input is an address, we don't need to debounce it
   const [_debouncedValue] = useDebounceValue(value, 500);
@@ -75,12 +75,14 @@ export const AddressInput = ({ value, name, placeholder, onChange, disabled }: C
   );
 
   const reFocus =
-    isEnsAddressError ||
-    isEnsNameError ||
-    isEnsNameSuccess ||
-    isEnsAddressSuccess ||
-    ensName === null ||
-    ensAddress === null;
+    !disableAutofocus && (
+      isEnsAddressError ||
+      isEnsNameError ||
+      isEnsNameSuccess ||
+      isEnsAddressSuccess ||
+      ensName === null ||
+      ensAddress === null
+    );
 
   return (
     <InputBase<Address>
