@@ -56,7 +56,7 @@ export const MarketList = ({ markets }: { markets: MarketInfo[] }) => {
 
   return (
     <div className="w-full flex flex-col gap-4 font-mono">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 flex-col sm:flex-row">
         <h2 className="text-2xl font-bold m-0">Prediction Markets</h2>
         <div className="flex items-center gap-2">
           <div className="relative">

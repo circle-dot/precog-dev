@@ -36,16 +36,16 @@ const Home: NextPage = () => {
         </div>
         <div className="flex-grow bg-base-300 w-full mt-16 px-6 pt-3 pb-6 border-t-2 border-primary/20">
           <div className="flex justify-center items-center">
-            <div className="font-mono text-center text-base">
+            <div className="font-mono text-center text-base flex flex-col sm:flex-row">
               <span className="text-base-content/70 mr-2">Results fetched from</span>
               <span className="font-bold text-base-content/70 mr-2">:: PrecogMasterV7 ::</span>
               <a
                 href={explorerLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:underline text-accent"
+                className="inline-flex items-center gap-1 hover:underline text-accent flex-col sm:flex-row break-all"
               >
-              [{precogMasterAddress}]
+                {precogMasterAddress}
                 <ArrowTopRightOnSquareIcon className="w-3 h-3" />
               </a>
             </div>
