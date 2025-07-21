@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatEther } from "viem";
-import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
@@ -10,10 +10,34 @@ import { fromInt128toNumber } from "~~/utils/numbers";
 
 
 /**
+ * Returns the current market status and associated styling class
+ */
+const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
+  const now = BigInt(Math.floor(Date.now() / 1000));
+
+  if (now < startTimestamp) {
+    return { status: "CREATED", className: "text-warning" };
+  } else if (now >= startTimestamp && now < endTimestamp) {
+    return { status: "OPEN", className: "text-success animate-pulse" };
+  } else {
+    return { status: "CLOSED", className: "text-error" };
+  }
+};
+
+/**
  * Main component that renders a list of prediction markets
  */
 export const MarketList = ({ markets }: { markets: MarketInfo[] }) => {
   const { targetNetwork } = useTargetNetwork();
+  const [searchFilter, setSearchFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const statusStyles: { [key: string]: string } = {
+    all: "text-base-content",
+    created: "text-warning",
+    open: "text-success",
+    closed: "text-error",
+  };
 
   if (markets.length === 0) {
     return (
@@ -23,11 +47,59 @@ export const MarketList = ({ markets }: { markets: MarketInfo[] }) => {
     );
   }
 
+  const filteredMarkets = markets.filter(market => {
+    const nameMatches = market.name.toLowerCase().includes(searchFilter.toLowerCase());
+    const status = getMarketStatus(market.startTimestamp, market.endTimestamp).status.toLowerCase();
+    const statusMatches = statusFilter === "all" || status === statusFilter;
+    return nameMatches && statusMatches;
+  });
+
   return (
     <div className="w-full flex flex-col gap-4 font-mono">
-      {markets.map(market => (
-        <MarketItem key={market.market} market={market} targetNetwork={targetNetwork} />
-      ))}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold m-0">Prediction Markets</h2>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={e => setSearchFilter(e.target.value)}
+              placeholder="Search Market"
+              className="input input-bordered input-sm pr-8 min-w-60"
+            />
+            {searchFilter && (
+              <button className="absolute inset-y-0 right-3 flex items-center" onClick={() => setSearchFilter("")}>
+                <XCircleIcon className="h-5 w-5 text-base-content/60 hover:text-error" />
+              </button>
+            )}
+          </div>
+          <select
+            className={`select select-bordered select-sm font-bold uppercase text-xs ${statusStyles[statusFilter]}`}
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+          >
+            <option value="all" className="text-base-content font-bold">
+              All
+            </option>
+            <option value="created" className="text-warning font-bold">
+              Created
+            </option>
+            <option value="open" className="text-success font-bold">
+              Open
+            </option>
+            <option value="closed" className="text-error font-bold">
+              Closed
+            </option>
+          </select>
+        </div>
+      </div>
+      {filteredMarkets.length > 0 ? (
+        filteredMarkets.map(market => <MarketItem key={market.market} market={market} targetNetwork={targetNetwork} />)
+      ) : (
+        <div className="flex flex-wrap justify-center py-10">
+          <p className="font-mono text-lg text-accent">-- NO MARKETS FOUND --</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -316,21 +388,6 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
 };
 
 // Helper Functions
-
-/**
- * Returns the current market status and associated styling class
- */
-const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
-  const now = BigInt(Math.floor(Date.now() / 1000));
-
-  if (now < startTimestamp) {
-    return { status: "CREATED", className: "text-warning" };
-  } else if (now >= startTimestamp && now < endTimestamp) {
-    return { status: "OPEN", className: "text-success animate-pulse" };
-  } else {
-    return { status: "CLOSED", className: "text-error" };
-  }
-};
 
 /**
  * Returns a detailed market status string based on timing and result
