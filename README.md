@@ -1,5 +1,5 @@
 # Precog Dev
-This repository contains the all smart contracts for the Precog forecasting protocol ([**Precog Markets**](https://precog.market/)).
+This repository contains all smart contracts for the Precog forecasting protocol ([**Precog Markets**](https://precog.market/)).
 <hr/>
 
 #### Prediction Markets and LMSR theory:
@@ -12,17 +12,17 @@ This repository contains the all smart contracts for the Precog forecasting prot
 - [Contracts Implementations](/packages/hardhat/contracts)
 - [Test Implementations](/packages/hardhat/test)
 - [Deploy and Helpers](/packages/hardhat/scripts)
-> Dev backend site: [**Precog Dev**](https://dev.precog.market/) (here the deployed version of this repo connected to mainnet contracts)
+> Dev backend site: [**Precog Dev**](https://dev.precog.market/) (here the deployed version of this repo)
 <hr/>
 
-## Mainnet Deployments (Base)
+## Mainnet Latest Deployments (Base)
 - **PrecogMaster**: [0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E](https://basescan.org/address/0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E)
 - **PrecogMarket**: [0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b](https://basescan.org/address/0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b) (Recipe for all markets)
 - **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://basescan.org/address/0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888) (Not used)
 > Core backend site: [**Precog Core**](https://core.precog.market/)
 <hr/>
 
-## Testnet deployed (Base Sepolia)
+## Testnet Latest Deployments (Base Sepolia)
 - **PrecogMasterV7**: [0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4](https://sepolia.basescan.org/address/0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4)
 - **PrecogMarketV7**: [0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE](https://sepolia.basescan.org/address/0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE) (Recipe for all markets)
 - **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://sepolia.basescan.org/address/0x7779ec685aa0bf5483b3e0c15daf246d2d978888) (Not used)
@@ -34,7 +34,7 @@ This repository contains the all smart contracts for the Precog forecasting prot
 
 `yarn test-details`: Run tests on latest implementations with verbose details (useful on developing new features).
 
-`yarn test-gas`: Run all test with the gas profiler enabled to check/optimize gas costs (used in GitHub Action in every `main` branch push).
+`yarn test-gas`: Run all tests with the gas profiler enabled to check/optimize gas costs.
 
 `yarn chain`: Starts a local harhat chain with configured accounts (useful to test initial deploys).
 
@@ -42,9 +42,9 @@ This repository contains the all smart contracts for the Precog forecasting prot
 
 `yarn deploy`: Runs deploy script. It's recommended to test it over a fork network before live chain run.
 
-`yarn start`: Runs GUI server (useful to test new version and/or features).
+`yarn start`: Runs GUI server (useful to test new releases or features).
 
-`yarn lint`: Runs hardhat and nextjs linters to ensure best practices.
+`yarn lint`: Runs Hardhat and NextJs linters to ensure best practices.
 
 > Note: all available commands could be found on the `package.json` file
 <hr/>
@@ -60,6 +60,6 @@ This repository contains the all smart contracts for the Precog forecasting prot
 <hr/>
 
 ## Base project Documentation
-This project used the Scaffold-ETH-2 as Template. 
+This project used the Scaffold-ETH-2 project as template. 
 Visit the [Docs](https://docs.scaffoldeth.io) to find useful scripts and guides:
 - ️ Built using NextJS, RainbowKit, Hardhat, Wagmi and Viem.
