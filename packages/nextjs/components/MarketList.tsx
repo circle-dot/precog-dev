@@ -119,13 +119,13 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
       <input type="checkbox" className="peer" checked={isOpen} onChange={e => setIsOpen(e.target.checked)} />
       {/* Market Header */}
       <div className="collapse-title peer-checked:bg-base-200/10 text-xs">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <h3 className="text-lg font-bold text-base-content/70 truncate m-0" title={market.name}>
               <span className="text-base-content/70 mr-2">[{market.marketId}]</span>
               {market.name}
             </h3>
-            <div className="flex gap-2 text-sm">
+            <div className="text-sm">
               <span>
                 <span className="text-success">{formatDate(market.startTimestamp)}</span> →{" "}
                 <span className="text-error">{formatDate(market.endTimestamp)}</span>
@@ -145,7 +145,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
           <div className="gap-2 flex flex-col">
             <h4 className="font-bold text-base-content/70 m-0">:: Market Basic Info ::</h4>
             <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-              <div>
+              <div className="break-words">
                 <span className="font-bold text-base-content/70">Market Description: </span>
                 {market.description}
               </div>
@@ -153,11 +153,11 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                 <span className="font-bold text-base-content/70">Category: </span>
                 {market.category}
               </div>
-              <div>
+              <div className="break-words">
                 <span className="font-bold text-base-content/70">Outcomes: </span>
                 {market.outcomes.join(", ")}
               </div>
-              <div>
+              <div className="break-all">
                 <span className="font-bold text-base-content/70">Creator: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
@@ -169,7 +169,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                   <ArrowTopRightOnSquareIcon className="w-3 h-3" />
                 </a>
               </div>
-              <div>
+              <div className="break-all">
                 <span className="font-bold text-base-content/70">Market Contract: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.market)}
