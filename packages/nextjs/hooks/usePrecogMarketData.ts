@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useAccount, usePublicClient } from "wagmi";
-import { useScaffoldContract } from "./scaffold-eth";
 import { Address } from "viem";
+import { useAccount, usePublicClient } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
+import { useScaffoldContract } from "./scaffold-eth";
 
 /**
  * Core types for market data structures

@@ -28,11 +28,6 @@ export const defaultLinks: HeaderMenuLink[] = [
         label: "Home",
         href: "/",
         icon: <HomeIcon className="h-4 w-4"/>
-    },
-    {
-        label: "Market Details",
-        href: "/market",
-        icon: <ChartBarSquareIcon className="h-4 w-4"/>,
     }
 ]
 

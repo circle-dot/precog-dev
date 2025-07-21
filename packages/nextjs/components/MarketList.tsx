@@ -1,11 +1,12 @@
 import { useState } from "react";
+import Link from "next/link";
 import { formatEther } from "viem";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
-import { fromInt128toNumber } from "~~/utils/numbers";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
+import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
+import { fromInt128toNumber } from "~~/utils/numbers";
 
 
 /**
@@ -107,6 +108,14 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                   {market.market}
                   <ArrowTopRightOnSquareIcon className="w-3 h-3" />
                 </a>
+                <Link
+                  href={`/market?address=${market.market}`}
+                  className="ml-4 inline-flex items-center gap-1 hover:underline"
+                  passHref
+                >
+                  Market Details
+                  <ChartBarSquareIcon className="w-4 h-4" />
+                </Link>
               </div>
             </div>
           </div>
