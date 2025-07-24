@@ -332,30 +332,68 @@ export const useAccountOutcomeBalances = (
   accountAddress: Address | undefined,
   chainId: number | undefined,
   enabled: boolean,
-  options?: Omit<Omit<UseQueryOptions<AccountSharesData>, "queryKey" | "queryFn" | "enabled">, "enabled">,
+  options?: Omit<Omit<UseQueryOptions<AccountSharesData & { tokenSymbol: string }>, "queryKey" | "queryFn" | "enabled">, "enabled">,
 ) => {
   const { data: masterContract } = useScaffoldContract({
     contractName: "PrecogMasterV7",
   });
+  const { data: marketContract } = useScaffoldContract({
+    contractName: "PrecogMarketV7",
+  });
   const publicClient = usePublicClient();
 
-  const isReady = !!publicClient && !!masterContract?.abi && !!accountAddress && !!chainId;
+  const isReady = !!publicClient && !!masterContract?.abi && !!marketContract?.abi && !!accountAddress && !!chainId;
 
-  return useQuery<AccountSharesData>({
-    queryKey: ["marketAccountShares", marketAddress, marketId, accountAddress, chainId],
+  return useQuery<AccountSharesData & { tokenSymbol: string }>({
+    queryKey: ["marketAccountBalances", marketAddress, marketId, accountAddress, chainId],
     queryFn: async () => {
       if (!isReady) {
         throw new Error("Required dependencies not met for fetching account balances.");
       }
 
-      const outcomeBalances = (await publicClient.readContract({
-        address: masterContract.address,
-        abi: masterContract.abi,
-        functionName: "marketAccountShares",
-        args: [BigInt(marketId), accountAddress],
-      })) as readonly [bigint, bigint, bigint, bigint, bigint, readonly bigint[]];
+      // Fetch all data in a single multicall
+      const multicallResults = await publicClient.multicall({
+        contracts: [
+          {
+            address: masterContract.address,
+            abi: masterContract.abi,
+            functionName: "marketAccountShares",
+            args: [BigInt(marketId), accountAddress],
+          },
+          {
+            address: marketAddress,
+            abi: marketContract.abi,
+            functionName: "token",
+          },
+        ],
+        allowFailure: true,
+      });
+
+      const [sharesResult, tokenResult] = multicallResults;
+
+      if (!sharesResult.status || !tokenResult.status) {
+        throw new Error("Failed to fetch market data");
+      }
+
+      const outcomeBalances = sharesResult.result as readonly [bigint, bigint, bigint, bigint, bigint, readonly bigint[]];
+      const tokenAddress = tokenResult.result as Address;
 
       const [buys, sells, deposited, withdrew, redeemed, balances] = outcomeBalances;
+
+      // Token symbol needs to be fetched separately since we need the token address first
+      const tokenSymbol = await publicClient.readContract({
+        address: tokenAddress,
+        abi: [
+          {
+            inputs: [],
+            name: "symbol",
+            outputs: [{ name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+        ] as const,
+        functionName: "symbol",
+      }) as string;
 
       return {
         balances,
@@ -364,6 +402,7 @@ export const useAccountOutcomeBalances = (
         deposited,
         withdrew,
         redeemed,
+        tokenSymbol,
       };
     },
     enabled: enabled && isReady,

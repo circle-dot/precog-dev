@@ -406,6 +406,16 @@ const MarketTradingPanel = ({
 }) => {
   const { address: connectedAddress } = useAccount();
   const [tradeType, setTradeType] = useState("BUY");
+  const [selectedOutcome, setSelectedOutcome] = useState("");
+  const [sharesAmount, setSharesAmount] = useState("");
+  const [quote, setQuote] = useState<{
+    cost: number;
+    pricePerShare: number;
+    newPrice: number;
+    priceChange: string;
+    maxRoi: number;
+    roiPercentage: string;
+  } | null>(null);
 
   const isReadyToFetch = !!connectedAddress && !!targetNetwork?.id;
 
@@ -439,17 +449,18 @@ const MarketTradingPanel = ({
     );
   }
 
-  // Placeholder data for parts not yet implemented
-  const tradeAction = "Buy";
-  const selectedOutcome = "A";
-  const sharesAmount = 10;
-  const cost = 3.3;
-  const currency = "MATE";
-  const pricePerShare = 0.33;
-  const newPrice = 0.35;
-  const priceChange = "+5%";
-  const maxRoi = 6.7;
-  const roiPercentage = "+200%";
+  const handleGetQuote = () => {
+    // For now, just setting some placeholder data.
+    // In the future, this will involve a contract call.
+    setQuote({
+      cost: 3.3,
+      pricePerShare: 0.33,
+      newPrice: 0.35,
+      priceChange: "+5%",
+      maxRoi: 6.7,
+      roiPercentage: "+200%",
+    });
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -477,14 +488,27 @@ const MarketTradingPanel = ({
           <select
             className="select select-bordered select-xs"
             value={tradeType}
-            onChange={e => setTradeType(e.target.value)}
+            onChange={e => {
+              setTradeType(e.target.value);
+              setQuote(null);
+            }}
           >
             <option>BUY</option>
             <option>SELL</option>
           </select>
 
           {/* Outcome selector */}
-          <select className="select select-bordered select-xs">
+          <select
+            className="select select-bordered select-xs"
+            value={selectedOutcome}
+            onChange={e => {
+              setSelectedOutcome(e.target.value);
+              setQuote(null);
+            }}
+          >
+            <option value="" disabled>
+              Please select an outcome
+            </option>
             {market.outcomes.map(outcome => (
               <option key={outcome}>{outcome}</option>
             ))}
@@ -496,26 +520,37 @@ const MarketTradingPanel = ({
             min={0}
             placeholder="Amount"
             className="input input-bordered input-xs w-full max-w-[120px]"
+            value={sharesAmount}
+            onChange={e => {
+              setSharesAmount(e.target.value);
+              setQuote(null);
+            }}
           />
 
           {/* QUOTE button */}
-          <button className="btn btn-xs btn-secondary">QUOTE</button>
+          <button className="btn btn-xs btn-secondary" onClick={handleGetQuote}>
+            QUOTE
+          </button>
         </div>
 
-        <div className="text-xs">
-          <p className="m-0 font-mono">
-            &gt; Trade: {tradeAction} {sharesAmount} {selectedOutcome}
-          </p>
-          <p className="m-0 font-mono">
-            &gt; Cost: {cost.toFixed(2)} {currency} (Price per share: {pricePerShare.toFixed(2)})
-          </p>
-          <p className="m-0 font-mono">
-            &gt; New Price (after trade): {newPrice.toFixed(2)} {currency} ({priceChange})
-          </p>
-          <p className="m-0 font-mono">
-            &gt; Max ROI: {maxRoi.toFixed(2)} ({roiPercentage})
-          </p>
-        </div>
+        {quote && (
+          <div className="text-xs">
+            <p className="m-0 font-mono">
+              &gt; Trade: {tradeType} {sharesAmount} shares of {selectedOutcome}
+            </p>
+            <p className="m-0 font-mono">
+              &gt; Cost: {quote.cost.toFixed(2)} {accountShares.tokenSymbol} (Price per share:{" "}
+              {quote.pricePerShare.toFixed(2)})
+            </p>
+            <p className="m-0 font-mono">
+              &gt; New Price (after trade): {quote.newPrice.toFixed(2)} {accountShares.tokenSymbol} (
+              {quote.priceChange})
+            </p>
+            <p className="m-0 font-mono">
+              &gt; Max ROI: {quote.maxRoi.toFixed(2)} ({quote.roiPercentage})
+            </p>
+          </div>
+        )}
 
         <button className="btn btn-primary btn-sm w-32 mt-2">{tradeType}</button>
       </div>
