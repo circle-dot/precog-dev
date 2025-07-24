@@ -10,7 +10,7 @@ import {
   usePrecogMarketDetails,
   usePrecogMarketPrices,
 } from "~~/hooks/usePrecogMarketData";
-import { useMarketBuyCalculations } from "~~/hooks/useMarketCalculations";
+import { useMarketBuyCalculations, useMarketSellCalculations } from "~~/hooks/useMarketCalculations";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
@@ -410,11 +410,16 @@ const MarketTradingPanel = ({
   const [selectedOutcome, setSelectedOutcome] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [costToQuote, setCostToQuote] = useState<number | null>(null);
+  const [sharesToQuote, setSharesToQuote] = useState<number | null>(null);
 
   const handleGetQuote = () => {
-    const cost = Number(inputValue);
-    if (cost > 0) {
-      setCostToQuote(cost);
+    const amount = Number(inputValue);
+    if (amount > 0) {
+      if (tradeType === "BUY") {
+        setCostToQuote(amount);
+      } else {
+        setSharesToQuote(amount);
+      }
     }
   };
 
@@ -427,9 +432,9 @@ const MarketTradingPanel = ({
     isError: isErrorAccountShares,
   } = useAccountOutcomeBalances(market.marketId, market.market, connectedAddress, targetNetwork.id, isReadyToFetch);
 
-  // Calculate buy data when a quote is requested
+  // Calculate buy/sell data when a quote is requested
   const outcomeIndex = selectedOutcome ? market.outcomes.indexOf(selectedOutcome) + 1 : 0;
-  const { data: buyCalculations, isLoading: isLoadingCalculations } = useMarketBuyCalculations(
+  const { data: buyCalculations, isLoading: isLoadingBuy } = useMarketBuyCalculations(
     targetNetwork.id,
     market.marketId,
     market.market,
@@ -437,6 +442,15 @@ const MarketTradingPanel = ({
     costToQuote ?? 0,
     isReadyToFetch && tradeType === "BUY" && costToQuote !== null && costToQuote > 0 && outcomeIndex > 0,
   );
+  const { data: sellCalculations, isLoading: isLoadingSell } = useMarketSellCalculations(
+    targetNetwork.id,
+    market.marketId,
+    outcomeIndex,
+    sharesToQuote ?? 0,
+    isReadyToFetch && tradeType === "SELL" && sharesToQuote !== null && sharesToQuote > 0 && outcomeIndex > 0,
+  );
+
+  const isLoadingCalculations = isLoadingBuy || isLoadingSell;
 
   if (!connectedAddress) {
     return (
@@ -462,15 +476,31 @@ const MarketTradingPanel = ({
     );
   }
 
-  // Calculate ROI and price changes if we have buy calculations
-  const quoteData =
-    buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0
-      ? {
-          cost: buyCalculations.actualPrice,
-          actualShares: buyCalculations.actualShares,
-          pricePerShare: buyCalculations.actualPrice / buyCalculations.actualShares,
-        }
-      : null;
+  // Determine what data to show in the quote based on the trade type
+  let quoteDisplay = null;
+  if (tradeType === "BUY" && buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0) {
+    const { actualPrice, actualShares } = buyCalculations;
+    quoteDisplay = (
+      <>
+        <p className="m-0 font-mono">&gt; Trade: BUY {actualShares} shares of {selectedOutcome}</p>
+        <p className="m-0 font-mono">
+          &gt; Cost: {actualPrice.toFixed(4)} {accountShares.tokenSymbol} (Price per share:{" "}
+          {(actualPrice / actualShares).toFixed(4)})
+        </p>
+      </>
+    );
+  } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError) {
+    const { collateralToReceive, pricePerShare } = sellCalculations;
+    quoteDisplay = (
+      <>
+        <p className="m-0 font-mono">&gt; Trade: SELL {sharesToQuote} shares of {selectedOutcome}</p>
+        <p className="m-0 font-mono">
+          &gt; Receive: {collateralToReceive.toFixed(4)} {accountShares.tokenSymbol} (Price per share:{" "}
+          {pricePerShare.toFixed(4)})
+        </p>
+      </>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -502,6 +532,7 @@ const MarketTradingPanel = ({
               setTradeType(e.target.value);
               setInputValue("");
               setCostToQuote(null);
+              setSharesToQuote(null);
             }}
           >
             <option>BUY</option>
@@ -516,6 +547,7 @@ const MarketTradingPanel = ({
               setSelectedOutcome(e.target.value);
               setInputValue("");
               setCostToQuote(null);
+              setSharesToQuote(null);
             }}
           >
             <option value="" disabled>
@@ -535,9 +567,8 @@ const MarketTradingPanel = ({
             value={inputValue}
             onChange={e => {
               setInputValue(e.target.value);
-              if (costToQuote !== null) {
-                setCostToQuote(null);
-              }
+              if (costToQuote !== null) setCostToQuote(null);
+              if (sharesToQuote !== null) setSharesToQuote(null);
             }}
             onKeyDown={e => {
               if (e.key === "Enter") {
@@ -560,27 +591,21 @@ const MarketTradingPanel = ({
           </div>
         )}
 
-        {quoteData && buyCalculations && (
+        {quoteDisplay && (
           <div className="text-xs">
-            <p className="m-0 font-mono">
-              &gt; Trade: {tradeType} {quoteData.actualShares} shares of {selectedOutcome}
-            </p>
-            <p className="m-0 font-mono">
-              &gt; Cost: {quoteData.cost.toFixed(4)} {accountShares.tokenSymbol} (Price per share:{" "}
-              {quoteData.pricePerShare.toFixed(4)})
-            </p>
+            {quoteDisplay}
           </div>
         )}
 
-        {buyCalculations?.hasError && (
+        {(buyCalculations?.hasError || sellCalculations?.hasError) && (
           <div className="text-xs text-error">
-            Error: {buyCalculations.error}
+            Error: {buyCalculations?.error || sellCalculations?.error}
           </div>
         )}
 
-        <button 
+        <button
           className="btn btn-primary btn-sm w-32 mt-2"
-          disabled={!quoteData || isLoadingCalculations}
+          disabled={!quoteDisplay || isLoadingCalculations}
         >
           {tradeType}
         </button>

@@ -88,6 +88,53 @@ export const useMarketBuyCalculations = (
   };
 };
 
+/**
+ * Hook to calculate market data for selling shares.
+ * It takes a number of shares and calculates the expected collateral to receive.
+ */
+export const useMarketSellCalculations = (
+  chainId: number,
+  marketId: number,
+  outcome: number,
+  sharesToSell: number,
+  enabled: boolean = true,
+) => {
+  const publicClient = usePublicClient();
+  const { data: masterContract } = useScaffoldContract({
+    contractName: "PrecogMasterV7",
+  });
+
+  return useQuery({
+    queryKey: ["marketSellPrice", chainId, marketId, outcome, sharesToSell],
+    queryFn: async () => {
+      try {
+        const collateralToReceive = await getShareSellPrice(
+          marketId,
+          outcome,
+          sharesToSell,
+          publicClient,
+          masterContract,
+        );
+        return {
+          collateralToReceive,
+          pricePerShare: collateralToReceive / sharesToSell,
+          hasError: false,
+          error: null,
+        };
+      } catch (error) {
+        console.error("Error fetching sell price:", error);
+        return {
+          collateralToReceive: 0,
+          pricePerShare: 0,
+          hasError: true,
+          error: error instanceof Error ? error.message : "Failed to fetch sell price",
+        };
+      }
+    },
+    enabled: enabled && !!masterContract && !!publicClient && sharesToSell > 0,
+  });
+};
+
 // =================================================================================================
 // DATA FETCHER HOOKS (reading from contract)
 // =================================================================================================
@@ -151,6 +198,22 @@ async function getShareBuyPrice(
     address: masterContract.address as `0x${string}`,
     abi: masterContract.abi,
     functionName: "marketBuyPrice",
+    args: [BigInt(marketId), BigInt(outcomeId), fromNumberToInt128(shares)],
+  })) as bigint;
+  return fromInt128toNumber(priceInt128);
+}
+
+async function getShareSellPrice(
+  marketId: number,
+  outcomeId: number,
+  shares: number,
+  publicClient: any,
+  masterContract: any,
+) {
+  const priceInt128 = (await publicClient.readContract({
+    address: masterContract.address as `0x${string}`,
+    abi: masterContract.abi,
+    functionName: "marketSellPrice",
     args: [BigInt(marketId), BigInt(outcomeId), fromNumberToInt128(shares)],
   })) as bigint;
   return fromInt128toNumber(priceInt128);
