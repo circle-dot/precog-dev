@@ -2,8 +2,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatEther } from "viem";
 import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "wagmi";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import { MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
+import {
+  MarketInfo,
+  useAccountOutcomeBalances,
+  usePrecogMarketDetails,
+  usePrecogMarketPrices,
+} from "~~/hooks/usePrecogMarketData";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
@@ -111,6 +117,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
   const [isOpen, setIsOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
+  const [showTrading, setShowTrading] = useState(false);
 
   const { status, className } = getMarketStatus(market.startTimestamp, market.endTimestamp);
 
@@ -195,16 +202,20 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
           {/* Action Buttons */}
           <div className="flex gap-4 pt-4">
             <button className="btn btn-sm btn-primary" onClick={() => setShowDetails(!showDetails)}>
-              {showDetails ? "Hide" : "Show"} Market Trading Info
+              {showDetails ? "Hide" : "Show"} Market Info
             </button>
             <button className="btn btn-sm btn-primary" onClick={() => setShowPrices(!showPrices)}>
               {showPrices ? "Hide" : "Show"} Prices
+            </button>
+            <button className="btn btn-sm btn-primary" onClick={() => setShowTrading(!showTrading)}>
+              {showTrading ? "Hide" : "Start"} Trading
             </button>
           </div>
 
           {/* Conditional Renders so that we don't have to fetch the data if the user doesn't want to see it */}
           {showDetails && <MarketDetailedInfo market={market} />}
           {showPrices && <MarketPrices market={market} />}
+          {showTrading && <MarketTradingPanel market={market} targetNetwork={targetNetwork} />}
         </div>
       </div>
     </div>
@@ -378,6 +389,135 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
             </span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Displays a trading panel for a market
+ */
+const MarketTradingPanel = ({
+  market,
+  targetNetwork,
+}: {
+  market: MarketInfo;
+  targetNetwork: ChainWithAttributes;
+}) => {
+  const { address: connectedAddress } = useAccount();
+  const [tradeType, setTradeType] = useState("BUY");
+
+  const isReadyToFetch = !!connectedAddress && !!targetNetwork?.id;
+
+  // Fetch account shares data on demand when the panel is shown
+  const {
+    data: accountShares,
+    isLoading: isLoadingAccountShares,
+    isError: isErrorAccountShares,
+  } = useAccountOutcomeBalances(market.marketId, market.market, connectedAddress, targetNetwork.id, isReadyToFetch);
+  if (!connectedAddress) {
+    return (
+      <div className="flex justify-center items-center pt-4">
+        <p>Please connect wallet to trade.</p>
+      </div>
+    );
+  }
+
+  if (isLoadingAccountShares) {
+    return (
+      <div className="flex justify-center items-center pt-4">
+        <span className="loading loading-spinner loading-md"></span>
+      </div>
+    );
+  }
+
+  if (isErrorAccountShares || !accountShares) {
+    return (
+      <div className="flex justify-center items-center pt-4 flex-col">
+        <p className="text-error">--! ERROR: COULD NOT LOAD YOUR TRADING DATA !--</p>
+      </div>
+    );
+  }
+
+  // Placeholder data for parts not yet implemented
+  const tradeAction = "Buy";
+  const selectedOutcome = "A";
+  const sharesAmount = 10;
+  const cost = 3.3;
+  const currency = "MATE";
+  const pricePerShare = 0.33;
+  const newPrice = 0.35;
+  const priceChange = "+5%";
+  const maxRoi = 6.7;
+  const roiPercentage = "+200%";
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h4 className="font-bold text-base-content/70 m-0">:: Your Info ::</h4>
+      {/* User Info */}
+      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+        <p className="m-0 break-all text-xs">
+          <span className="font-bold">Account:</span> {connectedAddress}
+        </p>
+        <p className="m-0 text-xs">
+          <span className="font-bold">Shares:</span> {formatSharesBalances(accountShares.balances, market.outcomes)}
+        </p>
+        <p className="m-0 text-xs">
+          <span className="font-bold">Buys:</span> {String(accountShares.buys)},{" "}
+          <span className="font-bold">Sells:</span> {String(accountShares.sells)}
+        </p>
+      </div>
+
+      {/* Trade in the Market */}
+      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+        <h5 className="font-bold text-base-content/70 m-0 text-sm">Trade in the Market</h5>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* BUY/SELL Selector */}
+          <select
+            className="select select-bordered select-xs"
+            value={tradeType}
+            onChange={e => setTradeType(e.target.value)}
+          >
+            <option>BUY</option>
+            <option>SELL</option>
+          </select>
+
+          {/* Outcome selector */}
+          <select className="select select-bordered select-xs">
+            {market.outcomes.map(outcome => (
+              <option key={outcome}>{outcome}</option>
+            ))}
+          </select>
+
+          {/* Shares Amount input */}
+          <input
+            type="number"
+            min={0}
+            placeholder="Amount"
+            className="input input-bordered input-xs w-full max-w-[120px]"
+          />
+
+          {/* QUOTE button */}
+          <button className="btn btn-xs btn-secondary">QUOTE</button>
+        </div>
+
+        <div className="text-xs">
+          <p className="m-0 font-mono">
+            &gt; Trade: {tradeAction} {sharesAmount} {selectedOutcome}
+          </p>
+          <p className="m-0 font-mono">
+            &gt; Cost: {cost.toFixed(2)} {currency} (Price per share: {pricePerShare.toFixed(2)})
+          </p>
+          <p className="m-0 font-mono">
+            &gt; New Price (after trade): {newPrice.toFixed(2)} {currency} ({priceChange})
+          </p>
+          <p className="m-0 font-mono">
+            &gt; Max ROI: {maxRoi.toFixed(2)} ({roiPercentage})
+          </p>
+        </div>
+
+        <button className="btn btn-primary btn-sm w-32 mt-2">{tradeType}</button>
       </div>
     </div>
   );
