@@ -10,6 +10,7 @@ import {
   usePrecogMarketDetails,
   usePrecogMarketPrices,
 } from "~~/hooks/usePrecogMarketData";
+import { useMarketBuyCalculations } from "~~/hooks/useMarketCalculations";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
@@ -407,15 +408,15 @@ const MarketTradingPanel = ({
   const { address: connectedAddress } = useAccount();
   const [tradeType, setTradeType] = useState("BUY");
   const [selectedOutcome, setSelectedOutcome] = useState("");
-  const [sharesAmount, setSharesAmount] = useState("");
-  const [quote, setQuote] = useState<{
-    cost: number;
-    pricePerShare: number;
-    newPrice: number;
-    priceChange: string;
-    maxRoi: number;
-    roiPercentage: string;
-  } | null>(null);
+  const [inputValue, setInputValue] = useState("");
+  const [costToQuote, setCostToQuote] = useState<number | null>(null);
+
+  const handleGetQuote = () => {
+    const cost = Number(inputValue);
+    if (cost > 0) {
+      setCostToQuote(cost);
+    }
+  };
 
   const isReadyToFetch = !!connectedAddress && !!targetNetwork?.id;
 
@@ -425,6 +426,18 @@ const MarketTradingPanel = ({
     isLoading: isLoadingAccountShares,
     isError: isErrorAccountShares,
   } = useAccountOutcomeBalances(market.marketId, market.market, connectedAddress, targetNetwork.id, isReadyToFetch);
+
+  // Calculate buy data when a quote is requested
+  const outcomeIndex = selectedOutcome ? market.outcomes.indexOf(selectedOutcome) + 1 : 0;
+  const { data: buyCalculations, isLoading: isLoadingCalculations } = useMarketBuyCalculations(
+    targetNetwork.id,
+    market.marketId,
+    market.market,
+    outcomeIndex,
+    costToQuote ?? 0,
+    isReadyToFetch && tradeType === "BUY" && costToQuote !== null && costToQuote > 0 && outcomeIndex > 0,
+  );
+
   if (!connectedAddress) {
     return (
       <div className="flex justify-center items-center pt-4">
@@ -449,18 +462,15 @@ const MarketTradingPanel = ({
     );
   }
 
-  const handleGetQuote = () => {
-    // For now, just setting some placeholder data.
-    // In the future, this will involve a contract call.
-    setQuote({
-      cost: 3.3,
-      pricePerShare: 0.33,
-      newPrice: 0.35,
-      priceChange: "+5%",
-      maxRoi: 6.7,
-      roiPercentage: "+200%",
-    });
-  };
+  // Calculate ROI and price changes if we have buy calculations
+  const quoteData =
+    buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0
+      ? {
+          cost: buyCalculations.actualPrice,
+          actualShares: buyCalculations.actualShares,
+          pricePerShare: buyCalculations.actualPrice / buyCalculations.actualShares,
+        }
+      : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -490,7 +500,8 @@ const MarketTradingPanel = ({
             value={tradeType}
             onChange={e => {
               setTradeType(e.target.value);
-              setQuote(null);
+              setInputValue("");
+              setCostToQuote(null);
             }}
           >
             <option>BUY</option>
@@ -503,7 +514,8 @@ const MarketTradingPanel = ({
             value={selectedOutcome}
             onChange={e => {
               setSelectedOutcome(e.target.value);
-              setQuote(null);
+              setInputValue("");
+              setCostToQuote(null);
             }}
           >
             <option value="" disabled>
@@ -514,45 +526,64 @@ const MarketTradingPanel = ({
             ))}
           </select>
 
-          {/* Shares Amount input */}
+          {/* Total Cost input */}
           <input
             type="number"
             min={0}
-            placeholder="Amount"
+            placeholder={tradeType === "BUY" ? "Total Cost" : "Shares Amount"}
             className="input input-bordered input-xs w-full max-w-[120px]"
-            value={sharesAmount}
+            value={inputValue}
             onChange={e => {
-              setSharesAmount(e.target.value);
-              setQuote(null);
+              setInputValue(e.target.value);
+              if (costToQuote !== null) {
+                setCostToQuote(null);
+              }
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                handleGetQuote();
+              }
             }}
           />
-
-          {/* QUOTE button */}
-          <button className="btn btn-xs btn-secondary" onClick={handleGetQuote}>
+          <button
+            className="btn btn-xs btn-secondary"
+            onClick={handleGetQuote}
+            disabled={isLoadingCalculations || !inputValue || Number(inputValue) <= 0 || !selectedOutcome}
+          >
             QUOTE
           </button>
         </div>
 
-        {quote && (
+        {isLoadingCalculations && (
+          <div className="flex justify-center items-center py-2">
+            <span className="loading loading-spinner loading-xs"></span>
+          </div>
+        )}
+
+        {quoteData && buyCalculations && (
           <div className="text-xs">
             <p className="m-0 font-mono">
-              &gt; Trade: {tradeType} {sharesAmount} shares of {selectedOutcome}
+              &gt; Trade: {tradeType} {quoteData.actualShares} shares of {selectedOutcome}
             </p>
             <p className="m-0 font-mono">
-              &gt; Cost: {quote.cost.toFixed(2)} {accountShares.tokenSymbol} (Price per share:{" "}
-              {quote.pricePerShare.toFixed(2)})
-            </p>
-            <p className="m-0 font-mono">
-              &gt; New Price (after trade): {quote.newPrice.toFixed(2)} {accountShares.tokenSymbol} (
-              {quote.priceChange})
-            </p>
-            <p className="m-0 font-mono">
-              &gt; Max ROI: {quote.maxRoi.toFixed(2)} ({quote.roiPercentage})
+              &gt; Cost: {quoteData.cost.toFixed(4)} {accountShares.tokenSymbol} (Price per share:{" "}
+              {quoteData.pricePerShare.toFixed(4)})
             </p>
           </div>
         )}
 
-        <button className="btn btn-primary btn-sm w-32 mt-2">{tradeType}</button>
+        {buyCalculations?.hasError && (
+          <div className="text-xs text-error">
+            Error: {buyCalculations.error}
+          </div>
+        )}
+
+        <button 
+          className="btn btn-primary btn-sm w-32 mt-2"
+          disabled={!quoteData || isLoadingCalculations}
+        >
+          {tradeType}
+        </button>
       </div>
     </div>
   );
