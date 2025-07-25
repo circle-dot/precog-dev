@@ -5,7 +5,7 @@ import { useScaffoldContract } from "./scaffold-eth";
 import { fromInt128toNumber, fromNumberToInt128 } from "~~/utils/numbers";
 
 // =================================================================================================
-// PRIMARY HOOK
+// PRIMARY HOOKS
 // =================================================================================================
 
 /**

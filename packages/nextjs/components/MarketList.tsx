@@ -433,6 +433,10 @@ const MarketTradingPanel = ({
     isError: isErrorAccountShares,
   } = useAccountOutcomeBalances(market.marketId, market.market, connectedAddress, targetNetwork.id, isReadyToFetch);
 
+  // Check if market is closed
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  const isMarketClosed = now > market.endTimestamp;
+
   // Calculate buy/sell data when a quote is requested
   const outcomeIndex = selectedOutcome ? market.outcomes.indexOf(selectedOutcome) + 1 : 0;
   const { data: buyCalculations, isLoading: isLoadingBuy } = useMarketBuyCalculations(
@@ -510,141 +514,169 @@ const MarketTradingPanel = ({
       <h4 className="font-bold text-base-content/70 m-0">:: Your Info ::</h4>
       {/* User Info */}
       <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-        <p className="m-0 break-all text-xs">
-          <span className="font-bold">Account:</span> {connectedAddress}
+        <p className="m-0 break-all ">
+          <span className="font-bold text-base-content/70">Account:</span> {connectedAddress}
         </p>
-        <p className="m-0 text-xs">
-          <span className="font-bold">Shares:</span> {formatTokenBalances(accountShares.balances, market.outcomes)}
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Shares:</span> {formatTokenBalances(accountShares.balances, market.outcomes)}
         </p>
-        <p className="m-0 text-xs">
-          <span className="font-bold">Buys:</span> {String(accountShares.buys)},{" "}
-          <span className="font-bold">Sells:</span> {String(accountShares.sells)}
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Buys:</span> {String(accountShares.buys)},{" "}
+          <span className="font-bold text-base-content/70">Sells:</span> {String(accountShares.sells)}
         </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Deposited:</span> {Number(formatEther(accountShares.deposited)).toFixed(4)} {accountShares.tokenSymbol},{" "}
+          <span className="font-bold text-base-content/70">Withdrew:</span> {Number(formatEther(accountShares.withdrew)).toFixed(4)} {accountShares.tokenSymbol}
+        </p>
+        {accountShares.redeemed > 0n && (
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Redeemed:</span> {Number(formatEther(accountShares.redeemed)).toFixed(4)} {accountShares.tokenSymbol}
+          </p>
+        )}
       </div>
 
-      {/* Trade in the Market */}
-      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
-        <h5 className="font-bold text-base-content/70 m-0 text-sm">Trade in the Market</h5>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* BUY/SELL Selector */}
-          <select
-            className="select select-bordered select-xs"
-            value={tradeType}
-            onChange={e => {
-              setTradeType(e.target.value);
-              setInputValue("");
-              setCostToQuote(null);
-              setSharesToQuote(null);
-            }}
-          >
-            <option>BUY</option>
-            <option>SELL</option>
-          </select>
-
-          {/* Outcome selector */}
-          <select
-            className="select select-bordered select-xs"
-            value={selectedOutcome}
-            onChange={e => {
-              setSelectedOutcome(e.target.value);
-              setInputValue("");
-              setCostToQuote(null);
-              setSharesToQuote(null);
-            }}
-          >
-            <option value="" disabled>
-              Please select an outcome
-            </option>
-            {market.outcomes.map(outcome => (
-              <option key={outcome}>{outcome}</option>
-            ))}
-          </select>
-
-          {/* Total Cost input */}
-          <input
-            type="number"
-            min={0}
-            placeholder={tradeType === "BUY" ? "Total Cost" : "Shares Amount"}
-            className="input input-bordered input-xs w-full max-w-[120px]"
-            value={inputValue}
-            onChange={e => {
-              setInputValue(e.target.value);
-              if (costToQuote !== null) setCostToQuote(null);
-              if (sharesToQuote !== null) setSharesToQuote(null);
-            }}
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                handleGetQuote();
-              }
-            }}
-          />
-          <button
-            className="btn btn-xs btn-secondary"
-            onClick={handleGetQuote}
-            disabled={isLoadingCalculations || !inputValue || Number(inputValue) <= 0 || !selectedOutcome}
-          >
-            QUOTE
-          </button>
+      {/* Show either Trading Panel or Redeem Button based on market status */}
+      {isMarketClosed ? (
+        <div className="flex flex-col gap-2">
+          <h4 className="font-bold text-base-content/70 m-0">:: Redeem Winnings ::</h4>
+          <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+            <button
+              className="btn btn-primary btn-sm w-32"
+              disabled={accountShares.redeemed > 0n}
+            >
+              REDEEM
+            </button>
+            {accountShares.redeemed > 0n && (
+              <p className="text-xs text-success m-0">You have already redeemed your winnings.</p>
+            )}
+          </div>
         </div>
+      ) : (
+        <>
+          <h4 className="font-bold text-base-content/70 m-0">:: Trade in the Market ::</h4>
+          <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
 
-        {isLoadingCalculations && (
-          <div className="flex justify-center items-center py-2">
-            <span className="loading loading-spinner loading-xs"></span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* BUY/SELL Selector */}
+              <select
+                className="select select-bordered select-xs"
+                value={tradeType}
+                onChange={e => {
+                  setTradeType(e.target.value);
+                  setInputValue("");
+                  setCostToQuote(null);
+                  setSharesToQuote(null);
+                }}
+              >
+                <option>BUY</option>
+                <option>SELL</option>
+              </select>
+
+              {/* Outcome selector */}
+              <select
+                className="select select-bordered select-xs"
+                value={selectedOutcome}
+                onChange={e => {
+                  setSelectedOutcome(e.target.value);
+                  setInputValue("");
+                  setCostToQuote(null);
+                  setSharesToQuote(null);
+                }}
+              >
+                <option value="" disabled>
+                  Please select an outcome
+                </option>
+                {market.outcomes.map(outcome => (
+                  <option key={outcome}>{outcome}</option>
+                ))}
+              </select>
+
+              {/* Total Cost input */}
+              <input
+                type="number"
+                min={0}
+                placeholder={tradeType === "BUY" ? "Total Cost" : "Shares Amount"}
+                className="input input-bordered input-xs w-full max-w-[120px]"
+                value={inputValue}
+                onChange={e => {
+                  setInputValue(e.target.value);
+                  if (costToQuote !== null) setCostToQuote(null);
+                  if (sharesToQuote !== null) setSharesToQuote(null);
+                }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    handleGetQuote();
+                  }
+                }}
+              />
+              <button
+                className="btn btn-xs btn-secondary"
+                onClick={handleGetQuote}
+                disabled={isLoadingCalculations || !inputValue || Number(inputValue) <= 0 || !selectedOutcome}
+              >
+                QUOTE
+              </button>
+            </div>
+
+            {isLoadingCalculations && (
+              <div className="flex justify-center items-center py-2">
+                <span className="loading loading-spinner loading-xs"></span>
+              </div>
+            )}
+
+            {quoteDisplay && (
+              <div className="text-xs">
+                {quoteDisplay}
+              </div>
+            )}
+
+            {(buyCalculations?.hasError || sellCalculations?.hasError) && (
+              <div className="text-xs text-error">
+                Error: {buyCalculations?.error || sellCalculations?.error}
+              </div>
+            )}
+
+            <button
+              className="btn btn-primary btn-sm w-32 mt-2"
+              disabled={!quoteDisplay || isLoadingCalculations || isPending}
+              onClick={async () => {
+                if (tradeType === "BUY" && buyCalculations?.actualShares && buyCalculations.actualPrice) {
+                  try {
+                    const maxTokenIn = parseEther(buyCalculations.actualPrice.toString());
+                    await executeBuy(
+                      market.marketId,
+                      outcomeIndex,
+                      buyCalculations.actualShares,
+                      market.market,
+                      maxTokenIn,
+                    );
+                    // Optionally refresh market data here
+                  } catch (error) {
+                    console.error("Buy execution failed:", error);
+                  }
+                } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError && sharesToQuote) {
+                  try {
+                    await executeSell(
+                      market.marketId,
+                      outcomeIndex,
+                      sharesToQuote,
+                    );
+                    // Optionally refresh market data here
+                  } catch (error) {
+                    console.error("Sell execution failed:", error);
+                  }
+                }
+              }}
+            >
+              {isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                tradeType
+              )}
+            </button>
           </div>
-        )}
-
-        {quoteDisplay && (
-          <div className="text-xs">
-            {quoteDisplay}
-          </div>
-        )}
-
-        {(buyCalculations?.hasError || sellCalculations?.hasError) && (
-          <div className="text-xs text-error">
-            Error: {buyCalculations?.error || sellCalculations?.error}
-          </div>
-        )}
-
-        <button
-          className="btn btn-primary btn-sm w-32 mt-2"
-          disabled={!quoteDisplay || isLoadingCalculations || isPending}
-          onClick={async () => {
-            if (tradeType === "BUY" && buyCalculations?.actualShares && buyCalculations.actualPrice) {
-              try {
-                const maxTokenIn = parseEther(buyCalculations.actualPrice.toString());
-                await executeBuy(
-                  market.marketId,
-                  outcomeIndex,
-                  buyCalculations.actualShares,
-                  market.market,
-                  maxTokenIn,
-                );
-                // Optionally refresh market data here
-              } catch (error) {
-                console.error("Buy execution failed:", error);
-              }
-            } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError && sharesToQuote) {
-              try {
-                await executeSell(
-                  market.marketId,
-                  outcomeIndex,
-                  sharesToQuote,
-                );
-                // Optionally refresh market data here
-              } catch (error) {
-                console.error("Sell execution failed:", error);
-              }
-            }
-          }}
-        >
-          {isPending ? (
-            <span className="loading loading-spinner loading-xs"></span>
-          ) : (
-            tradeType
-          )}
-        </button>
-      </div>
+        </>
+      )}
     </div>
   );
 };
