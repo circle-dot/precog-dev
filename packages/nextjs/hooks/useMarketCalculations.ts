@@ -47,8 +47,21 @@ export const useMarketBuyCalculations = (
       if (!sharesInfo || !alpha) return null;
       // This uses a binary search to find out how many shares match the totalCost.
       const shares = marketSharesFromCost(sharesInfo.sharesBalances, alpha, outcome, totalCost);
+      
+      // Calculate the future price after the trade
+      const futurePrice = marketPriceAfterTrade(
+        sharesInfo.sharesBalances,
+        alpha,
+        outcome,
+        shares
+      );
+
       return {
+        maxShares: shares,
         actualShares: Math.floor(shares),
+        futurePrice,
+        hasError: false,
+        error: null
       };
     },
     enabled: !!sharesInfo && !!alpha && !isNaN(outcome) && outcome > 0 && !isNaN(totalCost) && totalCost > 0,
@@ -70,8 +83,10 @@ export const useMarketBuyCalculations = (
 
     if (sharesData && priceData !== undefined) {
       return {
+        maxShares: sharesData.maxShares,
         actualShares: sharesData.actualShares,
         actualPrice: priceData,
+        futurePrice: sharesData.futurePrice,
         hasError: false,
         error: null,
       };
@@ -108,6 +123,7 @@ export const useMarketSellCalculations = (
     queryKey: ["marketSellPrice", chainId, marketId, outcome, sharesToSell],
     queryFn: async () => {
       try {
+        // Get current sell price
         const collateralToReceive = await getShareSellPrice(
           marketId,
           outcome,
@@ -115,9 +131,23 @@ export const useMarketSellCalculations = (
           publicClient,
           masterContract,
         );
+
+        // Get future price by calculating for one more share
+        const futurePriceTotal = await getShareSellPrice(
+          marketId,
+          outcome,
+          sharesToSell + 1,
+          publicClient,
+          masterContract,
+        );
+
+        // Calculate future price as the difference
+        const futurePrice = futurePriceTotal - collateralToReceive;
+
         return {
           collateralToReceive,
           pricePerShare: collateralToReceive / sharesToSell,
+          futurePrice,
           hasError: false,
           error: null,
         };
@@ -126,6 +156,7 @@ export const useMarketSellCalculations = (
         return {
           collateralToReceive: 0,
           pricePerShare: 0,
+          futurePrice: 0,
           hasError: true,
           error: error instanceof Error ? error.message : "Failed to fetch sell price",
         };
@@ -261,4 +292,17 @@ export const marketSharesFromCost = (shares: number[], alpha: number, outcome: n
     else high = mid;
   }
   return mid;
+};
+
+const marketPrice = (shares: number[], alpha: number, outcome: number): number => {
+  const totalShares = shares.reduce((sum, s) => sum + s, 0);
+  if (totalShares === 0) return 0;
+  const beta = totalShares * alpha;
+  return Math.exp(shares[outcome] / beta) / shares.reduce((sum, s) => (s === 0 ? sum : sum + Math.exp(s / beta)), 0);
+};
+
+const marketPriceAfterTrade = (shares: number[], alpha: number, outcome: number, amount: number): number => {
+  const newShares = [...shares];
+  newShares[outcome] += amount;
+  return marketPrice(newShares, alpha, outcome);
 };

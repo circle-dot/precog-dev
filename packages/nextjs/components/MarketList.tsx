@@ -494,7 +494,7 @@ const MarketTradingPanel = ({
   // Determine what data to show in the quote based on the trade type
   let quoteDisplay = null;
   if (tradeType === "BUY" && buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0) {
-    const { actualPrice, actualShares } = buyCalculations;
+    const { actualPrice, actualShares, futurePrice } = buyCalculations;
     
     // Calculate potential returns
     const tokenReturnValue = actualShares - actualPrice;
@@ -505,15 +505,17 @@ const MarketTradingPanel = ({
       <div>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> BUY {actualShares} shares of {selectedOutcome}</p>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Cost:</span> {actualPrice.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {(actualPrice / actualShares).toFixed(4)})</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Future Price:</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Max Return:</span> {tokenReturnValue.toFixed(4)} {accountShares.tokenSymbol} ({tokenReturnPercentage}%)</p>
       </div>
     );
   } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError) {
-    const { collateralToReceive, pricePerShare } = sellCalculations;
+    const { collateralToReceive, pricePerShare, futurePrice } = sellCalculations;
     quoteDisplay = (
       <>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> SELL {sharesToQuote} shares of {selectedOutcome}</p>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Receive:</span> {collateralToReceive.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {pricePerShare.toFixed(4)})</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Future Price:</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
       </>
     );
   }
