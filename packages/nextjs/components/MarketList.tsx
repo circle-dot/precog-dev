@@ -15,7 +15,7 @@ import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
 import { parseEther } from "viem";
-import { useMarketTrade } from "~~/hooks/useMarkettrade";
+import { useMarketTrade } from "~~/hooks/useMarketTrade";
 
 /**
  * Returns the current market status and associated styling class
