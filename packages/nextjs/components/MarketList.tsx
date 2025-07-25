@@ -14,7 +14,8 @@ import { useMarketBuyCalculations, useMarketSellCalculations } from "~~/hooks/us
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
-
+import { parseEther } from "viem";
+import { useMarketTrade } from "~~/hooks/useMarkettrade";
 
 /**
  * Returns the current market status and associated styling class
@@ -452,6 +453,8 @@ const MarketTradingPanel = ({
 
   const isLoadingCalculations = isLoadingBuy || isLoadingSell;
 
+  const { executeBuy, executeSell, isPending } = useMarketTrade();
+
   if (!connectedAddress) {
     return (
       <div className="flex justify-center items-center pt-4">
@@ -511,7 +514,7 @@ const MarketTradingPanel = ({
           <span className="font-bold">Account:</span> {connectedAddress}
         </p>
         <p className="m-0 text-xs">
-          <span className="font-bold">Shares:</span> {formatSharesBalances(accountShares.balances, market.outcomes)}
+          <span className="font-bold">Shares:</span> {formatTokenBalances(accountShares.balances, market.outcomes)}
         </p>
         <p className="m-0 text-xs">
           <span className="font-bold">Buys:</span> {String(accountShares.buys)},{" "}
@@ -605,9 +608,41 @@ const MarketTradingPanel = ({
 
         <button
           className="btn btn-primary btn-sm w-32 mt-2"
-          disabled={!quoteDisplay || isLoadingCalculations}
+          disabled={!quoteDisplay || isLoadingCalculations || isPending}
+          onClick={async () => {
+            if (tradeType === "BUY" && buyCalculations?.actualShares && buyCalculations.actualPrice) {
+              try {
+                const maxTokenIn = parseEther(buyCalculations.actualPrice.toString());
+                await executeBuy(
+                  market.marketId,
+                  outcomeIndex,
+                  buyCalculations.actualShares,
+                  market.market,
+                  maxTokenIn,
+                );
+                // Optionally refresh market data here
+              } catch (error) {
+                console.error("Buy execution failed:", error);
+              }
+            } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError && sharesToQuote) {
+              try {
+                await executeSell(
+                  market.marketId,
+                  outcomeIndex,
+                  sharesToQuote,
+                );
+                // Optionally refresh market data here
+              } catch (error) {
+                console.error("Sell execution failed:", error);
+              }
+            }
+          }}
         >
-          {tradeType}
+          {isPending ? (
+            <span className="loading loading-spinner loading-xs"></span>
+          ) : (
+            tradeType
+          )}
         </button>
       </div>
     </div>
@@ -685,4 +720,22 @@ const formatDate = (timestamp: bigint, includeTime = false) => {
   }
 
   return `${dateString} UTC`;
+};
+
+/**
+ * Formats token balances from wei to ETH units with outcome labels
+ * @param sharesArray array of token balances in wei (index 0 is skipped as it's a 0-index based)
+ * @param outcomes The outcomes of the market
+ * @returns Comma-separated string of token balances
+ */
+const formatTokenBalances = (
+  sharesArray: readonly bigint[] | undefined,
+  outcomes: readonly string[] | undefined,
+): string => {
+  if (!sharesArray || !outcomes) return "N/A";
+
+  // Skip the first element (0-index based) and convert the rest to ETH units
+  const balances = Array.from(sharesArray.slice(1)).map(amount => Number(formatEther(amount)));
+
+  return balances.map((balance, index) => `${balance} (${outcomes[index]})`).join(" | ");
 };
