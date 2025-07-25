@@ -426,18 +426,26 @@ const MarketTradingPanel = ({
 
   const isReadyToFetch = !!connectedAddress && !!targetNetwork?.id;
 
-  // Fetch account shares data on demand when the panel is shown
   const {
     data: accountShares,
     isLoading: isLoadingAccountShares,
     isError: isErrorAccountShares,
+    refetch: refetchAccountShares,
   } = useAccountOutcomeBalances(market.marketId, market.market, connectedAddress, targetNetwork.id, isReadyToFetch);
 
-  // Check if market is closed
+  // Function to reset the trading form
+  const resetTradingForm = () => {
+    setSelectedOutcome("");
+    setInputValue("");
+    setCostToQuote(null);
+    setSharesToQuote(null);
+  };
+
+  // Check if market is closed (based on end timestamp)
   const now = BigInt(Math.floor(Date.now() / 1000));
   const isMarketClosed = now > market.endTimestamp;
 
-  // Calculate buy/sell data when a quote is requested
+  // Calculate buy/sell data when a quote is requested (based on selected outcome)
   const outcomeIndex = selectedOutcome ? market.outcomes.indexOf(selectedOutcome) + 1 : 0;
   const { data: buyCalculations, isLoading: isLoadingBuy } = useMarketBuyCalculations(
     targetNetwork.id,
@@ -487,24 +495,25 @@ const MarketTradingPanel = ({
   let quoteDisplay = null;
   if (tradeType === "BUY" && buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0) {
     const { actualPrice, actualShares } = buyCalculations;
+    
+    // Calculate potential returns
+    const tokenReturnValue = actualShares - actualPrice;
+    const returnPercentage = ((actualShares / actualPrice - 1) * 100);
+    const tokenReturnPercentage = Math.round(returnPercentage);
+
     quoteDisplay = (
-      <>
-        <p className="m-0 font-mono">&gt; Trade: BUY {actualShares} shares of {selectedOutcome}</p>
-        <p className="m-0 font-mono">
-          &gt; Cost: {actualPrice.toFixed(4)} {accountShares.tokenSymbol} (Price per share:{" "}
-          {(actualPrice / actualShares).toFixed(4)})
-        </p>
-      </>
+      <div>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> BUY {actualShares} shares of {selectedOutcome}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Cost:</span> {actualPrice.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {(actualPrice / actualShares).toFixed(4)})</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Max Return:</span> {tokenReturnValue.toFixed(4)} {accountShares.tokenSymbol} ({tokenReturnPercentage}%)</p>
+      </div>
     );
   } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError) {
     const { collateralToReceive, pricePerShare } = sellCalculations;
     quoteDisplay = (
       <>
-        <p className="m-0 font-mono">&gt; Trade: SELL {sharesToQuote} shares of {selectedOutcome}</p>
-        <p className="m-0 font-mono">
-          &gt; Receive: {collateralToReceive.toFixed(4)} {accountShares.tokenSymbol} (Price per share:{" "}
-          {pricePerShare.toFixed(4)})
-        </p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> SELL {sharesToQuote} shares of {selectedOutcome}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Receive:</span> {collateralToReceive.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {pricePerShare.toFixed(4)})</p>
       </>
     );
   }
@@ -625,7 +634,7 @@ const MarketTradingPanel = ({
             )}
 
             {quoteDisplay && (
-              <div className="text-xs">
+              <div>
                 {quoteDisplay}
               </div>
             )}
@@ -650,7 +659,9 @@ const MarketTradingPanel = ({
                       market.market,
                       maxTokenIn,
                     );
-                    // Optionally refresh market data here
+                    // Reset form and refetch data after successful trade
+                    resetTradingForm();
+                    await refetchAccountShares();
                   } catch (error) {
                     console.error("Buy execution failed:", error);
                   }
@@ -661,7 +672,9 @@ const MarketTradingPanel = ({
                       outcomeIndex,
                       sharesToQuote,
                     );
-                    // Optionally refresh market data here
+                    // Reset form and refetch data after successful trade
+                    resetTradingForm();
+                    await refetchAccountShares();
                   } catch (error) {
                     console.error("Sell execution failed:", error);
                   }
