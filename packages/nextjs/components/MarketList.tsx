@@ -15,7 +15,7 @@ import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
 import { parseEther } from "viem";
-import { useMarketTrade } from "~~/hooks/useMarketTrade";
+import { useMarketTrade } from "~~/hooks/useMarkettrade";
 
 /**
  * Returns the current market status and associated styling class
@@ -465,7 +465,7 @@ const MarketTradingPanel = ({
 
   const isLoadingCalculations = isLoadingBuy || isLoadingSell;
 
-  const { executeBuy, executeSell, isPending } = useMarketTrade();
+  const { executeBuy, executeSell, executeRedeem, isPending } = useMarketTrade();
 
   if (!connectedAddress) {
     return (
@@ -553,9 +553,21 @@ const MarketTradingPanel = ({
           <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
             <button
               className="btn btn-primary btn-sm w-32"
-              disabled={accountShares.redeemed > 0n}
+              disabled={accountShares.redeemed > 0n || isPending}
+              onClick={async () => {
+                try {
+                  await executeRedeem(market.marketId);
+                  await refetchAccountShares();
+                } catch (error) {
+                  console.error("Failed to redeem shares:", error);
+                }
+              }}
             >
-              REDEEM
+              {isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                "REDEEM"
+              )}
             </button>
             {accountShares.redeemed > 0n && (
               <p className="text-xs text-success m-0">You have already redeemed your winnings.</p>

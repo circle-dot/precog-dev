@@ -1,3 +1,5 @@
+// TODO Using 2 block confirmations for now, need to change to 1. With 2 we assure that the refetch works.
+
 import { useState } from "react";
 import { usePublicClient, useAccount, useWriteContract } from "wagmi";
 import { erc20Abi, parseEther, formatEther } from "viem";
@@ -90,7 +92,7 @@ export function useMarketTrade() {
               args: [masterContract.address, maxTokenIn],
             });
 
-          await writeTx(writeApproveAsync, { blockConfirmations: 1 });
+          await writeTx(writeApproveAsync, { blockConfirmations: 2 });
         }
       }
 
@@ -103,7 +105,7 @@ export function useMarketTrade() {
           args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(sharesToTrade), maxTokenIn],
         });
 
-      const txHash = await writeTx(writeBuyAsync, { blockConfirmations: 1 });
+      const txHash = await writeTx(writeBuyAsync, { blockConfirmations: 2 });
       return txHash;
     } catch (error) {
       console.error("Trade execution failed:", error);
@@ -170,7 +172,7 @@ export function useMarketTrade() {
           args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(actualSellAmount), minOut],
         });
 
-      const txHash = await writeTx(writeSellAsync, { blockConfirmations: 1 });
+      const txHash = await writeTx(writeSellAsync, { blockConfirmations: 2 });
       return txHash;
     } catch (error) {
       console.error("Sell execution failed:", error);
@@ -180,9 +182,42 @@ export function useMarketTrade() {
     }
   };
 
+  /**
+   * Executes a redeem transaction for market shares
+   * @param marketId - ID of the market to redeem shares from
+   */
+  const executeRedeem = async (marketId: number) => {
+    if (!connectedAddress || !masterContract || !publicClient) {
+      notification.error("Missing dependencies for redeem execution");
+      return;
+    }
+
+    setIsPending(true);
+
+    try {
+      // Execute redeem transaction
+      const writeRedeemAsync = () =>
+        writeContractAsync({
+          address: masterContract.address,
+          abi: masterContract.abi,
+          functionName: "marketRedeemShares",
+          args: [BigInt(marketId)],
+        });
+
+      const txHash = await writeTx(writeRedeemAsync, { blockConfirmations: 2 });
+      return txHash;
+    } catch (error) {
+      console.error("Redeem execution failed:", error);
+      throw error; // Let useTransactor handle the error notification
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   return {
     executeBuy,
     executeSell,
+    executeRedeem,
     isPending,
     isLoading: !marketContract || !masterContract,
   };
