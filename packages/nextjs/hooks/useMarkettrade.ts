@@ -104,11 +104,7 @@ export function useMarketTrade() {
         });
 
       const txHash = await writeTx(writeBuyAsync, { blockConfirmations: 1 });
-      
-      if (txHash) {
-        notification.success("Trade executed successfully!");
-        return txHash;
-      }
+      return txHash;
     } catch (error) {
       console.error("Trade execution failed:", error);
       notification.error("Trade execution failed");
@@ -175,11 +171,7 @@ export function useMarketTrade() {
         });
 
       const txHash = await writeTx(writeSellAsync, { blockConfirmations: 1 });
-
-      if (txHash) {
-        notification.success("Sell executed successfully!");
-        return txHash;
-      }
+      return txHash;
     } catch (error) {
       console.error("Sell execution failed:", error);
       notification.error("Sell execution failed");

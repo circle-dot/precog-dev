@@ -653,7 +653,7 @@ const MarketTradingPanel = ({
               onClick={async () => {
                 if (tradeType === "BUY" && buyCalculations?.actualShares && buyCalculations.actualPrice) {
                   try {
-                    const maxTokenIn = parseEther(buyCalculations.actualPrice.toString());
+                    const maxTokenIn = parseEther(inputValue);
                     await executeBuy(
                       market.marketId,
                       outcomeIndex,
