@@ -8,7 +8,7 @@ import { useTransactor } from "./scaffold-eth/useTransactor";
 import { fromNumberToInt128, fromInt128toNumber } from "~~/utils/numbers";
 import { notification } from "~~/utils/scaffold-eth";
 
-export function useMarketTrade() {
+export function useMarketActions() {
   const [isPending, setIsPending] = useState(false);
   const { address: connectedAddress } = useAccount();
   const publicClient = usePublicClient();

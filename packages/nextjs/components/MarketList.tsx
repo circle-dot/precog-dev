@@ -15,7 +15,7 @@ import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
 import { parseEther } from "viem";
-import { useMarketTrade } from "~~/hooks/useMarkettrade";
+import { useMarketActions } from "~~/hooks/useMarketActions";
 
 /**
  * Returns the current market status and associated styling class
@@ -229,7 +229,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
  */
 const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
   const { address: connectedAddress } = useAccount();
-  const { executeReport, isPending: isReporting } = useMarketTrade();
+  const { executeReport, isPending: isReporting } = useMarketActions();
   const [selectedOutcome, setSelectedOutcome] = useState("");
 
   const {
@@ -502,7 +502,7 @@ const MarketTradingPanel = ({
 
   const isLoadingCalculations = isLoadingBuy || isLoadingSell;
 
-  const { executeBuy, executeSell, executeRedeem, isPending } = useMarketTrade();
+  const { executeBuy, executeSell, executeRedeem, isPending } = useMarketActions();
 
   if (!connectedAddress) {
     return (
