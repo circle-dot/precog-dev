@@ -23,6 +23,7 @@ export function useMarketTrade() {
     contractName: "PrecogMasterV7",
   });
 
+
   /**
    * Executes a buy transaction for market shares
    * @param marketId - ID of the market to buy shares in
@@ -182,6 +183,40 @@ export function useMarketTrade() {
     }
   };
 
+    /**
+   * Executes a report transaction to set the market outcome
+   * @param marketId - The unique identifier of the market
+   * @param outcomeId - The outcome to report
+   * @param marketAddress - The address of the market contract
+   */
+    const executeReport = async (marketId: number, outcomeId: number, marketAddress: string) => {
+      if (!connectedAddress || !marketContract) {
+        notification.error("Missing dependencies for report execution");
+        return;
+      }
+  
+      setIsPending(true);
+  
+      try {
+        const writeReportAsync = () =>
+          writeContractAsync({
+            address: marketAddress as `0x${string}`,
+            abi: marketContract.abi,
+            functionName: "reportResult",
+            args: [BigInt(marketId), BigInt(outcomeId)],
+          });
+  
+        const txHash = await writeTx(writeReportAsync, { blockConfirmations: 2 });
+        return txHash;
+      } catch (error) {
+        console.error("Report execution failed:", error);
+        notification.error("Report execution failed");
+      } finally {
+        setIsPending(false);
+      }
+    };
+
+
   /**
    * Executes a redeem transaction for market shares
    * @param marketId - ID of the market to redeem shares from
@@ -217,6 +252,7 @@ export function useMarketTrade() {
   return {
     executeBuy,
     executeSell,
+    executeReport,
     executeRedeem,
     isPending,
     isLoading: !marketContract || !masterContract,

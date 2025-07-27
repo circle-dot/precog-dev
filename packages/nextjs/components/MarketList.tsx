@@ -228,10 +228,15 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
  * Displays more market information including resolution and trading data
  */
 const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
+  const { address: connectedAddress } = useAccount();
+  const { executeReport, isPending: isReporting } = useMarketTrade();
+  const [selectedOutcome, setSelectedOutcome] = useState("");
+
   const {
     data: details,
     isLoading,
     isError,
+    refetch: refetchDetails,
   } = usePrecogMarketDetails(market.marketId, market.market, true);
   const { targetNetwork } = useTargetNetwork();
 
@@ -253,18 +258,20 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
 
   const { marketInfo, token, tokenSymbol, marketResultInfo } = details;
   const status = getDetailedMarketStatus(market.startTimestamp, market.endTimestamp, marketResultInfo[0]);
+  const isPendingResolution = status === "WAITING FOR THE RESULT";
+  const isOracle = connectedAddress === marketResultInfo[2];
 
   return (
     <div className="flex flex-col gap-4">
       {/* Market Resolution Section */}
-    <div className="flex flex-col gap-4">
-    <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
-      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Market Status:</span> {status}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Oracle:</span>{" "}
+      <div className="flex flex-col gap-4">
+        <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
+        <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Market Status:</span> {status}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Oracle:</span>{" "}
             <a
               href={getBlockExplorerAddressLink(targetNetwork, marketResultInfo[2])}
               target="_blank"
@@ -274,62 +281,92 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
               {marketResultInfo[2]}
               <ArrowTopRightOnSquareIcon className="w-3 h-3" />
             </a>
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
-          {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Resolution Date:</span>{" "}
-          {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
-        </p>
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
+            {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Resolution Date:</span>{" "}
+            {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
+          </p>
+          {isPendingResolution && isOracle && (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="font-bold text-base-content/70">Report Result:</span>
+              <select
+                className="select select-bordered select-xs"
+                value={selectedOutcome}
+                onChange={e => setSelectedOutcome(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select outcome
+                </option>
+                {market.outcomes.map(outcome => (
+                  <option key={outcome} value={outcome}>
+                    {outcome}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-xs btn-primary"
+                disabled={!selectedOutcome || isReporting}
+                onClick={async () => {
+                  const outcomeIndex = market.outcomes.indexOf(selectedOutcome) + 1; // +1 because 0 is a reserved value for empty result
+                  await executeReport(market.marketId, outcomeIndex, market.market);
+                  refetchDetails();
+                }}
+              >
+                {isReporting ? <span className="loading loading-spinner loading-xs"></span> : "Report"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
 
       {/* Market Trading Section */}
-    <div className="flex flex-col gap-4">
-    <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
-      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Trading Starts:</span>{" "}
-          {formatDate(market.startTimestamp, true)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Collateral Token:</span>{" "}
-          <a
-            href={getBlockExplorerAddressLink(targetNetwork, token)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:underline"
-          >
-            {token}
-            <ArrowTopRightOnSquareIcon className="w-3 h-3" />
-          </a>{" "}
-          ({tokenSymbol})
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
-          {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed())} ({tokenSymbol})
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Buys:</span> {formatMarketValue(marketInfo[3])}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Sells:</span> {formatMarketValue(marketInfo[4])}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
-          {formatMarketValue(marketInfo[0], fromInt128toNumber)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
-          {formatSharesBalances(marketInfo[1], market.outcomes)}
-        </p>
+      <div className="flex flex-col gap-4">
+        <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
+        <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Trading Starts:</span>{" "}
+            {formatDate(market.startTimestamp, true)}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Collateral Token:</span>{" "}
+            <a
+              href={getBlockExplorerAddressLink(targetNetwork, token)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:underline"
+            >
+              {token}
+              <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+            </a>{" "}
+            ({tokenSymbol})
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
+            {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed())} ({tokenSymbol})
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Buys:</span> {formatMarketValue(marketInfo[3])}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Sells:</span> {formatMarketValue(marketInfo[4])}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
+            {formatMarketValue(marketInfo[0], fromInt128toNumber)}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
+            {formatSharesBalances(marketInfo[1], market.outcomes)}
+          </p>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
@@ -505,8 +542,8 @@ const MarketTradingPanel = ({
       <div>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> BUY {actualShares} shares of {selectedOutcome}</p>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Cost:</span> {actualPrice.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {(actualPrice / actualShares).toFixed(4)})</p>
-        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Future Price:</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
-        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Max Return:</span> {tokenReturnValue.toFixed(4)} {accountShares.tokenSymbol} ({tokenReturnPercentage}%)</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">New Price (after trade):</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Max Potential Return:</span> {tokenReturnValue.toFixed(4)} {accountShares.tokenSymbol} ({tokenReturnPercentage}%)</p>
       </div>
     );
   } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError) {
@@ -515,7 +552,7 @@ const MarketTradingPanel = ({
       <>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> SELL {sharesToQuote} shares of {selectedOutcome}</p>
         <p className="m-0">&gt; <span className="font-bold text-base-content/70">Receive:</span> {collateralToReceive.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {pricePerShare.toFixed(4)})</p>
-        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Future Price:</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">New Price (after trade):</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
       </>
     );
   }
@@ -569,9 +606,6 @@ const MarketTradingPanel = ({
                 "REDEEM"
               )}
             </button>
-            {accountShares.redeemed > 0n && (
-              <p className="text-xs text-success m-0">You have already redeemed your winnings.</p>
-            )}
           </div>
         </div>
       ) : (
@@ -619,7 +653,7 @@ const MarketTradingPanel = ({
                 type="number"
                 min={0}
                 placeholder={tradeType === "BUY" ? "Total Cost" : "Shares Amount"}
-                className="input input-bordered input-xs w-full max-w-[120px]"
+                className="input input-bordered input-xs w-full max-w-[120px] text-center"
                 value={inputValue}
                 onChange={e => {
                   setInputValue(e.target.value);
