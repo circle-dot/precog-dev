@@ -110,7 +110,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
       <div className="collapse-title peer-checked:bg-base-200/10 text-xs">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <h3 className="text-lg font-bold text-base-content/70 truncate m-0" title={market.name}>
+            <h3 className="text-lg font-bold text-base-content/70 break-words m-0" title={market.name}>
               <span className="text-base-content/70 mr-2">[{market.marketId}]</span>
               {market.name}
             </h3>
@@ -135,8 +135,8 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
             <h4 className="font-bold text-base-content/70 m-0">:: Market Basic Info ::</h4>
             <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
               <div className="break-words">
-                <span className="font-bold text-base-content/70">Market Description: </span>
-                {market.description}
+                <span className="font-bold text-base-content/70 inline-block mb-1">Market Description: </span>
+                <span className="inline-block">{market.description}</span>
               </div>
               <div>
                 <span className="font-bold text-base-content/70">Category: </span>
@@ -147,27 +147,27 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                 {market.outcomes.join(", ")}
               </div>
               <div className="break-all">
-                <span className="font-bold text-base-content/70">Creator: </span>
+                <span className="font-bold text-base-content/70 inline-block mb-1">Creator: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:underline"
+                  className="inline-flex items-center gap-1 hover:underline break-all"
                 >
                   {market.creator}
-                  <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                  <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
                 </a>
               </div>
               <div className="break-all">
-                <span className="font-bold text-base-content/70">Market Contract: </span>
+                <span className="font-bold text-base-content/70 inline-block mb-1">Market Contract: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.market)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:underline"
+                  className="inline-flex items-center gap-1 hover:underline break-all"
                 >
                   {market.market}
-                  <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                  <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
                 </a>
                 <Link
                   href={`/market?address=${market.market}`}
@@ -175,14 +175,14 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                   passHref
                 >
                   Market Details
-                  <ChartBarSquareIcon className="w-4 h-4" />
+                  <ChartBarSquareIcon className="w-4 h-4 flex-shrink-0" />
                 </Link>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-4 pt-4 flex-wrap">
             <button className="btn btn-sm btn-primary" onClick={() => setShowDetails(!showDetails)}>
               {showDetails ? "Hide" : "Show"} Market Info
             </button>
@@ -250,18 +250,18 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
           <p className="m-0">
             <span className="font-bold text-base-content/70">Market Status:</span> {status}
           </p>
-          <p className="m-0">
-            <span className="font-bold text-base-content/70">Oracle:</span>{" "}
+          <div className="break-all">
+            <span className="font-bold text-base-content/70 inline-block mb-1">Oracle:</span>{" "}
             <a
               href={getBlockExplorerAddressLink(targetNetwork, marketResultInfo[2])}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:underline"
+              className="inline-flex items-center gap-1 hover:underline break-all"
             >
               {marketResultInfo[2]}
-              <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+              <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
             </a>
-          </p>
+          </div>
           <p className="m-0">
             <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
             {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
@@ -314,19 +314,19 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
           <p className="m-0">
             <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
           </p>
-          <p className="m-0">
-            <span className="font-bold text-base-content/70">Collateral Token:</span>{" "}
+          <div className="break-all">
+            <span className="font-bold text-base-content/70 inline-block mb-1">Collateral Token:</span>{" "}
             <a
               href={getBlockExplorerAddressLink(targetNetwork, token)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:underline"
+              className="inline-flex items-center gap-1 hover:underline break-all"
             >
               {token}
-              <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+              <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
             </a>{" "}
             ({tokenSymbol})
-          </p>
+          </div>
           <p className="m-0">
             <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
             {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed())} ({tokenSymbol})
@@ -398,16 +398,18 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
         PREDICTION: {winningOutcome.name} ({winningProbability.toFixed(2)}%)
         </div>
       )}
-        {outcomeData.map((outcome, i) => (
-          <div key={i}>
-            <span className="font-semibold text-base-content/80">{`> ${outcome.name}`}</span>
-            <span className="pl-2">
-              - BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}
-              <span className="px-2">|</span>
-              SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}
-            </span>
-          </div>
-        ))}
+        <div className="overflow-x-auto">
+          {outcomeData.map((outcome, i) => (
+            <div key={i} className="whitespace-nowrap">
+              <span className="font-semibold text-base-content/80">{`> ${outcome.name}`}</span>
+              <span className="pl-2">
+                - BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}
+                <span className="px-2">|</span>
+                SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -596,7 +598,7 @@ const MarketTradingPanel = ({
             <div className="flex items-center gap-2 flex-wrap">
               {/* BUY/SELL Selector */}
               <select
-                className="select select-bordered select-xs"
+                className="select select-bordered select-xs min-w-[80px]"
                 value={tradeType}
                 onChange={e => {
                   setTradeType(e.target.value);
@@ -611,7 +613,7 @@ const MarketTradingPanel = ({
 
               {/* Outcome selector */}
               <select
-                className="select select-bordered select-xs"
+                className="select select-bordered select-xs min-w-[150px]"
                 value={selectedOutcome}
                 onChange={e => {
                   setSelectedOutcome(e.target.value);
@@ -661,11 +663,13 @@ const MarketTradingPanel = ({
               </div>
             )}
 
-            {quoteDisplay && (
-              <div>
-                {quoteDisplay}
-              </div>
-            )}
+            <div className="overflow-x-auto">
+              {quoteDisplay && (
+                <div className="whitespace-nowrap">
+                  {quoteDisplay}
+                </div>
+              )}
+            </div>
 
             {(buyCalculations?.hasError || sellCalculations?.hasError) && (
               <div className="text-xs text-error">
