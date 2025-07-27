@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { usePublicClient } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
 import { useScaffoldContract } from "./scaffold-eth";
 import { fromInt128toNumber, fromNumberToInt128 } from "~~/utils/numbers";
 

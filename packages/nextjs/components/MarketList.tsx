@@ -1,36 +1,16 @@
 import { useState } from "react";
 import Link from "next/link";
-import { formatEther } from "viem";
-import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
+import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import {
-  MarketInfo,
-  useAccountOutcomeBalances,
-  usePrecogMarketDetails,
-  usePrecogMarketPrices,
-} from "~~/hooks/usePrecogMarketData";
+import { MarketInfo, useAccountOutcomeBalances, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
 import { useMarketBuyCalculations, useMarketSellCalculations } from "~~/hooks/useMarketCalculations";
+import { useMarketActions } from "~~/hooks/useMarketActions";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
-import { parseEther } from "viem";
-import { useMarketActions } from "~~/hooks/useMarketActions";
 
-/**
- * Returns the current market status and associated styling class
- */
-const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
-  const now = BigInt(Math.floor(Date.now() / 1000));
-
-  if (now < startTimestamp) {
-    return { status: "CREATED", className: "text-warning" };
-  } else if (now >= startTimestamp && now < endTimestamp) {
-    return { status: "OPEN", className: "text-success animate-pulse" };
-  } else {
-    return { status: "CLOSED", className: "text-error" };
-  }
-};
 
 /**
  * Main component that renders a list of prediction markets
@@ -742,7 +722,24 @@ const MarketTradingPanel = ({
   );
 };
 
+// =================================================================================================
 // Helper Functions
+// =================================================================================================
+
+/**
+ * Returns the current market status and associated styling class
+ */
+const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
+  const now = BigInt(Math.floor(Date.now() / 1000));
+
+  if (now < startTimestamp) {
+    return { status: "CREATED", className: "text-warning" };
+  } else if (now >= startTimestamp && now < endTimestamp) {
+    return { status: "OPEN", className: "text-success animate-pulse" };
+  } else {
+    return { status: "CLOSED", className: "text-error" };
+  }
+};
 
 /**
  * Returns a detailed market status string based on timing and result
