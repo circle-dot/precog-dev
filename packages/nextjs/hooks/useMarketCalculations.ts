@@ -273,7 +273,6 @@ const marketTradeCost = (shares: number[], alpha: number, outcome: number, amoun
   return Math.abs(costAfterTrade - cost);
 };
 
-
 /**
  * Calculates the price of buying/selling one share after a trade is completed
  * @param shares Current share balances
@@ -295,18 +294,3 @@ export const getFuturePriceAfterTrade = (
   // Then calculate the cost of trading 1 more share from that state
   return marketTradeCost(sharesAfterTrade, alpha, outcome, 1);
 };
-
-/**
- * Calculate the amount of collateral to buy/sell a single share after some trade is made
- *
- * @param shares - List of shares balances for all outcomes in the Market
- * @param alpha - Fixed PrecogMarket contract variable defined on market initialization
- * @param outcome - Index of the market outcome to be traded
- * @param amount - Total of shares to be traded in the market (negative amount for SELL trades)
- */
-export const marketPriceAfterTrade = (shares: number[], alpha: number, outcome: number, amount: number): number => {
-  const costAfterTrade = marketCostAfterTrade(shares, alpha, outcome, amount);
-  const oneShareDelta = amount > 0 ? amount + 1 : amount - 1;
-  const costAfterTradeWithDelta = marketCostAfterTrade(shares, alpha, outcome, oneShareDelta);
-  return Math.abs(costAfterTradeWithDelta - costAfterTrade);
-}
