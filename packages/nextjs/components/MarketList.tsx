@@ -634,7 +634,7 @@ const MarketTradingPanel = ({
               <input
                 type="number"
                 min={0}
-                placeholder={tradeType === "BUY" ? "Total Cost" : "Shares Amount"}
+                placeholder="Shares Amount"
                 className="input input-bordered input-xs w-full max-w-[120px] text-center"
                 value={inputValue}
                 onChange={e => {

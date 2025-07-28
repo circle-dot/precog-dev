@@ -10,15 +10,14 @@ import { fromInt128toNumber, fromNumberToInt128 } from "~~/utils/numbers";
 
 /**
  * Hook to calculate market data for buying shares.
- * It takes a total cost from the user and calculates how many shares can be bought,
- * and what the actual on-chain cost for those shares will be.
+ * It takes a number of shares to buy and calculates the actual cost and future price.
  */
 export const useMarketBuyCalculations = (
   chainId: number,
   marketId: number,
   marketAddress: string,
   outcome: number,
-  totalCost: number,
+  sharesToBuy: number,
   enabled: boolean = true,
 ) => {
   const publicClient = usePublicClient();
@@ -26,81 +25,55 @@ export const useMarketBuyCalculations = (
     contractName: "PrecogMasterV7",
   });
 
-  // Step 1: We need the market's current state (share balances and alpha) for our calculations.
-  const { data: sharesInfo, isLoading: isSharesInfoLoading } = useMarketSharesInfo(
-    marketId,
-    publicClient,
-    masterContract,
-    enabled && !isNaN(totalCost) && totalCost > 0,
-  );
+  return useQuery({
+    queryKey: ["marketBuyPrice", chainId, marketId, outcome, sharesToBuy],
+    queryFn: async () => {
+      try {
+        // Get current buy price for the requested shares
+        const currentPrice = await getShareBuyPrice(
+          marketId,
+          outcome,
+          sharesToBuy,
+          publicClient,
+          masterContract,
+        );
 
-  const { data: alpha, isLoading: isAlphaLoading } = useMarketAlpha(
-    marketAddress,
-    publicClient,
-    enabled && !isNaN(totalCost) && totalCost > 0,
-  );
+        // Get future price by calculating for one more share
+        const futurePriceTotal = await getShareBuyPrice(
+          marketId,
+          outcome,
+          sharesToBuy + 1,
+          publicClient,
+          masterContract,
+        );
 
-  // Step 2: Client-side calculation to estimate shares from the user's desired cost.
-  const sharesCalculationQuery = useQuery({
-    queryKey: ["marketSharesCalculation", sharesInfo, alpha, outcome, totalCost],
-    queryFn: () => {
-      if (!sharesInfo || !alpha) return null;
-      // This uses a binary search to find out how many shares match the totalCost.
-      const shares = marketSharesFromCost(sharesInfo.sharesBalances, alpha, outcome, totalCost);
-      
-      // Calculate the future price after the trade
-      const futurePrice = marketPriceAfterTrade(
-        sharesInfo.sharesBalances,
-        alpha,
-        outcome,
-        shares
-      );
+        // Calculate future price as the difference
+        const futurePrice = futurePriceTotal - currentPrice;
 
-      return {
-        maxShares: shares,
-        actualShares: Math.floor(shares),
-        futurePrice,
-        hasError: false,
-        error: null
-      };
+        return {
+          maxShares: sharesToBuy,
+          actualShares: sharesToBuy,
+          actualPrice: currentPrice,
+          pricePerShare: currentPrice / sharesToBuy,
+          futurePrice,
+          hasError: false,
+          error: null,
+        };
+      } catch (error) {
+        console.error("Error fetching buy price:", error);
+        return {
+          maxShares: 0,
+          actualShares: 0,
+          actualPrice: 0,
+          pricePerShare: 0,
+          futurePrice: 0,
+          hasError: true,
+          error: error instanceof Error ? error.message : "Failed to fetch buy price",
+        };
+      }
     },
-    enabled: !!sharesInfo && !!alpha && !isNaN(outcome) && outcome > 0 && !isNaN(totalCost) && totalCost > 0,
+    enabled: enabled && !!masterContract && !!publicClient && sharesToBuy > 0,
   });
-
-  const roundedShares = sharesCalculationQuery.data?.actualShares ?? 0;
-
-  // Step 3: Using the calculated shares, we ask the contract for the precise cost.
-  const actualPriceQuery = useQuery({
-    queryKey: ["shareBuyPrice", marketId, outcome, roundedShares],
-    queryFn: () => getShareBuyPrice(marketId, outcome, roundedShares, publicClient, masterContract),
-    enabled: roundedShares > 0 && !!publicClient && !!masterContract,
-  });
-
-  // Step 4: Combine the data for the UI.
-  const data = useMemo(() => {
-    const sharesData = sharesCalculationQuery.data;
-    const priceData = actualPriceQuery.data;
-
-    if (sharesData && priceData !== undefined) {
-      return {
-        maxShares: sharesData.maxShares,
-        actualShares: sharesData.actualShares,
-        actualPrice: priceData,
-        futurePrice: sharesData.futurePrice,
-        hasError: false,
-        error: null,
-      };
-    }
-    return undefined;
-  }, [sharesCalculationQuery.data, actualPriceQuery.data]);
-
-  const isLoading =
-    isSharesInfoLoading || isAlphaLoading || sharesCalculationQuery.isLoading || actualPriceQuery.isLoading;
-
-  return {
-    data,
-    isLoading,
-  };
 };
 
 /**
