@@ -10,7 +10,9 @@ import { useMarketActions } from "~~/hooks/useMarketActions";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
-
+import { Pie, PieChart, Sector } from "recharts";
+import { PieSectorDataItem } from "recharts/types/polar/Pie";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./Charts";
 
 /**
  * Main component that renders a list of prediction markets
@@ -342,8 +344,14 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
             {formatMarketValue(marketInfo[0], fromInt128toNumber)}
           </p>
           <p className="m-0">
-            <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
-            {formatSharesBalances(marketInfo[1], market.outcomes)}
+            <div className="flex items-center gap-4">
+              <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
+              {formatSharesBalances(marketInfo[1], market.outcomes)}
+            </div>
+            <SharesBalanceChart 
+              sharesArray={marketInfo[1]} 
+              outcomes={market.outcomes} 
+            />
           </p>
         </div>
       </div>
@@ -725,6 +733,104 @@ const MarketTradingPanel = ({
     </div>
   );
 };
+
+
+/**
+ * Displays shares balances as a pie chart
+ */
+const SharesBalanceChart = ({ 
+  sharesArray, 
+  outcomes 
+}: { 
+  sharesArray: readonly bigint[] | undefined, 
+  outcomes: readonly string[] | undefined 
+}) => {
+  if (!sharesArray || !outcomes) return null;
+
+  // Generate different shades of sky blue based on index
+  const generateColor = (index: number): string => {
+    // Use sky blue hue (around 200-210 degrees)
+    const hue = 205;
+    
+    // Keep saturation moderate-high for vibrant but soft blues (40-60%)
+    const s = 0.5; // 50% saturation
+    
+    // Vary the lightness based on index using golden ratio for even distribution
+    const goldenRatio = 0.618033988749895;
+    const normalizedIndex = (index * goldenRatio) % 1;
+    
+    // Lightness between 50% and 85% for soft sky blue appearance
+    const l = 0.5 + (normalizedIndex * 0.35);
+
+    return `hsl(${hue}, ${s * 100}%, ${l * 100}%)`;
+  };
+
+  // Skip the first element (0-index based) and convert the rest to numbers
+  const balances = Array.from(sharesArray.slice(1)).map(fromInt128toNumber);
+  
+  // Create chart data with generated colors
+  const chartData = balances.map((balance, index) => ({
+    name: outcomes[index],
+    value: balance,
+    fill: generateColor(index)
+  }));
+
+  // Find the index of the outcome with highest shares
+  const winningIndex = balances.reduce((maxIndex, current, index, arr) => 
+    current > arr[maxIndex] ? index : maxIndex
+  , 0);
+
+  // Create chart config with generated colors
+  const chartConfig = outcomes.reduce((acc, outcome, index) => ({
+    ...acc,
+    [outcome]: {
+      label: outcome,
+      color: generateColor(index)
+    }
+  }), {
+    value: { label: "Shares: " }
+  });
+
+  return (
+    <div className="w-full max-w-[200px]">
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-square"
+      >
+        <PieChart>
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent />}
+          />
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={45}
+            outerRadius={90}
+            strokeWidth={2}
+            activeIndex={winningIndex}
+            activeShape={(props: PieSectorDataItem) => {
+              const { cx, cy, innerRadius, outerRadius = 0, startAngle, endAngle, fill } = props;
+              return (
+                <Sector
+                  cx={cx}
+                  cy={cy}
+                  innerRadius={innerRadius}
+                  outerRadius={Number(outerRadius) + 10}
+                  startAngle={startAngle}
+                  endAngle={endAngle}
+                  fill={fill}
+                />
+              );
+            }}
+          />
+        </PieChart>
+      </ChartContainer>
+    </div>
+  );
+};
+
 
 // =================================================================================================
 // Helper Functions
