@@ -482,7 +482,6 @@ const MarketTradingPanel = ({
     sharesToQuote ?? 0,
     isReadyToFetch && tradeType === "SELL" && sharesToQuote !== null && sharesToQuote > 0 && outcomeIndex > 0,
   );
-  console.log("sellCalculations", sellCalculations);
   const isLoadingCalculations = isLoadingBuy || isLoadingSell;
 
   const { executeBuy, executeSell, executeRedeem, isPending } = useMarketActions();
