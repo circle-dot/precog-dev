@@ -2,6 +2,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
+import { Pie, PieChart, Sector } from "recharts";
+import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { MarketInfo, useAccountOutcomeBalances, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
@@ -10,8 +12,6 @@ import { useMarketActions } from "~~/hooks/useMarketActions";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
-import { Pie, PieChart, Sector } from "recharts";
-import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./Charts";
 
 /**

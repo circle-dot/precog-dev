@@ -273,49 +273,6 @@ const marketTradeCost = (shares: number[], alpha: number, outcome: number, amoun
   return Math.abs(costAfterTrade - cost);
 };
 
-/**
- * Calculates the buy price of one share after a sell transaction.
- * @param currentShares The current array of share balances in the market.
- * @param alpha The market's alpha parameter.
- * @param outcome The outcome token index being sold.
- * @param sharesToSell The number of shares being sold.
- * @returns The cost to buy one share of the same outcome after the sell.
- */
-export const getFutureBuyPriceAfterSell = (
-  currentShares: number[],
-  alpha: number,
-  outcome: number,
-  sharesToSell: number,
-): number => {
-  // Calculate the future state of shares after the sell
-  const sharesAfterSell = [...currentShares];
-  sharesAfterSell[outcome] -= sharesToSell;
-
-  // Then, calculate the cost of buying 1 share from that new state.
-  return marketTradeCost(sharesAfterSell, alpha, outcome, 1);
-};
-
-/**
- * Calculates the sell price of one share after a buy transaction.
- * @param currentShares The current array of share balances in the market.
- * @param alpha The market's alpha parameter.
- * @param outcome The outcome token index being bought.
- * @param sharesToBuy The number of shares being bought.
- * @returns The cost to buy 1 share of the same outcome after the buy.
- */
-export const getFutureBuyPriceAfterBuy = (
-  currentShares: number[],
-  alpha: number,
-  outcome: number,
-  sharesToBuy: number,
-): number => {
-  // Calculate the future state of shares after the buy
-  const sharesAfterBuy = [...currentShares];
-  sharesAfterBuy[outcome] += sharesToBuy;
-
-  // Then, calculate the cost of buying 1 share from that new state.
-  return marketTradeCost(sharesAfterBuy, alpha, outcome, 1);
-};
 
 /**
  * Calculates the price of buying/selling one share after a trade is completed
