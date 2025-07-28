@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { usePublicClient } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { useScaffoldContract } from "./scaffold-eth";
@@ -83,6 +82,7 @@ export const useMarketBuyCalculations = (
 export const useMarketSellCalculations = (
   chainId: number,
   marketId: number,
+  marketAddress: string,
   outcome: number,
   sharesToSell: number,
   enabled: boolean = true,
@@ -92,8 +92,17 @@ export const useMarketSellCalculations = (
     contractName: "PrecogMasterV7",
   });
 
-  return useQuery({
-    queryKey: ["marketSellPrice", chainId, marketId, outcome, sharesToSell],
+  const { data: sharesInfo, isLoading: isSharesInfoLoading } = useMarketSharesInfo(
+    marketId,
+    publicClient,
+    masterContract,
+    enabled && sharesToSell > 0,
+  );
+
+  const { data: alpha, isLoading: isAlphaLoading } = useMarketAlpha(marketAddress, publicClient, enabled && sharesToSell > 0);
+
+  const query = useQuery({
+    queryKey: ["marketSellPrice", chainId, marketId, outcome, sharesToSell, sharesInfo, alpha],
     queryFn: async () => {
       try {
         // Get current sell price
@@ -105,22 +114,18 @@ export const useMarketSellCalculations = (
           masterContract,
         );
 
-        // Get future price by calculating for one more share
-        const futurePriceTotal = await getShareSellPrice(
-          marketId,
-          outcome,
-          sharesToSell + 1,
-          publicClient,
-          masterContract,
-        );
 
-        // Calculate future price as the difference
-        const futurePrice = futurePriceTotal - collateralToReceive;
+        if (!sharesInfo || !alpha) {
+          throw new Error("Market data not available for future price calculation.");
+        }
+
+        // Calculate the buy price of 1 share after the sell
+        const futureBuyPrice = getSharePriceAfterSell(sharesInfo.sharesBalances, alpha, outcome, sharesToSell);
 
         return {
-          collateralToReceive,
+          collateralToReceive: collateralToReceive,
           pricePerShare: collateralToReceive / sharesToSell,
-          futurePrice,
+          futurePrice: futureBuyPrice,
           hasError: false,
           error: null,
         };
@@ -130,13 +135,21 @@ export const useMarketSellCalculations = (
           collateralToReceive: 0,
           pricePerShare: 0,
           futurePrice: 0,
+          futureBuyPrice: 0,
           hasError: true,
           error: error instanceof Error ? error.message : "Failed to fetch sell price",
         };
       }
     },
-    enabled: enabled && !!masterContract && !!publicClient && sharesToSell > 0,
+    enabled: enabled && !!masterContract && !!publicClient && sharesToSell > 0 && !!sharesInfo && !!alpha,
   });
+
+  const isLoading = isSharesInfoLoading || isAlphaLoading || query.isLoading;
+
+  return {
+    ...query,
+    isLoading,
+  };
 };
 
 // =================================================================================================
@@ -235,47 +248,47 @@ const marketCost = (shares: number[], alpha: number): number => {
   return beta * Math.log(sumTotal);
 };
 
+/**
+ * Simulates a trade to calculate the market's new total collateral after the trade is completed.
+ * If this trade were to happen, what would the market's new total value be?
+ */
 const marketCostAfterTrade = (shares: number[], alpha: number, outcome: number, amount: number): number => {
   const newShares = [...shares];
   newShares[outcome] += amount;
   return marketCost(newShares, alpha);
 };
 
+/**
+ * Calculates the exact cost of a trade by finding the difference
+ * in the market's total collateral before and after the trade.
+ * Is the precise amount to pay to buy those shares, or to receive for selling them
+ */
 const marketTradeCost = (shares: number[], alpha: number, outcome: number, amount: number): number => {
   const cost = marketCost(shares, alpha);
   const costAfterTrade = marketCostAfterTrade(shares, alpha, outcome, amount);
   return Math.abs(costAfterTrade - cost);
 };
 
-export const marketSharesFromCost = (shares: number[], alpha: number, outcome: number, totalCost: number): number => {
-  const maxIterations = 100;
-  const tolerance = 0.0001;
-  let low = 0;
-  let high = totalCost * 10000;
-  let mid = 0;
-  for (let i = 0; i < maxIterations; i++) {
-    mid = (low + high) / 2;
-    if (mid === 0) {
-      low = tolerance;
-      continue;
-    }
-    const cost = marketTradeCost(shares, alpha, outcome, mid);
-    if (Math.abs(cost - totalCost) < tolerance) return mid;
-    if (cost < totalCost) low = mid;
-    else high = mid;
-  }
-  return mid;
-};
+/**
+ * Calculates the buy price of one share after a sell transaction.
+ * @param currentShares The current array of share balances in the market.
+ * @param alpha The market's alpha parameter.
+ * @param outcome The outcome token index being sold.
+ * @param sharesToSell The number of shares being sold.
+ * @returns The cost to buy one share of the same outcome after the sell.
+ */
+const getSharePriceAfterSell = (
+  currentShares: number[],
+  alpha: number,
+  outcome: number,
+  sharesToSell: number,
+): number => {
+  // Calculate the future state of shares after the sell
+  const newShares = [...currentShares];
+  newShares[outcome] -= sharesToSell;
 
-const marketPrice = (shares: number[], alpha: number, outcome: number): number => {
-  const totalShares = shares.reduce((sum, s) => sum + s, 0);
-  if (totalShares === 0) return 0;
-  const beta = totalShares * alpha;
-  return Math.exp(shares[outcome] / beta) / shares.reduce((sum, s) => (s === 0 ? sum : sum + Math.exp(s / beta)), 0);
-};
+  // Calculate the buy price of 1 share after the sell, which is the cost of the trade
+  const futureBuyPrice = marketTradeCost(newShares, alpha, outcome, 1);
 
-const marketPriceAfterTrade = (shares: number[], alpha: number, outcome: number, amount: number): number => {
-  const newShares = [...shares];
-  newShares[outcome] += amount;
-  return marketPrice(newShares, alpha, outcome);
+  return futureBuyPrice;
 };
