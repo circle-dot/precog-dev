@@ -17,7 +17,7 @@ export const useMarketBuyCalculations = (
   marketAddress: string,
   outcome: number,
   sharesToBuy: number,
-  enabled: boolean = true,
+  enabled = true,
 ) => {
   const publicClient = usePublicClient();
   const { data: masterContract } = useScaffoldContract({
@@ -75,6 +75,7 @@ export const useMarketBuyCalculations = (
   });
 };
 
+
 /**
  * Hook to calculate market data for selling shares.
  * It takes a number of shares and calculates the expected collateral to receive.
@@ -85,7 +86,7 @@ export const useMarketSellCalculations = (
   marketAddress: string,
   outcome: number,
   sharesToSell: number,
-  enabled: boolean = true,
+  enabled = true,
 ) => {
   const publicClient = usePublicClient();
   const { data: masterContract } = useScaffoldContract({
@@ -114,18 +115,21 @@ export const useMarketSellCalculations = (
           masterContract,
         );
 
-
         if (!sharesInfo || !alpha) {
           throw new Error("Market data not available for future price calculation.");
         }
-
-        // Calculate the buy price of 1 share after the sell
-        const futureBuyPrice = getSharePriceAfterSell(sharesInfo.sharesBalances, alpha, outcome, sharesToSell);
+        // Calculate future buy price after the sell is completed
+        const futurePrice = getFuturePriceAfterTrade(
+          sharesInfo.sharesBalances,
+          alpha,
+          outcome,
+          -sharesToSell // Negative for sell
+        );
 
         return {
-          collateralToReceive: collateralToReceive,
+          collateralToReceive,
           pricePerShare: collateralToReceive / sharesToSell,
-          futurePrice: futureBuyPrice,
+          futurePrice,
           hasError: false,
           error: null,
         };
@@ -156,7 +160,7 @@ export const useMarketSellCalculations = (
 // DATA FETCHER HOOKS (reading from contract)
 // =================================================================================================
 
-const useMarketAlpha = (marketAddress: string, publicClient: any, enabled: boolean = true) => {
+const useMarketAlpha = (marketAddress: string, publicClient: any, enabled = true) => {
   return useQuery({
     queryKey: ["marketAlpha", marketAddress, publicClient?.chain.id],
     queryFn: () => getMarketV7Alpha(marketAddress, publicClient),
@@ -166,7 +170,7 @@ const useMarketAlpha = (marketAddress: string, publicClient: any, enabled: boole
   });
 };
 
-const useMarketSharesInfo = (marketId: number, publicClient: any, masterContract: any, enabled: boolean = true) => {
+const useMarketSharesInfo = (marketId: number, publicClient: any, masterContract: any, enabled = true) => {
   return useQuery({
     queryKey: ["marketSharesInfo", marketId, publicClient?.chain.id],
     queryFn: () => getMarketSharesInfo(marketId, publicClient, masterContract),
@@ -277,18 +281,75 @@ const marketTradeCost = (shares: number[], alpha: number, outcome: number, amoun
  * @param sharesToSell The number of shares being sold.
  * @returns The cost to buy one share of the same outcome after the sell.
  */
-const getSharePriceAfterSell = (
+export const getFutureBuyPriceAfterSell = (
   currentShares: number[],
   alpha: number,
   outcome: number,
   sharesToSell: number,
 ): number => {
   // Calculate the future state of shares after the sell
-  const newShares = [...currentShares];
-  newShares[outcome] -= sharesToSell;
+  const sharesAfterSell = [...currentShares];
+  sharesAfterSell[outcome] -= sharesToSell;
 
-  // Calculate the buy price of 1 share after the sell, which is the cost of the trade
-  const futureBuyPrice = marketTradeCost(newShares, alpha, outcome, 1);
-
-  return futureBuyPrice;
+  // Then, calculate the cost of buying 1 share from that new state.
+  return marketTradeCost(sharesAfterSell, alpha, outcome, 1);
 };
+
+/**
+ * Calculates the sell price of one share after a buy transaction.
+ * @param currentShares The current array of share balances in the market.
+ * @param alpha The market's alpha parameter.
+ * @param outcome The outcome token index being bought.
+ * @param sharesToBuy The number of shares being bought.
+ * @returns The cost to buy 1 share of the same outcome after the buy.
+ */
+export const getFutureBuyPriceAfterBuy = (
+  currentShares: number[],
+  alpha: number,
+  outcome: number,
+  sharesToBuy: number,
+): number => {
+  // Calculate the future state of shares after the buy
+  const sharesAfterBuy = [...currentShares];
+  sharesAfterBuy[outcome] += sharesToBuy;
+
+  // Then, calculate the cost of buying 1 share from that new state.
+  return marketTradeCost(sharesAfterBuy, alpha, outcome, 1);
+};
+
+/**
+ * Calculates the price of buying/selling one share after a trade is completed
+ * @param shares Current share balances
+ * @param alpha Market alpha parameter
+ * @param outcome Outcome index
+ * @param tradeAmount Amount of shares being traded (positive for buy, negative for sell)
+ * @returns Price of 1 share after the trade
+ */
+export const getFuturePriceAfterTrade = (
+  shares: number[],
+  alpha: number, 
+  outcome: number,
+  tradeAmount: number
+): number => {
+  // First simulate the trade by updating shares
+  const sharesAfterTrade = [...shares];
+  sharesAfterTrade[outcome] += tradeAmount;
+  
+  // Then calculate the cost of trading 1 more share from that state
+  return marketTradeCost(sharesAfterTrade, alpha, outcome, 1);
+};
+
+/**
+ * Calculate the amount of collateral to buy/sell a single share after some trade is made
+ *
+ * @param shares - List of shares balances for all outcomes in the Market
+ * @param alpha - Fixed PrecogMarket contract variable defined on market initialization
+ * @param outcome - Index of the market outcome to be traded
+ * @param amount - Total of shares to be traded in the market (negative amount for SELL trades)
+ */
+export const marketPriceAfterTrade = (shares: number[], alpha: number, outcome: number, amount: number): number => {
+  const costAfterTrade = marketCostAfterTrade(shares, alpha, outcome, amount);
+  const oneShareDelta = amount > 0 ? amount + 1 : amount - 1;
+  const costAfterTradeWithDelta = marketCostAfterTrade(shares, alpha, outcome, oneShareDelta);
+  return Math.abs(costAfterTradeWithDelta - costAfterTrade);
+}
