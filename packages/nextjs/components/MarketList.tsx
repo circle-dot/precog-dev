@@ -1,28 +1,18 @@
 import { useState } from "react";
 import Link from "next/link";
-import { formatEther } from "viem";
+import { formatEther, parseEther } from "viem";
+import { useAccount } from "wagmi";
+import { Pie, PieChart, Sector } from "recharts";
+import { PieSectorDataItem } from "recharts/types/polar/Pie";
 import { ArrowTopRightOnSquareIcon, ChartBarSquareIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import { MarketInfo, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
+import { MarketInfo, useAccountOutcomeBalances, usePrecogMarketDetails, usePrecogMarketPrices } from "~~/hooks/usePrecogMarketData";
+import { useMarketBuyCalculations, useMarketSellCalculations } from "~~/hooks/useMarketCalculations";
+import { useMarketActions } from "~~/hooks/useMarketActions";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth/networks";
 import { ChainWithAttributes } from "~~/utils/scaffold-eth/networks";
 import { fromInt128toNumber } from "~~/utils/numbers";
-
-
-/**
- * Returns the current market status and associated styling class
- */
-const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
-  const now = BigInt(Math.floor(Date.now() / 1000));
-
-  if (now < startTimestamp) {
-    return { status: "CREATED", className: "text-warning" };
-  } else if (now >= startTimestamp && now < endTimestamp) {
-    return { status: "OPEN", className: "text-success animate-pulse" };
-  } else {
-    return { status: "CLOSED", className: "text-error" };
-  }
-};
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./Charts";
 
 /**
  * Main component that renders a list of prediction markets
@@ -111,6 +101,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
   const [isOpen, setIsOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showPrices, setShowPrices] = useState(false);
+  const [showTrading, setShowTrading] = useState(false);
 
   const { status, className } = getMarketStatus(market.startTimestamp, market.endTimestamp);
 
@@ -121,7 +112,7 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
       <div className="collapse-title peer-checked:bg-base-200/10 text-xs">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <h3 className="text-lg font-bold text-base-content/70 truncate m-0" title={market.name}>
+            <h3 className="text-lg font-bold text-base-content/70 break-words m-0" title={market.name}>
               <span className="text-base-content/70 mr-2">[{market.marketId}]</span>
               {market.name}
             </h3>
@@ -146,8 +137,8 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
             <h4 className="font-bold text-base-content/70 m-0">:: Market Basic Info ::</h4>
             <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
               <div className="break-words">
-                <span className="font-bold text-base-content/70">Market Description: </span>
-                {market.description}
+                <span className="font-bold text-base-content/70 inline-block mb-1">Market Description: </span>
+                <span className="inline-block">{market.description}</span>
               </div>
               <div>
                 <span className="font-bold text-base-content/70">Category: </span>
@@ -158,27 +149,27 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                 {market.outcomes.join(", ")}
               </div>
               <div className="break-all">
-                <span className="font-bold text-base-content/70">Creator: </span>
+                <span className="font-bold text-base-content/70 inline-block mb-1">Creator: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.creator)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:underline"
+                  className="inline-flex items-center gap-1 hover:underline break-all"
                 >
                   {market.creator}
-                  <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                  <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
                 </a>
               </div>
               <div className="break-all">
-                <span className="font-bold text-base-content/70">Market Contract: </span>
+                <span className="font-bold text-base-content/70 inline-block mb-1">Market Contract: </span>
                 <a
                   href={getBlockExplorerAddressLink(targetNetwork, market.market)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 hover:underline"
+                  className="inline-flex items-center gap-1 hover:underline break-all"
                 >
                   {market.market}
-                  <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+                  <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
                 </a>
                 <Link
                   href={`/market?address=${market.market}`}
@@ -186,25 +177,29 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
                   passHref
                 >
                   Market Details
-                  <ChartBarSquareIcon className="w-4 h-4" />
+                  <ChartBarSquareIcon className="w-4 h-4 flex-shrink-0" />
                 </Link>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-4 pt-4 flex-wrap">
             <button className="btn btn-sm btn-primary" onClick={() => setShowDetails(!showDetails)}>
-              {showDetails ? "Hide" : "Show"} Market Trading Info
+              {showDetails ? "Hide" : "Show"} Market Info
             </button>
             <button className="btn btn-sm btn-primary" onClick={() => setShowPrices(!showPrices)}>
               {showPrices ? "Hide" : "Show"} Prices
+            </button>
+            <button className="btn btn-sm btn-primary" onClick={() => setShowTrading(!showTrading)}>
+              {showTrading ? "Hide" : "Start"} Trading
             </button>
           </div>
 
           {/* Conditional Renders so that we don't have to fetch the data if the user doesn't want to see it */}
           {showDetails && <MarketDetailedInfo market={market} />}
           {showPrices && <MarketPrices market={market} />}
+          {showTrading && <MarketTradingPanel market={market} targetNetwork={targetNetwork} />}
         </div>
       </div>
     </div>
@@ -215,10 +210,15 @@ const MarketItem = ({ market, targetNetwork }: { market: MarketInfo; targetNetwo
  * Displays more market information including resolution and trading data
  */
 const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
+  const { address: connectedAddress } = useAccount();
+  const { executeReport, isPending: isReporting } = useMarketActions();
+  const [selectedOutcome, setSelectedOutcome] = useState("");
+
   const {
     data: details,
     isLoading,
     isError,
+    refetch: refetchDetails,
   } = usePrecogMarketDetails(market.marketId, market.market, true);
   const { targetNetwork } = useTargetNetwork();
 
@@ -240,83 +240,121 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
 
   const { marketInfo, token, tokenSymbol, marketResultInfo } = details;
   const status = getDetailedMarketStatus(market.startTimestamp, market.endTimestamp, marketResultInfo[0]);
+  const isPendingResolution = status === "WAITING FOR THE RESULT";
+  const isOracle = connectedAddress === marketResultInfo[2];
 
   return (
     <div className="flex flex-col gap-4">
       {/* Market Resolution Section */}
-    <div className="flex flex-col gap-4">
-    <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
-      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Market Status:</span> {status}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Oracle:</span>{" "}
+      <div className="flex flex-col gap-4">
+        <h4 className="font-bold text-base-content/70 m-0">:: Market Resolution Info ::</h4>
+        <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Market Status:</span> {status}
+          </p>
+          <div className="break-all">
+            <span className="font-bold text-base-content/70 inline-block mb-1">Oracle:</span>{" "}
             <a
               href={getBlockExplorerAddressLink(targetNetwork, marketResultInfo[2])}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:underline"
+              className="inline-flex items-center gap-1 hover:underline break-all"
             >
               {marketResultInfo[2]}
-              <ArrowTopRightOnSquareIcon className="w-3 h-3" />
+              <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
             </a>
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
-          {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Resolution Date:</span>{" "}
-          {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
-        </p>
+          </div>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Reported Outcome:</span>{" "}
+            {marketResultInfo[0] === 0n ? "Pending Resolution" : market.outcomes[Number(marketResultInfo[0]) - 1]}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Resolution Date:</span>{" "}
+            {marketResultInfo[0] === 0n ? "Pending Resolution" : formatDate(marketResultInfo[1], true)}
+          </p>
+          {isPendingResolution && isOracle && (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="font-bold text-base-content/70">Report Result:</span>
+              <select
+                className="select select-bordered select-xs"
+                value={selectedOutcome}
+                onChange={e => setSelectedOutcome(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select outcome
+                </option>
+                {market.outcomes.map(outcome => (
+                  <option key={outcome} value={outcome}>
+                    {outcome}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-xs btn-primary"
+                disabled={!selectedOutcome || isReporting}
+                onClick={async () => {
+                  const outcomeIndex = market.outcomes.indexOf(selectedOutcome) + 1; // +1 because 0 is a reserved value for empty result
+                  await executeReport(market.marketId, outcomeIndex, market.market);
+                  refetchDetails();
+                }}
+              >
+                {isReporting ? <span className="loading loading-spinner loading-xs"></span> : "Report"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
 
       {/* Market Trading Section */}
-    <div className="flex flex-col gap-4">
-    <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
-      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Trading Starts:</span>{" "}
-          {formatDate(market.startTimestamp, true)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Collateral Token:</span>{" "}
-          <a
-            href={getBlockExplorerAddressLink(targetNetwork, token)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 hover:underline"
-          >
-            {token}
-            <ArrowTopRightOnSquareIcon className="w-3 h-3" />
-          </a>{" "}
-          ({tokenSymbol})
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
-          {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed())} ({tokenSymbol})
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Buys:</span> {formatMarketValue(marketInfo[3])}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Sells:</span> {formatMarketValue(marketInfo[4])}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
-          {formatMarketValue(marketInfo[0], fromInt128toNumber)}
-        </p>
-        <p className="m-0">
-          <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
-          {formatSharesBalances(marketInfo[1], market.outcomes)}
-        </p>
+      <div className="flex flex-col gap-4">
+        <h4 className="font-bold text-base-content/70 m-0">:: Market Trading Info ::</h4>
+        <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Trading Starts:</span>{" "}
+            {formatDate(market.startTimestamp, true)}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Trading Ends:</span> {formatDate(market.endTimestamp, true)}
+          </p>
+          <div className="break-all">
+            <span className="font-bold text-base-content/70 inline-block mb-1">Collateral Token:</span>{" "}
+            <a
+              href={getBlockExplorerAddressLink(targetNetwork, token)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:underline break-all"
+            >
+              {token}
+              <ArrowTopRightOnSquareIcon className="w-3 h-3 flex-shrink-0" />
+            </a>{" "}
+            ({tokenSymbol})
+          </div>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Locked Collateral:</span>{" "}
+            {formatMarketValue(marketInfo[2], v => fromInt128toNumber(v).toFixed())} ({tokenSymbol})
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Buys:</span> {formatMarketValue(marketInfo[3])}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Sells:</span> {formatMarketValue(marketInfo[4])}
+          </p>
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Total Shares:</span>{" "}
+            {formatMarketValue(marketInfo[0], fromInt128toNumber)}
+          </p>
+          <p className="m-0">
+            <div className="flex items-center gap-4">
+              <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
+              {formatSharesBalances(marketInfo[1], market.outcomes)}
+            </div>
+            <SharesBalanceChart 
+              sharesArray={marketInfo[1]} 
+              outcomes={market.outcomes} 
+            />
+          </p>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
@@ -368,22 +406,450 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
         PREDICTION: {winningOutcome.name} ({winningProbability.toFixed(2)}%)
         </div>
       )}
-        {outcomeData.map((outcome, i) => (
-          <div key={i}>
-            <span className="font-semibold text-base-content/80">{`> ${outcome.name}`}</span>
-            <span className="pl-2">
-              - BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}
-              <span className="px-2">|</span>
-              SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}
-            </span>
-          </div>
-        ))}
+        <div className="overflow-x-auto">
+          {outcomeData.map((outcome, i) => (
+            <div key={i} className="whitespace-nowrap">
+              <span className="font-semibold text-base-content/80">{`> ${outcome.name}`}</span>
+              <span className="pl-2">
+                - BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}
+                <span className="px-2">|</span>
+                SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
+/**
+ * Displays a trading panel for a market
+ */
+const MarketTradingPanel = ({
+  market,
+  targetNetwork,
+}: {
+  market: MarketInfo;
+  targetNetwork: ChainWithAttributes;
+}) => {
+  const { address: connectedAddress } = useAccount();
+  const [tradeType, setTradeType] = useState("BUY");
+  const [selectedOutcome, setSelectedOutcome] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [costToQuote, setCostToQuote] = useState<number | null>(null);
+  const [sharesToQuote, setSharesToQuote] = useState<number | null>(null);
+
+  const handleGetQuote = () => {
+    const amount = Number(inputValue);
+    if (amount > 0) {
+      if (tradeType === "BUY") {
+        setCostToQuote(amount);
+      } else {
+        setSharesToQuote(amount);
+      }
+    }
+  };
+
+  const isReadyToFetch = !!connectedAddress && !!targetNetwork?.id;
+
+  const {
+    data: accountShares,
+    isLoading: isLoadingAccountShares,
+    isError: isErrorAccountShares,
+    refetch: refetchAccountShares,
+  } = useAccountOutcomeBalances(market.marketId, market.market, connectedAddress, targetNetwork.id, isReadyToFetch);
+
+  // Function to reset the trading form
+  const resetTradingForm = () => {
+    setSelectedOutcome("");
+    setInputValue("");
+    setCostToQuote(null);
+    setSharesToQuote(null);
+  };
+
+  // Check if market is closed (based on end timestamp)
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  const isMarketClosed = now > market.endTimestamp;
+
+  // Calculate buy/sell data when a quote is requested (based on selected outcome)
+  const outcomeIndex = selectedOutcome ? market.outcomes.indexOf(selectedOutcome) + 1 : 0;
+  const { data: buyCalculations, isLoading: isLoadingBuy } = useMarketBuyCalculations(
+    targetNetwork.id,
+    market.marketId,
+    market.market,
+    outcomeIndex,
+    costToQuote ?? 0,
+    isReadyToFetch && tradeType === "BUY" && costToQuote !== null && costToQuote > 0 && outcomeIndex > 0,
+  );
+  const { data: sellCalculations, isLoading: isLoadingSell } = useMarketSellCalculations(
+    targetNetwork.id,
+    market.marketId,
+    market.market,
+    outcomeIndex,
+    sharesToQuote ?? 0,
+    isReadyToFetch && tradeType === "SELL" && sharesToQuote !== null && sharesToQuote > 0 && outcomeIndex > 0,
+  );
+  const isLoadingCalculations = isLoadingBuy || isLoadingSell;
+
+  const { executeBuy, executeSell, executeRedeem, isPending } = useMarketActions();
+
+  if (!connectedAddress) {
+    return (
+      <div className="flex justify-center items-center pt-4">
+        <p>Please connect wallet to trade.</p>
+      </div>
+    );
+  }
+
+  if (isLoadingAccountShares) {
+    return (
+      <div className="flex justify-center items-center pt-4">
+        <span className="loading loading-spinner loading-md"></span>
+      </div>
+    );
+  }
+
+  if (isErrorAccountShares || !accountShares) {
+    return (
+      <div className="flex justify-center items-center pt-4 flex-col">
+        <p className="text-error">--! ERROR: COULD NOT LOAD YOUR TRADING DATA !--</p>
+      </div>
+    );
+  }
+
+  // Determine what data to show in the quote based on the trade type
+  let quoteDisplay = null;
+  if (tradeType === "BUY" && buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0) {
+    const { actualPrice, actualShares, futurePrice } = buyCalculations;
+    
+    // Calculate potential returns
+    const tokenReturnValue = actualShares - actualPrice;
+    const returnPercentage = ((actualShares / actualPrice - 1) * 100);
+    const tokenReturnPercentage = Math.round(returnPercentage);
+
+    quoteDisplay = (
+      <div>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> BUY {actualShares} shares of {selectedOutcome}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Cost:</span> {actualPrice.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {(actualPrice / actualShares).toFixed(4)})</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">New Price (after trade):</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Max Potential Return:</span> {tokenReturnValue.toFixed(4)} {accountShares.tokenSymbol} ({tokenReturnPercentage}%)</p>
+      </div>
+    );
+  } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError) {
+    const { collateralToReceive, pricePerShare, futurePrice } = sellCalculations;
+    quoteDisplay = (
+      <>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Trade:</span> SELL {sharesToQuote} shares of {selectedOutcome}</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">Receive:</span> {collateralToReceive.toFixed(4)} {accountShares.tokenSymbol} (Price per share: {pricePerShare.toFixed(4)})</p>
+        <p className="m-0">&gt; <span className="font-bold text-base-content/70">New Price (after trade):</span> {futurePrice.toFixed(4)} {accountShares.tokenSymbol}</p>
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h4 className="font-bold text-base-content/70 m-0">:: Your Info ::</h4>
+      {/* User Info */}
+      <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-1">
+        <p className="m-0 break-all ">
+          <span className="font-bold text-base-content/70">Account:</span> {connectedAddress}
+        </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Shares:</span> {formatTokenBalances(accountShares.balances, market.outcomes)}
+        </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Buys:</span> {String(accountShares.buys)},{" "}
+          <span className="font-bold text-base-content/70">Sells:</span> {String(accountShares.sells)}
+        </p>
+        <p className="m-0">
+          <span className="font-bold text-base-content/70">Deposited:</span> {Number(formatEther(accountShares.deposited)).toFixed(4)} {accountShares.tokenSymbol},{" "}
+          <span className="font-bold text-base-content/70">Withdrew:</span> {Number(formatEther(accountShares.withdrew)).toFixed(4)} {accountShares.tokenSymbol}
+        </p>
+        {accountShares.redeemed > 0n && (
+          <p className="m-0">
+            <span className="font-bold text-base-content/70">Redeemed:</span> {Number(formatEther(accountShares.redeemed)).toFixed(4)} {accountShares.tokenSymbol}
+          </p>
+        )}
+      </div>
+
+      {/* Show either Trading Panel or Redeem Button based on market status */}
+      {isMarketClosed ? (
+        <div className="flex flex-col gap-2">
+          <h4 className="font-bold text-base-content/70 m-0">:: Redeem Winnings ::</h4>
+          <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+            <button
+              className="btn btn-primary btn-sm w-32"
+              disabled={accountShares.redeemed > 0n || isPending}
+              onClick={async () => {
+                try {
+                  await executeRedeem(market.marketId);
+                  await refetchAccountShares();
+                } catch (error) {
+                  console.error("Failed to redeem shares:", error);
+                }
+              }}
+            >
+              {isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                "REDEEM"
+              )}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <h4 className="font-bold text-base-content/70 m-0">:: Trade in the Market ::</h4>
+          <div className="p-2 border border-dashed border-base-content/20 rounded-md flex flex-col gap-2">
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* BUY/SELL Selector */}
+              <select
+                className="select select-bordered select-xs min-w-[80px]"
+                value={tradeType}
+                onChange={e => {
+                  setTradeType(e.target.value);
+                  setInputValue("");
+                  setCostToQuote(null);
+                  setSharesToQuote(null);
+                }}
+              >
+                <option>BUY</option>
+                <option>SELL</option>
+              </select>
+
+              {/* Outcome selector */}
+              <select
+                className="select select-bordered select-xs min-w-[150px]"
+                value={selectedOutcome}
+                onChange={e => {
+                  setSelectedOutcome(e.target.value);
+                  setInputValue("");
+                  setCostToQuote(null);
+                  setSharesToQuote(null);
+                }}
+              >
+                <option value="" disabled>
+                  Please select an outcome
+                </option>
+                {market.outcomes.map(outcome => (
+                  <option key={outcome}>{outcome}</option>
+                ))}
+              </select>
+
+              {/* Total Cost input */}
+              <input
+                type="number"
+                min={0}
+                placeholder="Shares Amount"
+                className="input input-bordered input-xs w-full max-w-[120px] text-center"
+                value={inputValue}
+                onChange={e => {
+                  setInputValue(e.target.value);
+                  if (costToQuote !== null) setCostToQuote(null);
+                  if (sharesToQuote !== null) setSharesToQuote(null);
+                }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    handleGetQuote();
+                  }
+                }}
+              />
+              <button
+                className="btn btn-xs btn-secondary"
+                onClick={handleGetQuote}
+                disabled={isLoadingCalculations || !inputValue || Number(inputValue) <= 0 || !selectedOutcome}
+              >
+                QUOTE
+              </button>
+            </div>
+
+            {isLoadingCalculations && (
+              <div className="flex justify-center items-center py-2">
+                <span className="loading loading-spinner loading-xs"></span>
+              </div>
+            )}
+
+            <div className="overflow-x-auto">
+              {quoteDisplay && (
+                <div className="whitespace-nowrap">
+                  {quoteDisplay}
+                </div>
+              )}
+            </div>
+
+            {(buyCalculations?.hasError || sellCalculations?.hasError) && (
+              <div className="text-xs text-error">
+                Error: {buyCalculations?.error || sellCalculations?.error}
+              </div>
+            )}
+
+            <button
+              className="btn btn-primary btn-sm w-32 mt-2"
+              disabled={!quoteDisplay || isLoadingCalculations || isPending}
+              onClick={async () => {
+                if (tradeType === "BUY" && buyCalculations?.actualShares && buyCalculations.actualPrice) {
+                  try {
+                    const maxTokenIn = parseEther(inputValue);
+                    await executeBuy(
+                      market.marketId,
+                      outcomeIndex,
+                      buyCalculations.actualShares,
+                      market.market,
+                      maxTokenIn,
+                    );
+                    // Reset form and refetch data after successful trade
+                    resetTradingForm();
+                    await refetchAccountShares();
+                  } catch (error) {
+                    console.error("Buy execution failed:", error);
+                  }
+                } else if (tradeType === "SELL" && sellCalculations && !sellCalculations.hasError && sharesToQuote) {
+                  try {
+                    await executeSell(
+                      market.marketId,
+                      outcomeIndex,
+                      sharesToQuote,
+                    );
+                    // Reset form and refetch data after successful trade
+                    resetTradingForm();
+                    await refetchAccountShares();
+                  } catch (error) {
+                    console.error("Sell execution failed:", error);
+                  }
+                }
+              }}
+            >
+              {isPending ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                tradeType
+              )}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+
+/**
+ * Displays shares balances as a pie chart
+ */
+const SharesBalanceChart = ({ 
+  sharesArray, 
+  outcomes 
+}: { 
+  sharesArray: readonly bigint[] | undefined, 
+  outcomes: readonly string[] | undefined 
+}) => {
+  if (!sharesArray || !outcomes) return null;
+
+  // Generate different shades of sky blue based on index
+  const generateColor = (index: number): string => {
+    // Use sky blue hue (around 200-210 degrees)
+    const hue = 205;
+    
+    // Keep saturation moderate-high for vibrant but soft blues (40-60%)
+    const s = 0.5; // 50% saturation
+    
+    // Vary the lightness based on index using golden ratio for even distribution
+    const goldenRatio = 0.618033988749895;
+    const normalizedIndex = (index * goldenRatio) % 1;
+    
+    // Lightness between 50% and 85% for soft sky blue appearance
+    const l = 0.5 + (normalizedIndex * 0.35);
+
+    return `hsl(${hue}, ${s * 100}%, ${l * 100}%)`;
+  };
+
+  // Skip the first element (0-index based) and convert the rest to numbers
+  const balances = Array.from(sharesArray.slice(1)).map(fromInt128toNumber);
+  
+  // Create chart data with generated colors
+  const chartData = balances.map((balance, index) => ({
+    name: outcomes[index],
+    value: balance,
+    fill: generateColor(index)
+  }));
+
+  // Find the index of the outcome with highest shares
+  const winningIndex = balances.reduce((maxIndex, current, index, arr) => 
+    current > arr[maxIndex] ? index : maxIndex
+  , 0);
+
+  // Create chart config with generated colors
+  const chartConfig = outcomes.reduce((acc, outcome, index) => ({
+    ...acc,
+    [outcome]: {
+      label: outcome,
+      color: generateColor(index)
+    }
+  }), {
+    value: { label: "Shares: " }
+  });
+
+  return (
+    <div className="w-full max-w-[200px]">
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-square"
+      >
+        <PieChart>
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent />}
+          />
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={45}
+            outerRadius={90}
+            strokeWidth={2}
+            activeIndex={winningIndex}
+            activeShape={(props: PieSectorDataItem) => {
+              const { cx, cy, innerRadius, outerRadius = 0, startAngle, endAngle, fill } = props;
+              return (
+                <Sector
+                  cx={cx}
+                  cy={cy}
+                  innerRadius={innerRadius}
+                  outerRadius={Number(outerRadius) + 10}
+                  startAngle={startAngle}
+                  endAngle={endAngle}
+                  fill={fill}
+                />
+              );
+            }}
+          />
+        </PieChart>
+      </ChartContainer>
+    </div>
+  );
+};
+
+
+// =================================================================================================
 // Helper Functions
+// =================================================================================================
+
+/**
+ * Returns the current market status and associated styling class
+ */
+const getMarketStatus = (startTimestamp: bigint, endTimestamp: bigint): { status: string; className: string } => {
+  const now = BigInt(Math.floor(Date.now() / 1000));
+
+  if (now < startTimestamp) {
+    return { status: "CREATED", className: "text-warning" };
+  } else if (now >= startTimestamp && now < endTimestamp) {
+    return { status: "OPEN", className: "text-success animate-pulse" };
+  } else {
+    return { status: "CLOSED", className: "text-error" };
+  }
+};
 
 /**
  * Returns a detailed market status string based on timing and result
@@ -454,4 +920,22 @@ const formatDate = (timestamp: bigint, includeTime = false) => {
   }
 
   return `${dateString} UTC`;
+};
+
+/**
+ * Formats token balances from wei to ETH units with outcome labels
+ * @param sharesArray array of token balances in wei (index 0 is skipped as it's a 0-index based)
+ * @param outcomes The outcomes of the market
+ * @returns Comma-separated string of token balances
+ */
+const formatTokenBalances = (
+  sharesArray: readonly bigint[] | undefined,
+  outcomes: readonly string[] | undefined,
+): string => {
+  if (!sharesArray || !outcomes) return "N/A";
+
+  // Skip the first element (0-index based) and convert the rest to ETH units
+  const balances = Array.from(sharesArray.slice(1)).map(amount => Number(formatEther(amount)));
+
+  return balances.map((balance, index) => `${balance} (${outcomes[index]})`).join(" | ");
 };
