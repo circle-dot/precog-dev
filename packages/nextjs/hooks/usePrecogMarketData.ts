@@ -1,6 +1,6 @@
 import { Address } from "viem";
 import { useAccount, usePublicClient } from "wagmi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { useScaffoldContract } from "./scaffold-eth";
 
 /**
@@ -34,6 +34,24 @@ export interface MarketDetails {
   token: Address;
   tokenSymbol: string;
   marketResultInfo: readonly [bigint, bigint, Address];
+}
+
+/**
+ * Represents the account shares data for a market
+ * @property buys - Total buys by the account
+ * @property sells - Total sells by the account
+ * @property deposited - Total collateral deposited by the account
+ * @property withdrew - Total collateral withdrawn by the account
+ * @property redeemed - Whether the account has redeemed their winnings
+ * @property balances - Array of shares balances for each outcome
+ */
+export interface AccountSharesData {
+  buys: bigint;
+  sells: bigint;
+  deposited: bigint;
+  withdrew: bigint;
+  redeemed: bigint;
+  balances: readonly bigint[];
 }
 
 /**
@@ -296,4 +314,102 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
       marketInfo: query.data?.errors?.marketInfo,
     },
   };
+};
+
+/**
+ * Hook to fetch the account outcome balances for a given market, on demand
+ * @param marketId - The ID of the market
+ * @param marketAddress - The address of the market, for query key purposes
+ * @param accountAddress - The address of the account to fetch balances for
+ * @param chainId - The ID of the chain to fetch data from
+ * @param enabled - Whether to enable the query
+ * @param options - Additional options for the useQuery hook
+ * @returns The account outcome balances for the given market
+ */
+export const useAccountOutcomeBalances = (
+  marketId: number,
+  marketAddress: Address,
+  accountAddress: Address | undefined,
+  chainId: number | undefined,
+  enabled: boolean,
+  options?: Omit<Omit<UseQueryOptions<AccountSharesData & { tokenSymbol: string }>, "queryKey" | "queryFn" | "enabled">, "enabled">,
+) => {
+  const { data: masterContract } = useScaffoldContract({
+    contractName: "PrecogMasterV7",
+  });
+  const { data: marketContract } = useScaffoldContract({
+    contractName: "PrecogMarketV7",
+  });
+  const publicClient = usePublicClient();
+
+  const isReady = !!publicClient && !!masterContract?.abi && !!marketContract?.abi && !!accountAddress && !!chainId;
+
+  return useQuery<AccountSharesData & { tokenSymbol: string }>({
+    queryKey: ["marketAccountBalances", marketAddress, marketId, accountAddress, chainId],
+    queryFn: async () => {
+      if (!isReady) {
+        throw new Error("Required dependencies not met for fetching account balances.");
+      }
+
+      // Fetch all data in a single multicall
+      const multicallResults = await publicClient.multicall({
+        contracts: [
+          {
+            address: masterContract.address,
+            abi: masterContract.abi,
+            functionName: "marketAccountShares",
+            args: [BigInt(marketId), accountAddress],
+          },
+          {
+            address: marketAddress,
+            abi: marketContract.abi,
+            functionName: "token",
+          },
+        ],
+        allowFailure: true,
+      });
+
+      const [sharesResult, tokenResult] = multicallResults;
+
+      if (!sharesResult.status || !tokenResult.status) {
+        throw new Error("Failed to fetch market data");
+      }
+
+      const outcomeBalances = sharesResult.result as readonly [bigint, bigint, bigint, bigint, bigint, readonly bigint[]];
+      const tokenAddress = tokenResult.result as Address;
+
+      const [buys, sells, deposited, withdrew, redeemed, balances] = outcomeBalances;
+
+      // Token symbol needs to be fetched separately since we need the token address first
+      const tokenSymbol = await publicClient.readContract({
+        address: tokenAddress,
+        abi: [
+          {
+            inputs: [],
+            name: "symbol",
+            outputs: [{ name: "", type: "string" }],
+            stateMutability: "view",
+            type: "function",
+          },
+        ] as const,
+        functionName: "symbol",
+      }) as string;
+
+      return {
+        balances,
+        buys,
+        sells,
+        deposited,
+        withdrew,
+        redeemed,
+        tokenSymbol,
+      };
+    },
+    enabled: enabled && isReady,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+    ...options,
+  });
 };
