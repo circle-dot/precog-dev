@@ -33,16 +33,32 @@ export const RPC_CHAIN_NAMES: Record<number, string> = {
   [chains.baseSepolia.id]: "base-sepolia",
 };
 
+/**
+ * Gives Alchemy node provider url based on loaded API key for the received chain
+ */
 export const getAlchemyHttpUrl = (chainId: number) => {
-  return RPC_CHAIN_NAMES[chainId]
-    ? `https://${RPC_CHAIN_NAMES[chainId]}.g.alchemy.com/v2/${scaffoldConfig.alchemyApiKey}`
-    : undefined;
+  const chainName = RPC_CHAIN_NAMES[chainId];
+  const apiKey = scaffoldConfig.alchemyApiKey;
+
+  if (!chainName || !apiKey) {
+    return undefined;
+  }
+
+  return `https://${chainName}.g.alchemy.com/v2/${apiKey}`;
 };
 
+/**
+ * Gives a node provider url based on loaded provider for the received chain
+ */
 export const getQuickNodeHttpUrl = (chainId: number) => {
-  return scaffoldConfig.nodeProviderUrl && scaffoldConfig.nodeProviderUrl.includes(RPC_CHAIN_NAMES[chainId])
-      ? scaffoldConfig.nodeProviderUrl
-      : undefined;
+  const chainName = RPC_CHAIN_NAMES[chainId];
+  const nodeUrl = scaffoldConfig.nodeProviderUrl;
+
+  if (!chainName || !nodeUrl || !nodeUrl.includes(chainName)) {
+    return undefined;
+  }
+
+  return nodeUrl;
 };
 
 export const NETWORKS_EXTRA_DATA: Record<string, ChainAttributes> = {

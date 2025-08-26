@@ -60,11 +60,13 @@ export const HeaderMenuLinks = () => {
     // });
 
     // TODO make a proper filter function
-    if (isAdmin == true && menuLinks.length == 2) {
+    // Add links to the Menu list if the currently connected address is whitelisted
+    if (isAdmin == true && menuLinks.length == defaultLinks.length) {
         menuLinks.push(createLink);
         menuLinks.push(debugLink);
     }
-    if (isAdmin == false && menuLinks.length > 2) {
+    // Remove links from the Menu list if the currently connected address is NOT whitelisted
+    if (isAdmin == false && menuLinks.length > defaultLinks.length) {
         menuLinks.pop();
         menuLinks.pop();
     }
