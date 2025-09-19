@@ -4,7 +4,7 @@ import React, {useCallback, useRef, useState} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import { Bars3Icon, BugAntIcon, DocumentPlusIcon, HomeIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, BugAntIcon, DocumentPlusIcon, GlobeAsiaAustraliaIcon, HomeIcon } from "@heroicons/react/24/outline";
 import {FaucetButton, RainbowKitCustomConnectButton} from "~~/components/scaffold-eth";
 import {useOutsideClick, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {useAccount} from "wagmi";
@@ -14,8 +14,6 @@ type HeaderMenuLink = {
     href: string;
     icon?: React.ReactNode;
 };
-
-export let menuLinks: HeaderMenuLink[] = [];
 
 export const defaultLinks: HeaderMenuLink[] = [
     {
@@ -32,6 +30,12 @@ export const debugLink: HeaderMenuLink = {
     icon: <BugAntIcon className="h-4 w-4"/>
 };
 
+export const oraclesLink: HeaderMenuLink = {
+    label: "Oracles",
+    href: "/oracles",
+    icon: <GlobeAsiaAustraliaIcon className="h-4 w-4"/>
+};
+
 export const createLink: HeaderMenuLink = {
     label: "Create Market",
     href: "/create-market",
@@ -44,7 +48,6 @@ const ADMIN_ROLE = "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693
 // const MARKET_CREATOR_ROLE = "0xd3065a24ad9e7725d223007135762d2902038999e3e5829146654498a58d9795";
 
 export const HeaderMenuLinks = () => {
-    menuLinks = defaultLinks;
     const pathname = usePathname();
 
     // Check connected address role and enable debug link
@@ -52,24 +55,11 @@ export const HeaderMenuLinks = () => {
     const {data: isAdmin} = useScaffoldReadContract({
         contractName: "PrecogMasterV7", functionName: "hasRole", args: [ADMIN_ROLE, connectedAddress]
     });
-    // const {data: isCaller} = useScaffoldReadContract({
-    //     contractName: "PrecogMasterV7", functionName: "hasRole", args: [CALLER_ROLE, connectedAddress]
-    // });
-    // const {data: isMarketCreator} = useScaffoldReadContract({
-    //     contractName: "PrecogMasterV7", functionName: "hasRole", args: [MARKET_CREATOR_ROLE, connectedAddress]
-    // });
 
-    // TODO make a proper filter function
-    // Add links to the Menu list if the currently connected address is whitelisted
-    if (isAdmin == true && menuLinks.length == defaultLinks.length) {
-        menuLinks.push(createLink);
-        menuLinks.push(debugLink);
-    }
-    // Remove links from the Menu list if the currently connected address is NOT whitelisted
-    if (isAdmin == false && menuLinks.length > defaultLinks.length) {
-        menuLinks.pop();
-        menuLinks.pop();
-    }
+    // Create the menu links array based on admin status
+    const menuLinks = isAdmin 
+        ? [...defaultLinks, createLink, oraclesLink, debugLink]
+        : defaultLinks;
 
     return (
         <>
