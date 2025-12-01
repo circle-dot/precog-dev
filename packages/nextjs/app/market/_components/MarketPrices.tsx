@@ -40,6 +40,7 @@ export const MarketPrices = ({address}: { address: AddressType }) => {
     const sellData = []
     for (let i = 1; i < marketOutcomes.length; i++) {
         const outcome = marketOutcomes[i];
+        // TODO Add here support for token with decimals not equal to 18
         const buyPrice = Number(formatEther(marketPrices[0][i]));
         const sellPrice = Number(formatEther(marketPrices[1][i]));
         buyData.push({"outcome": outcome, "price": buyPrice});

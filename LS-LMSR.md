@@ -43,7 +43,7 @@ This small shift in how to set b---from a constant to an increasing value---crea
    Observe that as the market has more activity and q increases, b increases, so market depth increases in market volume, a property that is seen in real-world markets (e.g., you can buy a million dollars of apple stock without moving the price significantly, but buying a million dollars of a low market cap stock like FDP will change its price significantly).
 
 
-5. Prices Sum to (at Least) 1:
+5. Prices Sum to (at Least ) 1:
 
    In the LMSR, marginal prices are positive and sum to exactly 1. This means that those prices are directly interpretable as probabilities. 
 

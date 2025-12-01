@@ -147,7 +147,7 @@ const UpdateMarket: NextPage = () => {
                     name: marketData[0] || "",
                     description: marketData[1] || "",
                     category: marketData[2] || "",
-                    outcomes: marketData[3] || "YES,NO",
+                    outcomes: marketData[3].toString() || "YES,NO",
                     startTimestamp: startTs,
                     endTimestamp: endTs,
                     creator: marketData[6] || connectedAddress || defaultCreator,
@@ -157,7 +157,7 @@ const UpdateMarket: NextPage = () => {
                 setName(marketData[0] || "");
                 setDescription(marketData[1] || "");
                 setCategory(marketData[2] || "");
-                setOutcomes(marketData[3] || "YES,NO");
+                setOutcomes(marketData[3].toString() || "YES,NO");
                 setCreator(marketData[6] || connectedAddress || defaultCreator);
                 setMarketAddress(marketData[7] || "");
             } else if (marketId) {

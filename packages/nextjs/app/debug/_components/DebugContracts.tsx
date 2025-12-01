@@ -5,15 +5,19 @@ import { useLocalStorage } from "usehooks-ts";
 import { BarsArrowUpIcon } from "@heroicons/react/20/solid";
 import { ContractUI } from "~~/app/debug/_components/contract";
 import { ContractName } from "~~/utils/scaffold-eth/contract";
-import { getAllContracts, getLatestContracts } from "~~/utils/scaffold-eth/contractsData";
+import {getLatestContracts, getLatestContractsNames} from "~~/utils/scaffold-eth/contractsData";
+import {useTargetNetwork} from "~~/hooks/scaffold-eth/useTargetNetwork";
 
-const selectedContractStorageKey = "scaffoldEth2.selectedContract";
-const allContracts = getAllContracts();
-const contractsData = getLatestContracts();
-const contractNames = Object.keys(contractsData) as ContractName[];
-console.log(`> Showing ${Object.keys(contractsData).length} of ${Object.keys(allContracts).length} detected contracts`);
+const selectedContractStorageKey = "precogDebug.selectedContract";
 
 export function DebugContracts() {
+  // Get all contract to be displayed based on selected chain
+  const { targetNetwork } = useTargetNetwork();
+  const contractsData = getLatestContracts(targetNetwork.id);  // Get all contracts for this network
+  const allContractNames = getLatestContractsNames() as ContractName[];  // Get all latest contracts names
+  // Get all contracts names for this network preserving latest names ordering
+  const contractNames = allContractNames.filter(key => contractsData[key]);
+
   const [selectedContract, setSelectedContract] = useLocalStorage<ContractName>(
     selectedContractStorageKey,
     contractNames[0],
@@ -24,7 +28,11 @@ export function DebugContracts() {
     if (!contractNames.includes(selectedContract)) {
       setSelectedContract(contractNames[0]);
     }
-  }, [selectedContract, setSelectedContract]);
+  }, [contractNames, selectedContract, setSelectedContract]);
+
+  // Only for debug
+  // console.log('Contracts Names:', contractNames);
+  // console.log('Contracts contractsData:', contractsData);
 
   return (
     <div className="flex flex-col gap-y-6 lg:gap-y-8 py-8 lg:py-12 justify-center items-center">

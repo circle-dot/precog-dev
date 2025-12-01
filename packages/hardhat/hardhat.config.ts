@@ -18,13 +18,14 @@ const ciPrivateKey: string = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a84
 const auxPrivateKey: string = "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 // Key used for 'market_creator' in tests [Hardhat account 3: 0x90F79bf6EB2c4f870365E785982E1f101E93b906]
 const aux2PrivateKey: string = "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6";
+// Key used for 'marketReporter' in tests [Hardhat account 4: 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65]
+const aux3PrivateKey: string = "0x6a76ba45681f6b797ddccea46af08ab0fcb13872f6feee68f23ab294356c0234";
 
 // If not set, it uses the hardhat account private key.
 const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY ?? ciPrivateKey;
 // If not set, it uses a Scafold-eth public api key
 const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
-const basescanApiKey = process.env.BASESCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 
 const config: HardhatUserConfig = {
@@ -32,6 +33,15 @@ const config: HardhatUserConfig = {
     compilers : [
       {
         version: "0.7.6",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
+      {
+        version: "0.8.30",
         settings: {
           optimizer: {
             enabled: true,
@@ -53,10 +63,10 @@ const config: HardhatUserConfig = {
     hardhat: {
       // allowUnlimitedContractSize: true,
       forking: {
-        // url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
-        // url: `https://base-mainnet.g.alchemy.com/v2/${providerApiKey}`,  // Base Mainnet
+        // url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,  // ETH Mainnet
+        url: `https://base-mainnet.g.alchemy.com/v2/${providerApiKey}`,  // Base Mainnet
         // url: `https://base-sepolia.g.alchemy.com/v2/${providerApiKey}`,  // Base Sepolia
-        url: `https://worldchain-mainnet.g.alchemy.com/v2/${providerApiKey}`,  // World Mainnet
+        // url: `https://worldchain-mainnet.g.alchemy.com/v2/${providerApiKey}`,  // World Mainnet
         // url: `https://worldchain-sepolia.g.alchemy.com/v2/${providerApiKey}`,  // World Sepolia
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
@@ -64,7 +74,8 @@ const config: HardhatUserConfig = {
         {privateKey: deployerPrivateKey, balance: "200000000000000000"},  // 0.2 eth
         {privateKey: faucetPrivateKey, balance: "1000000000000000000000"},  // 1 eth
         {privateKey: auxPrivateKey, balance: "1000000000000000000000"},  // 1 eth
-        {privateKey: aux2PrivateKey, balance: "1000000000000000000000"}  // 1 eth
+        {privateKey: aux2PrivateKey, balance: "1000000000000000000000"},  // 1 eth
+        {privateKey: aux3PrivateKey, balance: "1000000000000000000000"}  // 1 eth
       ],
     },
     mainnet: {
@@ -156,41 +167,21 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
     },
   },
-  // configuration for harhdat-verify plugin
+  // configuration for hardhat-verify plugin
   etherscan: {
-    apiKey: {
-      mainnet: etherscanApiKey,
-      base: basescanApiKey,
-      baseSepolia: basescanApiKey,
-    },
-    customChains: [
-      {
-        network: "baseSepolia",
-        chainId: 84532,
-        urls: {
-          apiURL: "https://api-sepolia.basescan.org/api",
-          browserURL: "https://sepolia.basescan.org/"
-        }
-      },
-      {
-        network: "optimismSepolia",
-        chainId: 11155420,
-        urls: {
-          apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
-          browserURL: "https://sepolia-optimism.etherscan.io/"
-        }
-      }
-    ]
+    apiKey: etherscanApiKey,
   },
   // configuration for etherscan-verify from hardhat-deploy plugin
   verify: {
     etherscan: {
       apiKey: `${etherscanApiKey}`,
-
     },
   },
   sourcify: {
-    enabled: false,
+    enabled: false
+  },
+  blockscout: {
+    enabled: false
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS === "true",

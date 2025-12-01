@@ -17,9 +17,9 @@ export const ContractVariables = ({
     (deployedContractData.abi as Abi).filter(part => part.type === "function") as AbiFunction[]
   )
     .filter(fn => {
-      const isQueryableWithNoParams =
-        (fn.stateMutability === "view" || fn.stateMutability === "pure") && fn.inputs.length === 0;
-      return isQueryableWithNoParams;
+      let showAsVariable = fn.stateMutability === "view" || fn.stateMutability === "pure";
+      showAsVariable = showAsVariable && fn.inputs.length === 0;
+      return showAsVariable;
     })
     .map(fn => {
       return {

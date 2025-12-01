@@ -1,5 +1,5 @@
 export * from "./MarketGeneralInfo";
-// export * from "./MarketHistory";
+export * from "./MarketHistory";
 export * from "./MarketPrices";
 export * from "./MarketRedeemBatch";
 export * from "./MarketRedeemShares";

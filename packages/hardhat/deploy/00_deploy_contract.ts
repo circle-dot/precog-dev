@@ -3,13 +3,14 @@ import {DeployFunction} from "hardhat-deploy/types";
 import {PrecogToken, PrecogMasterV7, PrecogMarketV7} from "../typechain-types";
 import {DeployResult} from "hardhat-deploy/dist/types";
 import {TransactionReceipt} from "ethers";
+import promptSync from 'prompt-sync';
 
 /**
  * Deploys Precog contracts script
  * @param hre HardhatRuntimeEnvironment object.
  */
 const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvironment): Promise<void> {
-    // Already deployed and Deprecated contracts:
+    // Base Sepolia: deployed and Deprecated contracts:
     // - PrecogToken: 0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888 (latest)
     // - PrecogMasterV1: 0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E
     // - PrecogMasterV2: 0x0D512A2176737Fdb5C9973DB92fB100A234cD738
@@ -23,11 +24,21 @@ const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvir
     // - PrecogMarketV4: 0xE1781EF8d232b31aADB34E313d129b56c0913015
     // - PrecogMarketV5: 0x95d4E2E5c49a76c35E52932FC668fe2D31D35F9B
     // - PrecogMarketV6: 0x0984Bed9E120774820D717df6A4ee217268A7b65
+    // - PrecogMarketV7beta: 0x40e9283B127D711A7Fc392C4FAc2CE7841390C1f
     // - PrecogMarketV7: 0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE (latest)
+    // - LatentTokenV1: 0x3cE4e93Ac026Ba86d02AFB9e5E9926b7AcdE0360 (latest)
+    // - MateTokenV1: 0xC139C86de76DF41c041A30853C3958427fA7CEbD (latest)
+    // - DAccTokenV1: 0x0000003CA8ffA47fd2DAb26b23025A8eB7290769 (latest)
+    // - BatchExecutorV1: 0xFe55Af540321c131434E619749DB824A933CC9bd (latest)
+    // - PrecogRealityOracleV1: 0x3a2FEdD33Cde9c825a34a0efBC1a92870E53c4ef
+    // - PrecogRealityOracleV2: 0xbd8B7cb4924aAdf579b6Dbd77CA6cF6e56029f37 (latest)
+    // Base Mainnet: deployed contracts:
+    // Put here the old & new addresses
 
     const {deployer} = await hre.getNamedAccounts();
     const {deploy} = hre.deployments;
     const provider = hre.ethers.provider;
+    const prompt = promptSync();
 
     console.log(`\n\n> Deploying at ${hre.network.name}`);
     console.log(`> Chain Id: ${await hre.getChainId()}`);
@@ -40,6 +51,19 @@ const deployContracts: DeployFunction = async function (hre: HardhatRuntimeEnvir
     console.log("");
     const initialOwner: string = "0x9475A4C1BF5Fc80aE079303f14B523da19619c16";
     let tx: DeployResult;
+
+    console.log(`> Current Gas Price State (gwei):`);
+    const feeData = await hre.ethers.provider.getFeeData();
+    console.log(`\t    gasPrice: ${hre.ethers.formatUnits(feeData.gasPrice ?? 0, 'gwei')}`);
+    console.log(`\tmaxFeePerGas: ${hre.ethers.formatUnits(feeData.maxFeePerGas ?? 0, 'gwei')}`);
+    console.log(`\t PriorityFee: ${hre.ethers.formatUnits(feeData.maxPriorityFeePerGas ?? 0, 'gwei')}`);
+
+    // Ask for confirmation before continuing with the script
+    const confirmDeploy = prompt("\n> Are you sure to deploy the contract? (y/n): ")
+    if (confirmDeploy !== 'y') {
+        console.log("\n> Deploy aborted!\n");
+        return;
+    }
 
     // Get already deployed contract
     const preDeployed = '0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888';

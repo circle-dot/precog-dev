@@ -15,19 +15,19 @@ export const enabledChains = targetNetworks.find((network: Chain) => network.id 
 
 const createChainTransports = (chainId: number): Transport[] => {
   const transports = [http()]; // Start with public RPC
-  
+
   // Add QuickNode if available
   const quickNodeUrl = getQuickNodeHttpUrl(chainId);
   if (quickNodeUrl) {
     transports.push(http(quickNodeUrl));
   }
-  
+
   // Add Alchemy if available
   const alchemyUrl = getAlchemyHttpUrl(chainId);
   if (alchemyUrl) {
     transports.push(http(alchemyUrl));
   }
-  
+
   return transports;
 };
 

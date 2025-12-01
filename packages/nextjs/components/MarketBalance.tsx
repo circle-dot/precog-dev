@@ -29,6 +29,7 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
     }
 
     // Get and parse needed data
+    // TODO Add here support for token with decimals not equal to 18
     const redeemedAmount = formatEther(accountShares[4]);
     const outcomeBalances = accountShares[5];
     // Only for debug
@@ -41,6 +42,7 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
         const label = outcomes[i].toString();
         let balance = "0";
         try {
+            // TODO Add here support for token with decimals not equal to 18
             // @ts-ignore
             balance = formatEther(outcomeBalances[i + 1]);
         } catch {

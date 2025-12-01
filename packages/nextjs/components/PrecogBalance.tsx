@@ -23,6 +23,7 @@ export const PrecogBalance = ({address}: BalanceProps) => {
         );
     }
 
+    // Dev note: Pre token has always 18 decimals as ether
     const formattedBalance = balance ? Number(formatEther(balance)) : 0;
     return (
         <div className="w-full flex items-center">
