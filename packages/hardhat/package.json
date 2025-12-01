@@ -25,6 +25,7 @@
     "@typechain/ethers-v6": "~0.5.1",
     "dotenv": "~16.0.3",
     "envfile": "~6.18.0",
+    "prompt-sync": "~4.2.0",
     "qrcode": "~1.5.1"
   },
   "devDependencies": {
@@ -33,7 +34,7 @@
     "@nomicfoundation/hardhat-chai-matchers": "~2.0.8",
     "@nomicfoundation/hardhat-ethers": "~3.1.0",
     "@nomicfoundation/hardhat-network-helpers": "~1.1.0",
-    "@nomicfoundation/hardhat-verify": "~2.0.3",
+    "@nomicfoundation/hardhat-verify": "~2.1.1",
     "@typechain/ethers-v5": "~10.1.0",
     "@typechain/hardhat": "~9.1.0",
     "@types/eslint": "~8",

@@ -11,6 +11,7 @@ type MarketSellProps = {
     sharesToTrade?: number;
 };
 
+// Deprecated component 17/10/2025 (delete after this version)
 export const MarketSell = ({
                                marketId,
                                marketOutcome,
@@ -26,6 +27,7 @@ export const MarketSell = ({
 
     const market = BigInt(marketId);
     const outcome = BigInt(marketOutcome);
+    // TODO Add here support for token with decimals not equal to 18
     const sellAmount = Math.min(sharesToTrade, Number(formatEther(outcomeBalance)));
     const shares = fromNumberToInt128(sellAmount);
     const {data: priceInt128, isLoading: isPriceLoading} = useReadContract({
@@ -43,6 +45,7 @@ export const MarketSell = ({
 
     const price = priceInt128 ? fromInt128toNumber(priceInt128) : 1;
     const minTokenOut = price * 0.999  // Add 0.1% of slippage
+    // TODO Add here support for token with decimals not equal to 18
     const minOut: bigint = parseEther(minTokenOut.toString());
 
     const writeContractAsyncWithParams = () =>

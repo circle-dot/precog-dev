@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { usePublicClient, useAccount, useWriteContract } from "wagmi";
-import { erc20Abi, parseEther, formatEther } from "viem";
+import {erc20Abi, parseUnits, formatUnits} from "viem";
 import { useScaffoldContract } from "./scaffold-eth";
-import { useTransactor } from "./scaffold-eth/useTransactor";
+import { useTransactor } from "~~/hooks/scaffold-eth";
 import { fromNumberToInt128, fromInt128toNumber } from "~~/utils/numbers";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -28,16 +28,16 @@ export function useMarketActions() {
    * Executes a buy transaction for market shares
    * @param marketId - ID of the market to buy shares in
    * @param marketOutcome - Outcome ID to buy
-   * @param sharesToTrade - Number of shares to buy
+   * @param sharesToTrade - Number of shares to buy (number, not int128)
    * @param marketAddress - Address of the market contract
-   * @param maxTokenIn - Maximum amount of tokens to spend
+   * @param maxTokenIn - Maximum amount of tokens to spend (number, not wei)
    */
   const executeBuy = async (
     marketId: number,
     marketOutcome: number,
     sharesToTrade: number,
     marketAddress: string,
-    maxTokenIn: bigint,
+    maxTokenIn: number
   ) => {
     if (!connectedAddress || !masterContract || !marketContract || !publicClient) {
       notification.error("Missing dependencies for trade execution");
@@ -62,7 +62,17 @@ export function useMarketActions() {
         args: [connectedAddress],
       }) as bigint;
 
-      if (balance < maxTokenIn) {
+      // Check user's token balance
+      const tokenDecimals = await publicClient.readContract({
+        address: collateral,
+        abi: erc20Abi,
+        functionName: "decimals",
+        args: [],
+      }) as number;
+
+      const maxTokenWei = parseUnits(maxTokenIn.toString(), tokenDecimals);
+
+      if (balance < maxTokenWei) {
         notification.error("Insufficient token balance");
         return;
       }
@@ -90,7 +100,7 @@ export function useMarketActions() {
               address: collateral,
               abi: erc20Abi,
               functionName: "approve",
-              args: [masterContract.address, maxTokenIn],
+              args: [masterContract.address, maxTokenWei],
             });
 
           await writeTx(writeApproveAsync, { blockConfirmations: 2 });
@@ -103,7 +113,7 @@ export function useMarketActions() {
           address: masterContract.address,
           abi: masterContract.abi,
           functionName: "marketBuy",
-          args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(sharesToTrade), maxTokenIn],
+          args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(sharesToTrade), maxTokenWei],
         });
 
       const txHash = await writeTx(writeBuyAsync, { blockConfirmations: 2 });
@@ -121,13 +131,15 @@ export function useMarketActions() {
    * @param marketId - ID of the market to sell shares from
    * @param marketOutcome - Outcome ID to sell
    * @param sharesToTrade - Number of shares to sell
+   * @param marketAddress - Address of the market contract
    */
   const executeSell = async (
     marketId: number,
     marketOutcome: number,
     sharesToTrade: number,
+    marketAddress: string
   ) => {
-    if (!connectedAddress || !masterContract || !publicClient) {
+    if (!connectedAddress || !masterContract || !marketContract || !publicClient) {
       notification.error("Missing dependencies for trade execution");
       return;
     }
@@ -143,26 +155,43 @@ export function useMarketActions() {
         args: [BigInt(marketId), connectedAddress],
       }) as [bigint, bigint, bigint, bigint, bigint, readonly bigint[]];
 
-      const outcomeBalances = accountShares[5];
-      const maxSellAmount = Number(formatEther(outcomeBalances[marketOutcome]));
-      const actualSellAmount = Math.min(sharesToTrade, maxSellAmount);
-
-      if (actualSellAmount <= 0) {
-        notification.error("Insufficient shares balance");
-        return;
-      }
-
       // Get the sell price and calculate minimum tokens to receive
       const priceResult = await publicClient.readContract({
         address: masterContract.address,
         abi: masterContract.abi,
         functionName: "marketSellPrice",
-        args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(actualSellAmount)],
+        args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(sharesToTrade)],
       }) as bigint;
 
+      // Get the collateral token address from the market
+      const collateral = await publicClient.readContract({
+        address: marketAddress as `0x${string}`,
+        abi: marketContract.abi,
+        functionName: "token",
+      }) as `0x${string}`;
+
+      // Check user's token balance
+      const tokenDecimals = await publicClient.readContract({
+        address: collateral,
+        abi: erc20Abi,
+        functionName: "decimals",
+        args: [],
+      }) as number;
+
+      // Calculate max amount of shares available to sell
+      const outcomeBalances = accountShares[5];
+      const maxSellAmount = Number(formatUnits(outcomeBalances[marketOutcome], tokenDecimals));
+
+      // Check that the selling amount is less than max amount available
+      if (sharesToTrade > maxSellAmount) {
+        notification.error("Insufficient shares balance");
+        return;
+      }
+
+      // Calculate min out of tokens to receive for this sell
       const price = fromInt128toNumber(priceResult);
       const minTokenOut = price * 0.999; // Add 0.1% slippage
-      const minOut = parseEther(minTokenOut.toString());
+      const minOut = parseUnits(minTokenOut.toString(), tokenDecimals);
 
       // Execute sell transaction
       const writeSellAsync = () =>
@@ -170,7 +199,7 @@ export function useMarketActions() {
           address: masterContract.address,
           abi: masterContract.abi,
           functionName: "marketSell",
-          args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(actualSellAmount), minOut],
+          args: [BigInt(marketId), BigInt(marketOutcome), fromNumberToInt128(sharesToTrade), minOut],
         });
 
       const txHash = await writeTx(writeSellAsync, { blockConfirmations: 2 });

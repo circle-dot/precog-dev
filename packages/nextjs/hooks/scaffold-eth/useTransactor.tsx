@@ -75,7 +75,8 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
         confirmations: options?.blockConfirmations,
       });
       notification.remove(notificationId);
-      // Check if transaction was successful
+
+      // Check if the transaction was successful
       if (transactionReceipt.status === "success") {
         notification.success(
           <TxnNotification message="Transaction completed successfully!" blockExplorerLink={blockExplorerTxURL} />,

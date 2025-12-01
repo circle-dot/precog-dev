@@ -33,6 +33,7 @@ export interface MarketDetails {
   marketInfo: readonly [bigint, readonly bigint[], bigint, bigint, bigint];
   token: Address;
   tokenSymbol: string;
+  tokenDecimals: number;
   marketResultInfo: readonly [bigint, bigint, Address];
 }
 
@@ -59,9 +60,7 @@ export interface AccountSharesData {
  * @returns Object containing markets array and total count
  */
 export const usePrecogMarkets = () => {
-  const { data: masterContract } = useScaffoldContract({
-    contractName: "PrecogMasterV7",
-  });
+  const { data: masterContract } = useScaffoldContract({contractName: "PrecogMasterV7"});
   const publicClient = usePublicClient();
   const { chain } = useAccount();
 
@@ -112,7 +111,7 @@ export const usePrecogMarkets = () => {
             name: marketData[0],
             description: marketData[1],
             category: marketData[2],
-            outcomes: marketData[3].split(","),
+            outcomes: marketData[3].toString().split(","),
             startTimestamp: marketData[4],
             endTimestamp: marketData[5],
             creator: marketData[6],
@@ -210,10 +209,26 @@ export const usePrecogMarketDetails = (marketId: number, marketAddress: Address,
         functionName: "symbol",
       })) as string;
 
+      // Fetch token decimals from the collateral token contract
+      const tokenDecimals = (await publicClient.readContract({
+        address: token,
+        abi: [
+          {
+            inputs: [],
+            name: "decimals",
+            outputs: [{"internalType": "uint8", name: "", type: "uint8" }],
+            stateMutability: "view",
+            type: "function",
+          },
+        ] as const,
+        functionName: "decimals",
+      })) as number;
+
       return {
         marketInfo,
         token,
         tokenSymbol,
+        tokenDecimals,
         marketResultInfo,
       } as MarketDetails;
     },
@@ -291,7 +306,7 @@ export const usePrecogMarketPrices = (marketAddress: Address, outcomes: string[]
       const isAnyError = multicallData.some(d => d.status === "failure");
 
       return {
-        outcomeData,
+        outcomeData: outcomeData,
         isError: isAnyError,
         errors: {
           prices: pricesResult?.error,
@@ -332,7 +347,7 @@ export const useAccountOutcomeBalances = (
   accountAddress: Address | undefined,
   chainId: number | undefined,
   enabled: boolean,
-  options?: Omit<Omit<UseQueryOptions<AccountSharesData & { tokenSymbol: string }>, "queryKey" | "queryFn" | "enabled">, "enabled">,
+  options?: Omit<Omit<UseQueryOptions<AccountSharesData & { tokenSymbol: string; tokenDecimals: number; }>, "queryKey" | "queryFn" | "enabled">, "enabled">,
 ) => {
   const { data: masterContract } = useScaffoldContract({
     contractName: "PrecogMasterV7",
@@ -344,7 +359,7 @@ export const useAccountOutcomeBalances = (
 
   const isReady = !!publicClient && !!masterContract?.abi && !!marketContract?.abi && !!accountAddress && !!chainId;
 
-  return useQuery<AccountSharesData & { tokenSymbol: string }>({
+  return useQuery<AccountSharesData & { tokenSymbol: string; tokenDecimals: number; }>({
     queryKey: ["marketAccountBalances", marketAddress, marketId, accountAddress, chainId],
     queryFn: async () => {
       if (!isReady) {
@@ -395,6 +410,21 @@ export const useAccountOutcomeBalances = (
         functionName: "symbol",
       }) as string;
 
+      // Fetch token decimals from the collateral token contract
+      const tokenDecimals = await publicClient.readContract({
+        address: tokenAddress,
+        abi: [
+          {
+            inputs: [],
+            name: "decimals",
+            outputs: [{"internalType": "uint8", name: "", type: "uint8" }],
+            stateMutability: "view",
+            type: "function",
+          },
+        ] as const,
+        functionName: "decimals",
+      }) as number;
+
       return {
         balances,
         buys,
@@ -403,6 +433,7 @@ export const useAccountOutcomeBalances = (
         withdrew,
         redeemed,
         tokenSymbol,
+        tokenDecimals
       };
     },
     enabled: enabled && isReady,

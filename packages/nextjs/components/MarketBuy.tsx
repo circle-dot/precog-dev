@@ -10,6 +10,7 @@ type MarketBuyProps = {
     sharesToTrade?: number
 };
 
+// Deprecated component 17/10/2025 (delete after this version)
 export const MarketBuy = ({marketId, marketOutcome, outcomeLabel = "", sharesToTrade = 1}: MarketBuyProps) => {
     const {data: master} = useScaffoldContract({contractName: "PrecogMasterV7"});
     const ABI = master ? master.abi : [];
@@ -33,6 +34,7 @@ export const MarketBuy = ({marketId, marketOutcome, outcomeLabel = "", sharesToT
 
     const price = priceInt128 ? fromInt128toNumber(priceInt128) : 1;
     const maxTokenIn = price * 1.001  // Add 0.1% of slippage
+    // TODO Add here support for token with decimals not equal to 18
     const maxIn: bigint = parseEther(maxTokenIn.toString());
 
     if (isPriceLoading || !master) {

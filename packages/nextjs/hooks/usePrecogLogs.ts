@@ -74,8 +74,8 @@ export const usePrecogLogs = (address: Address) => {
             const startBlock = getPrecogDeployBlock(targetNetwork.id);
             const endBlock = Number(await client.getBlockNumber());
             let chunkSize = Math.round((endBlock - startBlock) / 20);
-            chunkSize = Math.max(chunkSize, 5000);
-            chunkSize = Math.min(chunkSize, 100000);
+            chunkSize = Math.max(chunkSize, 5000);  // TODO Update implementation to use 100 as min size
+            chunkSize = Math.min(chunkSize, 100000);  // TODO Update implementation to use 500 as max size
             console.log(`Fetching block logs (start: ${startBlock}, end: ${endBlock}, chunk: ${chunkSize})...`);
             // const startBlock = 25803661;  // Just for testing
             // const endBlock =   25903660;  // Just for testing

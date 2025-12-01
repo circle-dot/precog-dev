@@ -8,11 +8,13 @@ export type ScaffoldConfig = {
     walletConnectProjectId: string;
     onlyLocalBurnerWallet: boolean;
     marketSharesToTrade: number;
+    precogTrackerApiKey: string
 };
 
 const scaffoldConfig = {
     // The networks on which your DApp is live
     targetNetworks: [chains.base, chains.baseSepolia],
+    // targetNetworks: [chains.hardhat],
 
     // The interval at which your front-end polls the RPC servers for new data
     // it has no effect if you only target the local network (default is 4000)
@@ -36,7 +38,10 @@ const scaffoldConfig = {
     onlyLocalBurnerWallet: false,
 
     // # Amount of shares to be used as default in BUY and SELL trades
-    marketSharesToTrade: 1
+    marketSharesToTrade: 1,
+
+    precogTrackerApiKey: process.env.NEXT_PRECOG_TRACKER_API_KEY || "8ab1b34a-8bf1-7bcd-9fa8-4f0b785b03f9",
+
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;

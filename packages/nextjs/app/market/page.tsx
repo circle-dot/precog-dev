@@ -4,7 +4,7 @@ import type {NextPage} from "next";
 import {useState} from "react";
 import {useSearchParams} from "next/navigation";
 import {AddressInput} from "~~/components/scaffold-eth";
-import {MarketGeneralInfo, MarketSharesInfo, MarketPrices} from "~~/app/market/_components";
+import {MarketGeneralInfo, MarketSharesInfo, MarketPrices, MarketHistory} from "~~/app/market/_components";
 import {MarketReportResult, MarketRedeemShares, MarketRedeemBatch} from "~~/app/market/_components";
 import {MarketHolders} from "~~/app/market/_components/MarketHolders";
 import {useAccount} from "wagmi";
@@ -14,7 +14,7 @@ const ADMIN_ROLE = "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693
 
 const MarketDetails: NextPage = () => {
     const {address: connectedAddress} = useAccount();
-    const defaultMarket = "0x8a82D617ad02016dB4E80b01Bb54C04b888aC004" as `0x${string}`;  // MarketV7 Id: 0
+    const defaultMarket = "0xF6c22888FD82FCb43Bc263dF15ED40900cD6F231" as `0x${string}`;  // MarketV7 Id: 0
     const [marketAddress, setMarketAddress] = useState<`0x${string}`>(defaultMarket);
     const [isSelected, setIsSelected] = useState(false);
 
@@ -49,22 +49,25 @@ const MarketDetails: NextPage = () => {
                     <div className="text-lg font-bold">Shares Info</div>
                     <MarketSharesInfo address={marketAddress}/>
 
-                    { isAdmin && (
+                    {isAdmin && (
                         <>
                             <div className="text-lg font-bold pt-5">Shareholders</div>
                             <MarketHolders address={marketAddress}/>
                         </>
                     )}
                 </div>
-                {/*TODO Temporally disable market history due to request limits */}
-                {/*<div className="flex flex-col gap-1 p-4 pb-8 mt-3 bg-base-100 rounded-2xl">*/}
-                {/*    <div className="text-xl font-bold">Event history</div>*/}
-                {/*    <MarketHistory address={marketAddress}/>*/}
-                {/*</div>*/}
+                {isAdmin && (
+                    <div className="flex flex-col gap-1 p-4 pb-8 mt-3 bg-base-100 rounded-2xl">
+                        <div className="text-xl font-bold">Market history</div>
+                        <MarketHistory address={marketAddress}/>
+                    </div>
+                )}
                 <div className="flex flex-col gap-1 p-4 pb-8 mt-3 bg-base-100 rounded-2xl">
                     <div className="text-xl font-bold">Actions</div>
 
-                    <MarketReportResult marketAddress={marketAddress} connectedAddress={connectedAddress}/>
+                    <MarketReportResult
+                        marketAddress={marketAddress} connectedAddress={connectedAddress} isAdmin={isAdmin}
+                    />
 
                     <MarketRedeemBatch marketAddress={marketAddress} connectedAddress={connectedAddress}/>
 

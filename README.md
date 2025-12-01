@@ -4,29 +4,29 @@ This repository contains all smart contracts for the Precog forecasting protocol
 
 #### Prediction Markets and LMSR theory:
 - [Cultivate Labs: Types of Prediction Markets](https://www.cultivatelabs.com/crowdsourced-forecasting-guide/what-are-the-different-types-of-prediction-markets)
+- [Precog: Interactive LS-LMSR Simulator](https://core.precog.market/simulator)
 - [Research Corner: Gates Building Prediction Market](https://www.cs.utexas.edu/news/2012/research-corner-gates-building-prediction-market)
 - [Augur: LMSR and LS-LMSR](https://augur.mystrikingly.com/blog/augur-s-automated-market-maker-the-ls-lmsr)
-- [Precog: Interactive LMSR pricing](https://www.desmos.com/calculator/jvy0ci53lm)
 
 ## Repository Structure
 - [Contracts Implementations](/packages/hardhat/contracts)
 - [Test Implementations](/packages/hardhat/test)
 - [Deploy and Helpers](/packages/hardhat/scripts)
-> Dev backend site: [**Precog Dev**](https://dev.precog.market/) (here the deployed version of this repo)
+> Precog Dev site: [**Precog Dev**](https://dev.precog.market/) (here the deployed version of this repo)
 <hr/>
 
 ## Mainnet Latest Deployments (Base)
 - **PrecogMaster**: [0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E](https://basescan.org/address/0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E)
 - **PrecogMarket**: [0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b](https://basescan.org/address/0xAac4F52016bc3A97D0d841A90f51fA1d7C2BB52b) (Recipe for all markets)
-- **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://basescan.org/address/0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888) (Not used)
-> Core backend site: [**Precog Core**](https://core.precog.market/)
+- **PrecogRealityOracle**: [0xd7bE03206daFa4552ab58CD3CFC191426404C77D](https://basescan.org/address/0xd7bE03206daFa4552ab58CD3CFC191426404C77D) 
+> Precog app site: [**Precog Core**](https://core.precog.market/)
 <hr/>
 
 ## Testnet Latest Deployments (Base Sepolia)
 - **PrecogMasterV7**: [0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4](https://sepolia.basescan.org/address/0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4)
 - **PrecogMarketV7**: [0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE](https://sepolia.basescan.org/address/0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE) (Recipe for all markets)
-- **PrecogToken**: [0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888](https://sepolia.basescan.org/address/0x7779ec685aa0bf5483b3e0c15daf246d2d978888) (Not used)
-> Core backend site: [**Precog Core Staging**](https://staging-core.precog.market/) 
+- **PrecogRealityOracleV2**: [0xbd8B7cb4924aAdf579b6Dbd77CA6cF6e56029f37](https://sepolia.basescan.org/address/0xbd8B7cb4924aAdf579b6Dbd77CA6cF6e56029f37)
+> Precog app site: [**Precog Core Staging**](https://staging-core.precog.market/) 
 <hr/>
 
 ## Utility commands
@@ -36,9 +36,9 @@ This repository contains all smart contracts for the Precog forecasting protocol
 
 `yarn test-gas`: Run all tests with the gas profiler enabled to check/optimize gas costs.
 
-`yarn chain`: Starts a local harhat chain with configured accounts (useful to test initial deploys).
+`yarn chain`: Starts a local hardhat chain with configured accounts (useful to test initial deploys).
 
-`yarn fork`: Starts a local harhat fork chain with configured accounts (useful to test new version deploys).
+`yarn fork`: Starts a local hardhat fork chain with configured accounts (useful to test new version deploys).
 
 `yarn deploy`: Runs deploy script. It's recommended to test it over a fork network before live chain run.
 

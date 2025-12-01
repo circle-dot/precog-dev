@@ -2166,6 +2166,1088 @@ const deployedContracts = {
         revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
       },
     },
+    PrecogRealityOracleV2: {
+      address: "0xd7bE03206daFa4552ab58CD3CFC191426404C77D",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "initialAdmin",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "previousAdminRole",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "newAdminRole",
+              type: "bytes32",
+            },
+          ],
+          name: "RoleAdminChanged",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "RoleGranted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "RoleRevoked",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "ADMIN_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "DEFAULT_ADMIN_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "REPORTER_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "addAdmin",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "addMarketReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "addReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "maxPrevious",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+          ],
+          name: "answerOpenQuestion",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "arbitrator",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "getAccountPermissions",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "isAdmin",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isGlobalReporter",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "getMarketState",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "isRegistered",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isAnswered",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isFinalized",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isReported",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getRealityBalance",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "getRealityQuestionInfo",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint32",
+              name: "openingTS",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint256",
+              name: "bounty",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "getRealityResultInfo",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint32",
+              name: "finalizeTS",
+              type: "uint32",
+            },
+            {
+              internalType: "bytes32",
+              name: "lastHash",
+              type: "bytes32",
+            },
+            {
+              internalType: "bool",
+              name: "isFinalized",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isPendingArbitration",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+          ],
+          name: "getRoleAdmin",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "index",
+              type: "uint256",
+            },
+          ],
+          name: "getRoleMember",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+          ],
+          name: "getRoleMemberCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "grantRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "hasRole",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "isMarketRegistered",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "isMarketReporter",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address[]",
+              name: "accounts",
+              type: "address[]",
+            },
+          ],
+          name: "marketRedeemBatch",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "marketReporters",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "markets",
+          outputs: [
+            {
+              internalType: "address",
+              name: "market",
+              type: "address",
+            },
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "string",
+              name: "outcomes",
+              type: "string",
+            },
+            {
+              internalType: "bool",
+              name: "answered",
+              type: "bool",
+            },
+            {
+              internalType: "uint256",
+              name: "resultIndex",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "resultLabel",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "maxAnswerBond",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bounty",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "templateId",
+              type: "uint32",
+            },
+            {
+              internalType: "string",
+              name: "question",
+              type: "string",
+            },
+            {
+              internalType: "string[]",
+              name: "outcomes",
+              type: "string[]",
+            },
+            {
+              internalType: "string",
+              name: "category",
+              type: "string",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "startTime",
+              type: "uint32",
+            },
+          ],
+          name: "openQuestion",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "precogMaster",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "reality",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32[]",
+              name: "historyHashes",
+              type: "bytes32[]",
+            },
+            {
+              internalType: "address[]",
+              name: "answerers",
+              type: "address[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "bonds",
+              type: "uint256[]",
+            },
+            {
+              internalType: "bytes32[]",
+              name: "answers",
+              type: "bytes32[]",
+            },
+          ],
+          name: "realityClaimWinnings",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "bounty",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "templateId",
+              type: "uint32",
+            },
+            {
+              internalType: "string",
+              name: "question",
+              type: "string",
+            },
+            {
+              internalType: "string[]",
+              name: "outcomes",
+              type: "string[]",
+            },
+            {
+              internalType: "string",
+              name: "category",
+              type: "string",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "startTime",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "nonce",
+              type: "uint32",
+            },
+          ],
+          name: "realityOpenQuestion",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "maxPrevious",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "answerer",
+              type: "address",
+            },
+          ],
+          name: "realitySubmitAnswerFor",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "realityWithdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "market",
+              type: "address",
+            },
+            {
+              internalType: "address[]",
+              name: "initialReporters",
+              type: "address[]",
+            },
+          ],
+          name: "registerMarket",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "removeAdmin",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "removeMarketReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "removeReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "renounceRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "reportResult",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "revokeRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "arbitratorProxy",
+              type: "address",
+            },
+          ],
+          name: "setArbitrator",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "maxBond",
+              type: "uint256",
+            },
+          ],
+          name: "setMaxAnswerBond",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "master",
+              type: "address",
+            },
+          ],
+          name: "setPrecogMaster",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "realityProxy",
+              type: "address",
+            },
+          ],
+          name: "setReality",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "templateId",
+              type: "uint32",
+            },
+            {
+              internalType: "string",
+              name: "question",
+              type: "string",
+            },
+            {
+              internalType: "string[]",
+              name: "outcomes",
+              type: "string[]",
+            },
+            {
+              internalType: "string",
+              name: "category",
+              type: "string",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "startTime",
+              type: "uint32",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+          ],
+          name: "submitResult",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_token",
+              type: "address",
+            },
+          ],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          stateMutability: "payable",
+          type: "receive",
+        },
+      ],
+      inheritedFunctions: {
+        DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
+        getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
+        getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
+        getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
+        grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
+        hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
+        renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
+        revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
+      },
+    },
     PrecogToken: {
       address: "0x7779ec685Aa0bf5483B3e0c15dAf246d2d978888",
       abi: [
@@ -5226,815 +6308,6 @@ const deployedContracts = {
     },
   },
   84532: {
-    // ConditionalTokens: {
-    //   address: "0x065d23d57C45459fA5e14DAB84F3501c38728F27",
-    //   abi: [
-    //     {
-    //       inputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "constructor",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "bool",
-    //           name: "approved",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       name: "ApprovalForAll",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "questionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "outcomeSlotCount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "ConditionPreparation",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "questionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "outcomeSlotCount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256[]",
-    //           name: "payoutNumerators",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       name: "ConditionResolution",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "redeemer",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256[]",
-    //           name: "indexSets",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "payout",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "PayoutRedemption",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "stakeholder",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256[]",
-    //           name: "partition",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "PositionSplit",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "stakeholder",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256[]",
-    //           name: "partition",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "PositionsMerge",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256[]",
-    //           name: "ids",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256[]",
-    //           name: "values",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       name: "TransferBatch",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "value",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TransferSingle",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: false,
-    //           internalType: "string",
-    //           name: "value",
-    //           type: "string",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "URI",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "balanceOf",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address[]",
-    //           name: "accounts",
-    //           type: "address[]",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "ids",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       name: "balanceOfBatch",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "indexSet",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getCollectionId",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "questionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeSlotCount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getConditionId",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "pure",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getOutcomeSlotCount",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "collectionId",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getPositionId",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "pure",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "isApprovedForAll",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "partition",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "mergePositions",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "payoutDenominator",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "payoutNumerators",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "questionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeSlotCount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "prepareCondition",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "indexSets",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       name: "redeemPositions",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "questionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "payouts",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       name: "reportPayouts",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "ids",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "amounts",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           internalType: "bytes",
-    //           name: "data",
-    //           type: "bytes",
-    //         },
-    //       ],
-    //       name: "safeBatchTransferFrom",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "bytes",
-    //           name: "data",
-    //           type: "bytes",
-    //         },
-    //       ],
-    //       name: "safeTransferFrom",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bool",
-    //           name: "approved",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       name: "setApprovalForAll",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "contract IERC20",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "parentCollectionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "conditionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "partition",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "splitPosition",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes4",
-    //           name: "interfaceId",
-    //           type: "bytes4",
-    //         },
-    //       ],
-    //       name: "supportsInterface",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "uri",
-    //       outputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "",
-    //           type: "string",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     balanceOf: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     balanceOfBatch: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     isApprovedForAll: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     safeBatchTransferFrom:
-    //       "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     safeTransferFrom: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     setApprovalForAll: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     supportsInterface: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //     uri: "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
-    //   },
-    // },
     LatentToken: {
       address: "0x3cE4e93Ac026Ba86d02AFB9e5E9926b7AcdE0360",
       abi: [
@@ -6483,2494 +6756,6 @@ const deployedContracts = {
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
       },
     },
-    // PrecogMarketV3: {
-    //   address: "0x77AeDD00A0F057aEb140319920BcD555D8273A62",
-    //   abi: [
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "previousOwner",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "OwnershipTransferred",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_buy",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "_price",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeOneBalance",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeTwoBalance",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrawn",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buy",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "_price",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "condition",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "cost",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "cost_after_buy",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "endTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "getConditionalTokens",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "getMarketInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getPositionAndDustPositions",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getTokenEth",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "getTokenWei",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_ct",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "initialize",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "numOutcomes",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "ids",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "values",
-    //           type: "uint256[]",
-    //         },
-    //         {
-    //           internalType: "bytes",
-    //           name: "data",
-    //           type: "bytes",
-    //         },
-    //       ],
-    //       name: "onERC1155BatchReceived",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes4",
-    //           name: "",
-    //           type: "bytes4",
-    //         },
-    //       ],
-    //       stateMutability: "pure",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "operator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "value",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "bytes",
-    //           name: "data",
-    //           type: "bytes",
-    //         },
-    //       ],
-    //       name: "onERC1155Received",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes4",
-    //           name: "",
-    //           type: "bytes4",
-    //         },
-    //       ],
-    //       stateMutability: "pure",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "owner",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "price",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "bytes32",
-    //           name: "_questionId",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_numOutcomes",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_subsidy",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_overround",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setup",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "startTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes4",
-    //           name: "interfaceId",
-    //           type: "bytes4",
-    //         },
-    //       ],
-    //       name: "supportsInterface",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "pure",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "transferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_endTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateDates",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "withdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     onERC1155BatchReceived:
-    //       "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol",
-    //     onERC1155Received:
-    //       "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol",
-    //     supportsInterface:
-    //       "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol",
-    //   },
-    // },
-    // PrecogMarketV4: {
-    //   address: "0xE1781EF8d232b31aADB34E313d129b56c0913015",
-    //   abi: [
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "previousOwner",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "OwnershipTransferred",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesBought",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesRedeemed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesSold",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_buy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_redeem",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "shares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_sell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "sells",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeOneBalance",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeTwoBalance",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrew",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buyPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "closeTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "cost",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "endTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "getMarketInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getTokenEth",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "getTokenWei",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "id",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "initialize",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "oracle",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "owner",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address[]",
-    //           name: "_accounts",
-    //           type: "address[]",
-    //         },
-    //       ],
-    //       name: "redeemBatch",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeems",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "redeemShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "shares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "reportResult",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "result",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "sell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "sellPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_totalOutcomes",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_subsidy",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_overround",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setup",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "startTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "transferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_endTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateDates",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "withdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {},
-    // },
-    // PrecogMarketV5: {
-    //   address: "0x95d4E2E5c49a76c35E52932FC668fe2D31D35F9B",
-    //   abi: [
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "previousOwner",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "OwnershipTransferred",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesBought",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesRedeemed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesSold",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_buy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_redeem",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "shares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_sell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "sells",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeOneBalance",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcomeTwoBalance",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrew",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buyPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "closeTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "cost",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "endTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "getMarketInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "id",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "initialize",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "oracle",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "owner",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address[]",
-    //           name: "_accounts",
-    //           type: "address[]",
-    //         },
-    //       ],
-    //       name: "redeemBatch",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeems",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "redeemShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "shares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "reportResult",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "result",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "sell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "sellPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_totalOutcomes",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_subsidy",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_overround",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setup",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "startTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "transferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_endTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateDates",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "withdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {},
-    // },
-    // PrecogMarketV6: {
-    //   address: "0x0984Bed9E120774820D717df6A4ee217268A7b65",
-    //   abi: [
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "previousOwner",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "OwnershipTransferred",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesBought",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesRedeemed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "tokenOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "SharesSold",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_buy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_redeem",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemedShares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "_sell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "sells",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrew",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_cost",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "buyPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "closeTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "cost",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "endTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "getAccountOutcomeBalances",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "getMarketInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128[]",
-    //           name: "",
-    //           type: "int128[]",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "id",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "initialize",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "oracle",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "owner",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address[]",
-    //           name: "_accounts",
-    //           type: "address[]",
-    //         },
-    //       ],
-    //       name: "redeemBatch",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeems",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "redeemShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemedShares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "reportResult",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "result",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "sell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_returned",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "_amount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "sellPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "_oracle",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_totalOutcomes",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_subsidy",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_overround",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setup",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "startTimestamp",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "transferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "_startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "_endTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateDates",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_newOracle",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "updateOracle",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "withdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {},
-    // },
     PrecogMarketV7: {
       address: "0xCA1Ef8240D50c797Fee174a082dF5B47aFB328AE",
       abi: [
@@ -9654,5380 +7439,6 @@ const deployedContracts = {
       ],
       inheritedFunctions: {},
     },
-    // PrecogMasterV1: {
-    //   address: "0x1eB90323aE74E5FBc3241c1D074cFd0b117d7e8E",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "precogToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "initialAdmin",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "constructor",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "previousAdminRole",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "newAdminRole",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "RoleAdminChanged",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleGranted",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleRevoked",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensClaimed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensMinted",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "CALLER_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "DEFAULT_ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "claimToken",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "currentSeason",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleAdmin",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "index",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getRoleMember",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleMemberCount",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "grantRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "hasClaimed",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRole",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "miningSeasons",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogBurn",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogMint",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newPrecogMaster",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "precogTransferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "renounceRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "revokeRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setMiningSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateCurrentSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "userTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //   },
-    // },
-    // PrecogMasterV2: {
-    //   address: "0x0D512A2176737Fdb5C9973DB92fB100A234cD738",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "precogToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "initialAdmin",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "constructor",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "previousAdminRole",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "newAdminRole",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "RoleAdminChanged",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleGranted",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleRevoked",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensClaimed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensMinted",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "CALLER_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "DEFAULT_ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "claimToken",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "funding",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "dustFee",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "createMarket",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "newMarketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "createdMarkets",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "currentSeason",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleAdmin",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "index",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getRoleMember",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleMemberCount",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "grantRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "hasClaimed",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRole",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketAccountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outOne",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outTwo",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrawn",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxAmountIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketBuy",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "marketPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketSharesInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "totalShares",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "qOne",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "qTwo",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "cost",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalBuys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "beta",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketWithdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "markets",
-    //       outputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "market",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "miningSeasons",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogBurn",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogMint",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newPrecogMaster",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "precogTransferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "renounceRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "revokeRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "ct",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setConditionalTokens",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setMiningSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateCurrentSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateTokenClaim",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "userTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //   },
-    // },
-    // PrecogMasterV3: {
-    //   address: "0x3f408C67cE37eA69e1FEd59ABA78389EdA3d5b9c",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "precogToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "initialAdmin",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "constructor",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "previousAdminRole",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "newAdminRole",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "RoleAdminChanged",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleGranted",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleRevoked",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensClaimed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensMinted",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "CALLER_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "DEFAULT_ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "claimToken",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "funding",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "dustFee",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "createMarket",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "newMarketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "createdMarkets",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "currentSeason",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleAdmin",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "index",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getRoleMember",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleMemberCount",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "grantRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "hasClaimed",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRole",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketAccountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outOne",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outTwo",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrawn",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxAmountIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketBuy",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "marketPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketSharesInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "totalShares",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "qOne",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "qTwo",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "cost",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalBuys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "beta",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketWithdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "markets",
-    //       outputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "market",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "miningSeasons",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogBurn",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogMint",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newPrecogMaster",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "precogTransferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "renounceRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "revokeRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_conditionalTokens",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setBaseConditionalTokens",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_market",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setBaseMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setMiningSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateCurrentSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "updateMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateTokenClaim",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "userTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //   },
-    // },
-    // PrecogMasterV4: {
-    //   address: "0x1eB088E48341F22385c14E2bD25D7Eccc6BB496B",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "precogToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "initialAdmin",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "constructor",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "previousAdminRole",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "newAdminRole",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "RoleAdminChanged",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleGranted",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleRevoked",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensClaimed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensMinted",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "CALLER_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "DEFAULT_ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "claimToken",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "funding",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "dustFee",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "createMarket",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "newMarketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "createdMarkets",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "currentSeason",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleAdmin",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "index",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getRoleMember",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleMemberCount",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "grantRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "hadClaimed",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRedeemedShares",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRole",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketAccountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "sells",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outOne",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outTwo",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrew",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemed",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxAmountIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketBuy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "amountIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "marketBuyPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketRedeemShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "shares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "minAmountOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketSell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "amountOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "marketSellPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketSharesInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "totalShares",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "qOne",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "qTwo",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "cost",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalBuys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalSells",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "marketToken",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketWithdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "markets",
-    //       outputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "market",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "miningSeasons",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogBurn",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogMint",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newPrecogMaster",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "precogTransferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "renounceRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "revokeRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_market",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setBaseMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_oracle",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setBaseOracle",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setMiningSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateCurrentSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "updateMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateTokenClaim",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "userTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "withdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //   },
-    // },
-    // PrecogMasterV6: {
-    //   address: "0x16D24dE99e3282F153B72229a3c23959cC20FdA3",
-    //   abi: [
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "precogToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "initialAdmin",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "constructor",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "address",
-    //           name: "market",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "MarketCreated",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "previousAdminRole",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "newAdminRole",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "RoleAdminChanged",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleGranted",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "sender",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "RoleRevoked",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: true,
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensClaimed",
-    //       type: "event",
-    //     },
-    //     {
-    //       anonymous: false,
-    //       inputs: [
-    //         {
-    //           indexed: true,
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           indexed: false,
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "TokensMinted",
-    //       type: "event",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "CALLER_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "DEFAULT_ADMIN_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "MARKET_CREATOR_ROLE",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "accountTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "addMarketCreator",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "claimToken",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalOutcomes",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "funding",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "overround",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "collateralToken",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "collateralFunder",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "marketOracle",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "createCustomMarket",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "newMarketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalOutcomes",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "funding",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "overround",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "createMarket",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "newMarketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "createdMarkets",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "currentSeason",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleAdmin",
-    //       outputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "index",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "getRoleMember",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //       ],
-    //       name: "getRoleMemberCount",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "grantRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "hadClaimed",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRedeemedShares",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "hasRole",
-    //       outputs: [
-    //         {
-    //           internalType: "bool",
-    //           name: "",
-    //           type: "bool",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketAccountShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "buys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "sells",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "deposited",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "withdrew",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "redeemed",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256[]",
-    //           name: "balances",
-    //           type: "uint256[]",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxAmountIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketBuy",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "amountIn",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "marketBuyPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketRedeemShares",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "shares",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "minAmountOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketSell",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "amountOut",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "outcome",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "sharesAmount",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       name: "marketSellPrice",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "",
-    //           type: "int128",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "marketSharesInfo",
-    //       outputs: [
-    //         {
-    //           internalType: "int128",
-    //           name: "totalShares",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "int128[]",
-    //           name: "sharesBalances",
-    //           type: "int128[]",
-    //         },
-    //         {
-    //           internalType: "int128",
-    //           name: "cost",
-    //           type: "int128",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalBuys",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "totalSells",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "newOwner",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketTransferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "marketId",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "marketToken",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "marketWithdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "markets",
-    //       outputs: [
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "creator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "market",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "miningSeasons",
-    //       outputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "from",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogBurn",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "to",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "precogMint",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "newPrecogMaster",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "precogTransferOwnership",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeAdmin",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeCaller",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "removeMarketCreator",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "renounceRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "bytes32",
-    //           name: "role",
-    //           type: "bytes32",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "revokeRole",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_market",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setBaseMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_oracle",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "setBaseOracle",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxUserClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalClaim",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "maxTotalMint",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "mintedAmount",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "setMiningSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [],
-    //       name: "token",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "",
-    //           type: "address",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "seasonIndex",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateCurrentSeason",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "id",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "name",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "description",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "string",
-    //           name: "category",
-    //           type: "string",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "startTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "endTimestamp",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "marketCreator",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "address",
-    //           name: "marketOracle",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "updateMarket",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "amount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "timestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "updateTokenClaim",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "uint256",
-    //           name: "",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       name: "userTokenClaims",
-    //       outputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "account",
-    //           type: "address",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "user",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedAmount",
-    //           type: "uint256",
-    //         },
-    //         {
-    //           internalType: "uint256",
-    //           name: "claimedTimestamp",
-    //           type: "uint256",
-    //         },
-    //       ],
-    //       stateMutability: "view",
-    //       type: "function",
-    //     },
-    //     {
-    //       inputs: [
-    //         {
-    //           internalType: "address",
-    //           name: "_token",
-    //           type: "address",
-    //         },
-    //       ],
-    //       name: "withdraw",
-    //       outputs: [],
-    //       stateMutability: "nonpayable",
-    //       type: "function",
-    //     },
-    //   ],
-    //   inheritedFunctions: {
-    //     DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //     revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
-    //   },
-    // },
     PrecogMasterV7: {
       address: "0x5fEa67Ef543615Bf8A6141AD63095e74c94Af1C4",
       abi: [
@@ -16458,6 +8869,1088 @@ const deployedContracts = {
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
+        },
+      ],
+      inheritedFunctions: {
+        DEFAULT_ADMIN_ROLE: "@openzeppelin/contracts/access/AccessControl.sol",
+        getRoleAdmin: "@openzeppelin/contracts/access/AccessControl.sol",
+        getRoleMember: "@openzeppelin/contracts/access/AccessControl.sol",
+        getRoleMemberCount: "@openzeppelin/contracts/access/AccessControl.sol",
+        grantRole: "@openzeppelin/contracts/access/AccessControl.sol",
+        hasRole: "@openzeppelin/contracts/access/AccessControl.sol",
+        renounceRole: "@openzeppelin/contracts/access/AccessControl.sol",
+        revokeRole: "@openzeppelin/contracts/access/AccessControl.sol",
+      },
+    },
+    PrecogRealityOracleV2: {
+      address: "0xbd8B7cb4924aAdf579b6Dbd77CA6cF6e56029f37",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "initialAdmin",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "previousAdminRole",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "newAdminRole",
+              type: "bytes32",
+            },
+          ],
+          name: "RoleAdminChanged",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "RoleGranted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "sender",
+              type: "address",
+            },
+          ],
+          name: "RoleRevoked",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "ADMIN_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "DEFAULT_ADMIN_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "REPORTER_ROLE",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "addAdmin",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "addMarketReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "addReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "maxPrevious",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+          ],
+          name: "answerOpenQuestion",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "arbitrator",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "getAccountPermissions",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "isAdmin",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isGlobalReporter",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "getMarketState",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "isRegistered",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isAnswered",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isFinalized",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isReported",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getRealityBalance",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "getRealityQuestionInfo",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint32",
+              name: "openingTS",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint256",
+              name: "bounty",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "getRealityResultInfo",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint32",
+              name: "finalizeTS",
+              type: "uint32",
+            },
+            {
+              internalType: "bytes32",
+              name: "lastHash",
+              type: "bytes32",
+            },
+            {
+              internalType: "bool",
+              name: "isFinalized",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "isPendingArbitration",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+          ],
+          name: "getRoleAdmin",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "index",
+              type: "uint256",
+            },
+          ],
+          name: "getRoleMember",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+          ],
+          name: "getRoleMemberCount",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "grantRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "hasRole",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "isMarketRegistered",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "isMarketReporter",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address[]",
+              name: "accounts",
+              type: "address[]",
+            },
+          ],
+          name: "marketRedeemBatch",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "marketReporters",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "markets",
+          outputs: [
+            {
+              internalType: "address",
+              name: "market",
+              type: "address",
+            },
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "string",
+              name: "outcomes",
+              type: "string",
+            },
+            {
+              internalType: "bool",
+              name: "answered",
+              type: "bool",
+            },
+            {
+              internalType: "uint256",
+              name: "resultIndex",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "resultLabel",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "maxAnswerBond",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "bounty",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "templateId",
+              type: "uint32",
+            },
+            {
+              internalType: "string",
+              name: "question",
+              type: "string",
+            },
+            {
+              internalType: "string[]",
+              name: "outcomes",
+              type: "string[]",
+            },
+            {
+              internalType: "string",
+              name: "category",
+              type: "string",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "startTime",
+              type: "uint32",
+            },
+          ],
+          name: "openQuestion",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "precogMaster",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "reality",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32[]",
+              name: "historyHashes",
+              type: "bytes32[]",
+            },
+            {
+              internalType: "address[]",
+              name: "answerers",
+              type: "address[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "bonds",
+              type: "uint256[]",
+            },
+            {
+              internalType: "bytes32[]",
+              name: "answers",
+              type: "bytes32[]",
+            },
+          ],
+          name: "realityClaimWinnings",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "bounty",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "templateId",
+              type: "uint32",
+            },
+            {
+              internalType: "string",
+              name: "question",
+              type: "string",
+            },
+            {
+              internalType: "string[]",
+              name: "outcomes",
+              type: "string[]",
+            },
+            {
+              internalType: "string",
+              name: "category",
+              type: "string",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "startTime",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "nonce",
+              type: "uint32",
+            },
+          ],
+          name: "realityOpenQuestion",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "maxPrevious",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "answerer",
+              type: "address",
+            },
+          ],
+          name: "realitySubmitAnswerFor",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "realityWithdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "market",
+              type: "address",
+            },
+            {
+              internalType: "address[]",
+              name: "initialReporters",
+              type: "address[]",
+            },
+          ],
+          name: "registerMarket",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "removeAdmin",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "removeMarketReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "removeReporter",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "renounceRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+          ],
+          name: "reportResult",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "role",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "revokeRole",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "arbitratorProxy",
+              type: "address",
+            },
+          ],
+          name: "setArbitrator",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "maxBond",
+              type: "uint256",
+            },
+          ],
+          name: "setMaxAnswerBond",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "master",
+              type: "address",
+            },
+          ],
+          name: "setPrecogMaster",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "realityProxy",
+              type: "address",
+            },
+          ],
+          name: "setReality",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "marketId",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "templateId",
+              type: "uint32",
+            },
+            {
+              internalType: "string",
+              name: "question",
+              type: "string",
+            },
+            {
+              internalType: "string[]",
+              name: "outcomes",
+              type: "string[]",
+            },
+            {
+              internalType: "string",
+              name: "category",
+              type: "string",
+            },
+            {
+              internalType: "uint32",
+              name: "timeout",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "startTime",
+              type: "uint32",
+            },
+            {
+              internalType: "bytes32",
+              name: "answer",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "bond",
+              type: "uint256",
+            },
+          ],
+          name: "submitResult",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "questionId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_token",
+              type: "address",
+            },
+          ],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          stateMutability: "payable",
+          type: "receive",
         },
       ],
       inheritedFunctions: {

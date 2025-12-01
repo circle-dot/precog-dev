@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
-import { formatEther, parseEther } from "viem";
+import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { Pie, PieChart, Sector } from "recharts";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
@@ -216,8 +216,8 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
 
   const {
     data: details,
-    isLoading,
-    isError,
+    isLoading: isLoading,
+    isError: isError,
     refetch: refetchDetails,
   } = usePrecogMarketDetails(market.marketId, market.market, true);
   const { targetNetwork } = useTargetNetwork();
@@ -348,9 +348,9 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
               <span className="font-bold text-base-content/70">Shares Balances:</span>{" "}
               {formatSharesBalances(marketInfo[1], market.outcomes)}
             </div>
-            <SharesBalanceChart 
-              sharesArray={marketInfo[1]} 
-              outcomes={market.outcomes} 
+            <SharesBalanceChart
+              sharesArray={marketInfo[1]}
+              outcomes={market.outcomes}
             />
           </p>
         </div>
@@ -363,8 +363,11 @@ const MarketDetailedInfo = ({ market }: { market: MarketInfo }) => {
  * Displays current market prices and outcome probabilities
  */
 const MarketPrices = ({ market }: { market: MarketInfo }) => {
+  // Make all request needed
+  const { data: details } = usePrecogMarketDetails(market.marketId, market.market, true);
   const { outcomeData, isLoading, isError } = usePrecogMarketPrices(market.market, market.outcomes, true);
 
+  // Waiting only for the 2nd request (assuming than the first one is completed)
   if (isLoading) {
     return (
       <div className="flex justify-center items-center pt-4">
@@ -373,6 +376,7 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
     );
   }
 
+  // Checking only the 2nd request for errors
   if (isError) {
     return (
       <div className="flex justify-center items-center pt-4 flex-col">
@@ -390,12 +394,12 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
         )
       : null;
 
-  const calculateProbability = (buyPrice?: bigint): number => {
-    if (!buyPrice) return 0;
-    return Number(formatEther(buyPrice)) * 100;
-  };
-
-  const winningProbability = calculateProbability(winningOutcome?.buyPrice);
+  const tokenDecimals = details?.tokenDecimals ?? 18;
+  let winningProbability = 0;
+  if (winningOutcome?.buyPrice && tokenDecimals) {
+    const buyPriceStr = formatUnits(winningOutcome?.buyPrice, tokenDecimals);
+    winningProbability = Number(buyPriceStr) * 100;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -411,9 +415,9 @@ const MarketPrices = ({ market }: { market: MarketInfo }) => {
             <div key={i} className="whitespace-nowrap">
               <span className="font-semibold text-base-content/80">{`> ${outcome.name}`}</span>
               <span className="pl-2">
-                - BUY: {outcome.buyPrice ? Number(formatEther(outcome.buyPrice)).toFixed(4) : "N/A"}
+                - BUY: {outcome.buyPrice ? Number(formatUnits(outcome.buyPrice, tokenDecimals)).toFixed(4) : "N/A"}
                 <span className="px-2">|</span>
-                SELL: {outcome.sellPrice ? Number(formatEther(outcome.sellPrice)).toFixed(4) : "N/A"}
+                SELL: {outcome.sellPrice ? Number(formatUnits(outcome.sellPrice, tokenDecimals)).toFixed(4) : "N/A"}
               </span>
             </div>
           ))}
@@ -522,7 +526,7 @@ const MarketTradingPanel = ({
   let quoteDisplay = null;
   if (tradeType === "BUY" && buyCalculations && !buyCalculations.hasError && buyCalculations.actualShares > 0) {
     const { actualPrice, actualShares, futurePrice } = buyCalculations;
-    
+
     // Calculate potential returns
     const tokenReturnValue = actualShares - actualPrice;
     const returnPercentage = ((actualShares / actualPrice - 1) * 100);
@@ -547,6 +551,10 @@ const MarketTradingPanel = ({
     );
   }
 
+  // Calculate always displayed amounts
+  const deposited = Number(formatUnits(accountShares.deposited, accountShares.tokenDecimals));
+  const withdrew = Number(formatUnits(accountShares.withdrew, accountShares.tokenDecimals));
+
   return (
     <div className="flex flex-col gap-4">
       <h4 className="font-bold text-base-content/70 m-0">:: Your Info ::</h4>
@@ -556,19 +564,24 @@ const MarketTradingPanel = ({
           <span className="font-bold text-base-content/70">Account:</span> {connectedAddress}
         </p>
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Shares:</span> {formatTokenBalances(accountShares.balances, market.outcomes)}
+          <span className="font-bold text-base-content/70">Shares: </span>
+          <span>{formatOutcomeShareBalances(accountShares.balances, market.outcomes, accountShares.tokenDecimals)}</span>
         </p>
         <p className="m-0">
           <span className="font-bold text-base-content/70">Buys:</span> {String(accountShares.buys)},{" "}
           <span className="font-bold text-base-content/70">Sells:</span> {String(accountShares.sells)}
         </p>
         <p className="m-0">
-          <span className="font-bold text-base-content/70">Deposited:</span> {Number(formatEther(accountShares.deposited)).toFixed(4)} {accountShares.tokenSymbol},{" "}
-          <span className="font-bold text-base-content/70">Withdrew:</span> {Number(formatEther(accountShares.withdrew)).toFixed(4)} {accountShares.tokenSymbol}
+          <span className="font-bold text-base-content/70">Deposited: </span>
+          <span>{deposited.toFixed(4)} {accountShares.tokenSymbol},{" "}</span>
+          <span className="font-bold text-base-content/70">Withdrew: </span>
+          <span>{withdrew.toFixed(4)} {accountShares.tokenSymbol}</span>
         </p>
         {accountShares.redeemed > 0n && (
           <p className="m-0">
-            <span className="font-bold text-base-content/70">Redeemed:</span> {Number(formatEther(accountShares.redeemed)).toFixed(4)} {accountShares.tokenSymbol}
+            <span className="font-bold text-base-content/70">Redeemed: </span>
+            <span>{Number(formatUnits(accountShares.redeemed, accountShares.tokenDecimals)).toFixed(4)} </span>
+            <span>{accountShares.tokenSymbol}</span>
           </p>
         )}
       </div>
@@ -691,7 +704,8 @@ const MarketTradingPanel = ({
               onClick={async () => {
                 if (tradeType === "BUY" && buyCalculations?.actualShares && buyCalculations.actualPrice) {
                   try {
-                    const maxTokenIn = parseEther(inputValue);
+                    // Transform user input into decimal number
+                    const maxTokenIn = Number(inputValue);
                     await executeBuy(
                       market.marketId,
                       outcomeIndex,
@@ -711,6 +725,7 @@ const MarketTradingPanel = ({
                       market.marketId,
                       outcomeIndex,
                       sharesToQuote,
+                      market.market
                     );
                     // Reset form and refetch data after successful trade
                     resetTradingForm();
@@ -738,12 +753,12 @@ const MarketTradingPanel = ({
 /**
  * Displays shares balances as a pie chart
  */
-const SharesBalanceChart = ({ 
-  sharesArray, 
-  outcomes 
-}: { 
-  sharesArray: readonly bigint[] | undefined, 
-  outcomes: readonly string[] | undefined 
+const SharesBalanceChart = ({
+  sharesArray,
+  outcomes
+}: {
+  sharesArray: readonly bigint[] | undefined,
+  outcomes: readonly string[] | undefined
 }) => {
   if (!sharesArray || !outcomes) return null;
 
@@ -751,14 +766,14 @@ const SharesBalanceChart = ({
   const generateColor = (index: number): string => {
     // Use sky blue hue (around 200-210 degrees)
     const hue = 205;
-    
+
     // Keep saturation moderate-high for vibrant but soft blues (40-60%)
     const s = 0.5; // 50% saturation
-    
+
     // Vary the lightness based on index using golden ratio for even distribution
     const goldenRatio = 0.618033988749895;
     const normalizedIndex = (index * goldenRatio) % 1;
-    
+
     // Lightness between 50% and 85% for soft sky blue appearance
     const l = 0.5 + (normalizedIndex * 0.35);
 
@@ -767,7 +782,7 @@ const SharesBalanceChart = ({
 
   // Skip the first element (0-index based) and convert the rest to numbers
   const balances = Array.from(sharesArray.slice(1)).map(fromInt128toNumber);
-  
+
   // Create chart data with generated colors
   const chartData = balances.map((balance, index) => ({
     name: outcomes[index],
@@ -776,7 +791,7 @@ const SharesBalanceChart = ({
   }));
 
   // Find the index of the outcome with highest shares
-  const winningIndex = balances.reduce((maxIndex, current, index, arr) => 
+  const winningIndex = balances.reduce((maxIndex, current, index, arr) =>
     current > arr[maxIndex] ? index : maxIndex
   , 0);
 
@@ -923,19 +938,21 @@ const formatDate = (timestamp: bigint, includeTime = false) => {
 };
 
 /**
- * Formats token balances from wei to ETH units with outcome labels
+ * Formats outcome shares balances [eg.: ""]
  * @param sharesArray array of token balances in wei (index 0 is skipped as it's a 0-index based)
  * @param outcomes The outcomes of the market
+ * @param decimals The number of decimals of the token
  * @returns Comma-separated string of token balances
  */
-const formatTokenBalances = (
+const formatOutcomeShareBalances = (
   sharesArray: readonly bigint[] | undefined,
   outcomes: readonly string[] | undefined,
+  decimals: number | undefined,
 ): string => {
-  if (!sharesArray || !outcomes) return "N/A";
+  if (!sharesArray || !outcomes || !decimals) return "N/A";
 
-  // Skip the first element (0-index based) and convert the rest to ETH units
-  const balances = Array.from(sharesArray.slice(1)).map(amount => Number(formatEther(amount)));
+  // Skip the first element (0-index based) and convert the rest to balances
+  const balances = Array.from(sharesArray.slice(1)).map(amount => Number(formatUnits(amount, decimals)));
 
   return balances.map((balance, index) => `${balance} (${outcomes[index]})`).join(" | ");
 };

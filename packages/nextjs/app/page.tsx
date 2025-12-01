@@ -6,16 +6,18 @@ import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { MarketList } from "~~/components/MarketList";
 import { usePrecogMarkets } from "~~/hooks/usePrecogMarketData";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
-import { getLatestContracts } from "~~/utils/scaffold-eth/contractsData";
+import {getContractsByNetwork} from "~~/utils/scaffold-eth/contractsData";
 import { getBlockExplorerAddressLink } from "~~/utils/scaffold-eth";
 
-const contractsData = getLatestContracts();
 
 const Home: NextPage = () => {
+  // Get all precog markets for selected network
   const { data, isLoading, error } = usePrecogMarkets();
-  const { targetNetwork } = useTargetNetwork();
 
-  const precogMasterAddress = contractsData.PrecogMasterV7.address;
+  // Get precog master address and build external link to explorer
+  const { targetNetwork } = useTargetNetwork();
+  const contractsData = getContractsByNetwork(targetNetwork.id);
+  const precogMasterAddress = contractsData.PrecogMasterV7?.address;
   const explorerLink = getBlockExplorerAddressLink(targetNetwork, precogMasterAddress);
 
   return (
