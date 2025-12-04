@@ -1,4 +1,4 @@
-import {Address as AddressType, formatEther} from "viem";
+import {Address as AddressType, erc20Abi, formatUnits} from "viem";
 import {useScaffoldContract, useScaffoldReadContract} from "~~/hooks/scaffold-eth";
 import {useReadContract} from "wagmi";
 import React from "react";
@@ -13,6 +13,25 @@ export const MarketPrices = ({address}: { address: AddressType }) => {
     });
     const {data: marketPrices, isLoading: isLoading} = useScaffoldReadContract({
         contractName: "PrecogMasterV7", functionName: "marketPrices", args: [marketId]
+    });
+
+    // Get market address from marketData (index 7)
+    const marketAddress = marketData?.[7] as AddressType | undefined;
+    
+    // Get token address from market contract
+    const {data: tokenAddress} = useReadContract({
+        abi: marketABI,
+        address: marketAddress,
+        functionName: 'token',
+        query: { enabled: !!marketAddress }
+    });
+
+    // Get token decimals from ERC20 token contract
+    const {data: tokenDecimals} = useReadContract({
+        abi: erc20Abi,
+        address: tokenAddress as AddressType | undefined,
+        functionName: 'decimals',
+        query: { enabled: !!tokenAddress }
     });
 
     if (isLoading) {
@@ -38,11 +57,14 @@ export const MarketPrices = ({address}: { address: AddressType }) => {
     let predictionPrice = 0;
     const buyData = []
     const sellData = []
+    
+    // Use token decimals if available, otherwise default to 18
+    const decimals = tokenDecimals ?? 18;
+    
     for (let i = 1; i < marketOutcomes.length; i++) {
         const outcome = marketOutcomes[i];
-        // TODO Add here support for token with decimals not equal to 18
-        const buyPrice = Number(formatEther(marketPrices[0][i]));
-        const sellPrice = Number(formatEther(marketPrices[1][i]));
+        const buyPrice = Number(formatUnits(marketPrices[0][i], decimals));
+        const sellPrice = Number(formatUnits(marketPrices[1][i], decimals));
         buyData.push({"outcome": outcome, "price": buyPrice});
         sellData.push({"outcome": outcome, "price": sellPrice})
 

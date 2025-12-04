@@ -1,5 +1,6 @@
-import {Address, formatEther} from "viem";
-import {useScaffoldReadContract} from "~~/hooks/scaffold-eth";
+import {Address, erc20Abi, formatUnits} from "viem";
+import {useScaffoldReadContract, useScaffoldContract} from "~~/hooks/scaffold-eth";
+import {useReadContract} from "wagmi";
 import React from "react";
 
 type MarketBalanceProps = {
@@ -18,6 +19,26 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
         contractName: "PrecogMasterV7", functionName: "marketAccountShares", args: [marketId, marketAddress]
     });
 
+    // Get market contract ABI to call token()
+    const {data: marketContract} = useScaffoldContract({contractName: "PrecogMarketV7"});
+    const marketABI = marketContract ? marketContract.abi : [];
+
+    // Get token address from market contract
+    const {data: tokenAddress} = useReadContract({
+        abi: marketABI,
+        address: marketAddress,
+        functionName: 'token',
+        query: { enabled: !!marketAddress }
+    });
+
+    // Get token decimals from ERC20 token contract
+    const {data: tokenDecimals} = useReadContract({
+        abi: erc20Abi,
+        address: tokenAddress as Address | undefined,
+        functionName: 'decimals',
+        query: { enabled: !!tokenAddress }
+    });
+
     if (!marketAddress || isLoading || !accountShares) {
         return (
             <div className="animate-pulse flex space-x-4">
@@ -29,8 +50,9 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
     }
 
     // Get and parse needed data
-    // TODO Add here support for token with decimals not equal to 18
-    const redeemedAmount = formatEther(accountShares[4]);
+    // Use token decimals if available, otherwise default to 18
+    const decimals = tokenDecimals ?? 18;
+    const redeemedAmount = formatUnits(accountShares[4], decimals);
     const outcomeBalances = accountShares[5];
     // Only for debug
     // console.log("outcomes", outcomes);
@@ -42,9 +64,8 @@ export const MarketBalance = ({address, id, outcomes}: MarketBalanceProps) => {
         const label = outcomes[i].toString();
         let balance = "0";
         try {
-            // TODO Add here support for token with decimals not equal to 18
             // @ts-ignore
-            balance = formatEther(outcomeBalances[i + 1]);
+            balance = formatUnits(outcomeBalances[i + 1], decimals);
         } catch {
             console.log("> Error getting share balance: ", i, label);
         }
