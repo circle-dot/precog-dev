@@ -63,6 +63,7 @@ export const Balance = ({ address, className = "", usdMode }: BalanceProps) => {
     );
   }
 
+  // Dev note: this shows the native balance of the chain (18 decimals)
   const formattedBalance = balance ? Number(formatEther(balance.value)) : 0;
 
   return (

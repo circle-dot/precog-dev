@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { NextPage } from "next";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { parseEther } from "viem";
 import { getBlockExplorerAddressLink, notification } from "~~/utils/scaffold-eth";
 import { getContractsByNetwork } from "~~/utils/scaffold-eth/contractsData";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon, InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { toDateString } from "~~/utils/dates";
 
@@ -41,6 +41,30 @@ const Oracle: NextPage = () => {
   const [precogMasterAddress, setPrecogMasterAddress] = useState<string>("");
   const [realityAddress, setRealityAddress] = useState<string>("");
   const [arbitratorAddress, setArbitratorAddress] = useState<string>("");
+
+  // Claims states
+  const [claimQuestionId, setClaimQuestionId] = useState("");
+  const [historyHashes, setHistoryHashes] = useState("");
+  const [answerers, setAnswerers] = useState("");
+  const [bonds, setBonds] = useState("");
+  const [answers, setAnswers] = useState("");
+  const [openTooltip, setOpenTooltip] = useState<string | null>(null);
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openTooltip && !(event.target as Element).closest('.tooltip-container')) {
+        setOpenTooltip(null);
+      }
+    };
+
+    if (openTooltip) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [openTooltip]);
 
   const handleRegisterMarket = async () => {
     if (!walletClient || !publicClient) {
@@ -237,7 +261,7 @@ const Oracle: NextPage = () => {
         args: [],
       });
       setPrecogMasterAddress(data as string);
-      notification.success("Precog Master address fetched!");
+      console.log("Precog Master address fetched!", data);
     } catch (error: any) {
       const errorMessage = error?.shortMessage || error?.message || "Failed to fetch Precog Master";
       notification.error(errorMessage);
@@ -259,7 +283,7 @@ const Oracle: NextPage = () => {
         args: [],
       });
       setRealityAddress(data as string);
-      notification.success("Reality address fetched!");
+      console.log("Reality address fetched!", data);
     } catch (error: any) {
       const errorMessage = error?.shortMessage || error?.message || "Failed to fetch Reality";
       notification.error(errorMessage);
@@ -281,11 +305,88 @@ const Oracle: NextPage = () => {
         args: [],
       });
       setArbitratorAddress(data as string);
-      notification.success("Arbitrator address fetched!");
+      console.log("Arbitrator address fetched!", data);
     } catch (error: any) {
       const errorMessage = error?.shortMessage || error?.message || "Failed to fetch Arbitrator";
       notification.error(errorMessage);
       console.error("Failed to fetch Arbitrator:", error);
+    }
+  };
+
+  const handleClaimWinnings = async () => {
+    if (!walletClient || !publicClient) {
+      notification.error("Please connect your wallet");
+      return;
+    }
+
+    try {
+      const historyHashesArray = historyHashes.split(",").map(h => h.trim() as `0x${string}`);
+      const answerersArray = answerers.split(",").map(a => a.trim() as `0x${string}`);
+      const bondsArray = bonds.split(",").map(b => BigInt(b.trim()));
+      const answersArray = answers.split(",").map(a => a.trim() as `0x${string}`);
+
+      // Validate arrays have same length
+      if (
+        historyHashesArray.length !== answerersArray.length ||
+        answerersArray.length !== bondsArray.length ||
+        bondsArray.length !== answersArray.length
+      ) {
+        notification.error("All arrays must have the same length");
+        return;
+      }
+
+      console.log("Claiming winnings with args:", {
+        questionId: claimQuestionId as `0x${string}`,
+        historyHashesArray,
+        answerersArray,
+        bondsArray,
+        answersArray
+      });
+
+      const { request } = await publicClient.simulateContract({
+        address: oracle_address,
+        abi: oracle_abi,
+        functionName: "realityClaimWinnings",
+        args: [
+          claimQuestionId as `0x${string}`,
+          historyHashesArray,
+          answerersArray,
+          bondsArray,
+          answersArray
+        ],
+        account: walletClient.account,
+      });
+      await walletClient.writeContract(request);
+      notification.success("Winnings claimed successfully!");
+    } catch (error: any) {
+      const errorMessage = error?.shortMessage || error?.message || "Failed to claim winnings";
+      notification.error(errorMessage);
+      console.error(error);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!walletClient || !publicClient) {
+      notification.error("Please connect your wallet");
+      return;
+    }
+
+    try {
+      console.log("Withdrawing from Reality.eth...");
+
+      const { request } = await publicClient.simulateContract({
+        address: oracle_address,
+        abi: oracle_abi,
+        functionName: "realityWithdraw",
+        args: [],
+        account: walletClient.account,
+      });
+      await walletClient.writeContract(request);
+      notification.success("Withdrawal successful!");
+    } catch (error: any) {
+      const errorMessage = error?.shortMessage || error?.message || "Failed to withdraw";
+      notification.error(errorMessage);
+      console.error(error);
     }
   };
 
@@ -347,6 +448,7 @@ const Oracle: NextPage = () => {
                         { id: "answer", label: "ANSWER" },
                         { id: "result", label: "RESULT" },
                         { id: "info", label: "INFO" },
+                        { id: "claims", label: "CLAIMS" },
                         { id: "contracts", label: "CONTRACTS" }
                       ].map(tab => (
                         <button
@@ -600,12 +702,236 @@ const Oracle: NextPage = () => {
                         </div>
                       )}
 
+                      {/* Claims Tab */}
+                      {activeTab === "claims" && (
+                        <div className="gap-2 flex flex-col">
+                          <h4 className="font-bold text-base-content/70 m-0">:: Claims & Withdrawals ::</h4>
+                          
+                          {/* Claim Winnings Section */}
+                          <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-3">
+                            <h5 className="font-bold text-base-content/70 m-0">Claim Winnings</h5>
+                            
+                            {/* Question ID */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="QUESTION ID (BYTES32)"
+                                className="input input-bordered input-sm font-mono text-center flex-1"
+                                value={claimQuestionId}
+                                onChange={e => setClaimQuestionId(e.target.value)}
+                              />
+                              <div className="relative tooltip-container">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenTooltip(openTooltip === "questionId" ? null : "questionId")}
+                                  className="cursor-pointer"
+                                >
+                                  <InformationCircleIcon className="w-4 h-4 text-base-content/50" />
+                                </button>
+                                {openTooltip === "questionId" && (
+                                  <div className="absolute right-0 top-6 z-50 w-80 bg-base-200 border border-base-content/20 rounded-lg shadow-lg p-3 text-xs">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <span className="font-bold text-base-content/70">Question ID</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setOpenTooltip(null)}
+                                        className="text-base-content/50 hover:text-base-content"
+                                      >
+                                        <XMarkIcon className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                    <p className="text-base-content/80 select-text">
+                                      The question ID from Reality.eth. You can get this from the INFO tab by entering the marketId and clicking `FETCH QUESTION`. The question ID is displayed in the Question Info section.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* History Hashes */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="HISTORY HASHES (COMMA-SEPARATED BYTES32)"
+                                className="input input-bordered input-sm font-mono text-center flex-1"
+                                value={historyHashes}
+                                onChange={e => setHistoryHashes(e.target.value)}
+                              />
+                              <div className="relative tooltip-container">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenTooltip(openTooltip === "historyHashes" ? null : "historyHashes")}
+                                  className="cursor-pointer"
+                                >
+                                  <InformationCircleIcon className="w-4 h-4 text-base-content/50" />
+                                </button>
+                                {openTooltip === "historyHashes" && (
+                                  <div className="absolute right-0 top-6 z-50 w-80 bg-base-200 border border-base-content/20 rounded-lg shadow-lg p-3 text-xs break-words">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <span className="font-bold text-base-content/70">History Hashes</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setOpenTooltip(null)}
+                                        className="text-base-content/50 hover:text-base-content"
+                                      >
+                                        <XMarkIcon className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                    <p className="text-base-content/80 select-text break-words">
+                                      Each answer submission creates a history hash. The first history hash always starts with{" "}
+                                      <code className="bg-base-300 px-1 rounded break-all">0x0000000000000000000000000000000000000000000000000000000000000000</code>. If the market has only one answer, that will be the history hash. Each subsequent hash is computed from the previous hash, answer, bond, answerer, and a boolean flag.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Answerers */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="ANSWERERS (COMMA-SEPARATED ADDRESSES)"
+                                className="input input-bordered input-sm font-mono text-center flex-1"
+                                value={answerers}
+                                onChange={e => setAnswerers(e.target.value)}
+                              />
+                              <div className="relative tooltip-container">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenTooltip(openTooltip === "answerers" ? null : "answerers")}
+                                  className="cursor-pointer"
+                                >
+                                  <InformationCircleIcon className="w-4 h-4 text-base-content/50" />
+                                </button>
+                                {openTooltip === "answerers" && (
+                                  <div className="absolute right-0 top-6 z-50 w-80 bg-base-200 border border-base-content/20 rounded-lg shadow-lg p-3 text-xs">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <span className="font-bold text-base-content/70">Answerers</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setOpenTooltip(null)}
+                                        className="text-base-content/50 hover:text-base-content"
+                                      >
+                                        <XMarkIcon className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                    <p className="text-base-content/80 select-text">
+                                      The addresses of the users who answered the question. If you used the Reality Oracle to open and answer the question, the address will be the oracle contract address{oracle_address ? (
+                                        <> (<code className="bg-base-300 px-1 rounded break-all">{oracle_address}</code>)</>
+                                      ) : ""}. Each address corresponds to one answer in the history.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Bonds */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="BONDS (COMMA-SEPARATED WEI VALUES)"
+                                className="input input-bordered input-sm font-mono text-center flex-1"
+                                value={bonds}
+                                onChange={e => setBonds(e.target.value)}
+                              />
+                              <div className="relative tooltip-container">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenTooltip(openTooltip === "bonds" ? null : "bonds")}
+                                  className="cursor-pointer"
+                                >
+                                  <InformationCircleIcon className="w-4 h-4 text-base-content/50" />
+                                </button>
+                                {openTooltip === "bonds" && (
+                                  <div className="absolute right-0 top-6 z-50 w-80 bg-base-200 border border-base-content/20 rounded-lg shadow-lg p-3 text-xs">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <span className="font-bold text-base-content/70">Bonds</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setOpenTooltip(null)}
+                                        className="text-base-content/50 hover:text-base-content"
+                                      >
+                                        <XMarkIcon className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                    <p className="text-base-content/80 select-text">
+                                      The bond amounts (in wei) that were posted with each answer. Bonds are used to incentivize correct answers and penalize incorrect ones. By default, our system uses{" "}
+                                      <code className="bg-base-300 px-1 rounded">1500000000000000</code> wei (0.0015 ETH) per answer. Each bond corresponds to one answer in the history.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Answers */}
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="ANSWERS (COMMA-SEPARATED BYTES32)"
+                                className="input input-bordered input-sm font-mono text-center flex-1"
+                                value={answers}
+                                onChange={e => setAnswers(e.target.value)}
+                              />
+                              <div className="relative tooltip-container">
+                                <button
+                                  type="button"
+                                  onClick={() => setOpenTooltip(openTooltip === "answers" ? null : "answers")}
+                                  className="cursor-pointer"
+                                >
+                                  <InformationCircleIcon className="w-4 h-4 text-base-content/50" />
+                                </button>
+                                {openTooltip === "answers" && (
+                                  <div className="absolute right-0 top-6 z-50 w-80 bg-base-200 border border-base-content/20 rounded-lg shadow-lg p-3 text-xs break-words">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <span className="font-bold text-base-content/70">Answers</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setOpenTooltip(null)}
+                                        className="text-base-content/50 hover:text-base-content"
+                                      >
+                                        <XMarkIcon className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                    <p className="text-base-content/80 select-text break-words">
+                                      The answers in bytes32 format. The first outcome corresponds to{" "}
+                                      <code className="bg-base-300 px-1 rounded break-all">0x0000000000000000000000000000000000000000000000000000000000000000</code>, the second to{" "}
+                                      <code className="bg-base-300 px-1 rounded break-all">0x0000000000000000000000000000000000000000000000000000000000000001</code>, and so on. Each answer corresponds to one entry in the history.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <button
+                              className="btn btn-accent btn-sm font-mono"
+                              onClick={handleClaimWinnings}
+                            >
+                              CLAIM WINNINGS
+                            </button>
+                          </div>
+
+                          {/* Withdraw Section */}
+                          <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-3">
+                            <h5 className="font-bold text-base-content/70 m-0">Withdraw from Reality.eth</h5>
+                            <p className="text-xs text-base-content/70">
+                              Withdraws any available balance from the Reality.eth contract to this oracle contract.
+                            </p>
+                            <button
+                              className="btn btn-accent btn-sm font-mono"
+                              onClick={handleWithdraw}
+                            >
+                              WITHDRAW
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Contracts Tab */}
                       {activeTab === "contracts" && (
                         <div className="gap-2 flex flex-col">
                           <h4 className="font-bold text-base-content/70 m-0">:: Contract Addresses ::</h4>
                           <div className="p-4 border border-dashed border-base-content/20 rounded-md flex flex-col gap-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-4">
                               {/* Precog Master */}
                               <div className="bg-base-200 p-3 rounded">
                                 <h5 className="font-bold text-accent mb-2 text-center">PRECOG MASTER</h5>
@@ -663,7 +989,7 @@ const Oracle: NextPage = () => {
                               </div>
 
                               {/* Arbitrator */}
-                              <div className="bg-base-200 p-3 rounded md:col-span-2">
+                              <div className="bg-base-200 p-3 rounded">
                                 <h5 className="font-bold text-accent mb-2 text-center">ARBITRATOR</h5>
                                 <div className="space-y-2">
                                   <p className="break-all text-xs">
