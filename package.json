@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "lint-staged": "~13.2.2",
-    "next": "~14.2.32",
+    "next": "~14.2.35",
     "vercel": "~41.6.2"
   },
   "resolutions": {
