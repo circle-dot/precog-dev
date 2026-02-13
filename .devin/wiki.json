@@ -1,0 +1,174 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "Introduce the Precog prediction market system, its core components, and high-level architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Smart Contract System",
+      "purpose": "Explain the smart contract architecture and how the contracts interact with each other",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "PrecogMarketV7",
+      "purpose": "Detail the individual market contract, its LMSR pricing mechanism, and market lifecycle",
+      "parent": "Smart Contract System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "PrecogMasterV7",
+      "purpose": "Explain the master contract that manages market creation and interaction",
+      "parent": "Smart Contract System",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Frontend Application",
+      "purpose": "Overview of the Next.js frontend application structure and key components",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Market Pages and Components",
+      "purpose": "Document the main market-related pages and UI components",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Market Creation Interface",
+      "purpose": "Explain how the market creation UI works and interacts with contracts",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Data Fetching and Custom Hooks",
+      "purpose": "Detail the custom React hooks used for blockchain data fetching and processing",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Service Worker and PWA Support",
+      "purpose": "Document the service worker implementation for offline capabilities",
+      "parent": "Frontend Application",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Development and Deployment",
+      "purpose": "Explain the development workflow, testing, and deployment process",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Testing Framework",
+      "purpose": "Detail the testing approach and methodology",
+      "parent": "Development and Deployment",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "CI/CD Pipeline",
+      "purpose": "Document the continuous integration and deployment setup",
+      "parent": "Development and Deployment",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Deployment Environments",
+      "purpose": "Explain the different deployment environments and configuration",
+      "parent": "Development and Deployment",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "User Guides",
+      "purpose": "Practical guides for using the Precog system",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Creating a Prediction Market",
+      "purpose": "Step-by-step guide for creating a new market",
+      "parent": "User Guides",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Trading in Markets",
+      "purpose": "How to buy and sell shares in prediction markets",
+      "parent": "User Guides",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Redeeming Shares",
+      "purpose": "How to redeem winning shares after market resolution",
+      "parent": "User Guides",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
